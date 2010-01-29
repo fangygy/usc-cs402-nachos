@@ -116,6 +116,14 @@ Lock::~Lock() {
   ready_queue = new List;
 
 }
+bool Lock::isHeldByCurrentThread() {
+  // If the current running thread is the same as the thread pointer
+  // (the thread that owns the lock), then function returns true
+  if(currentThread == thread)
+    return true;
+  else
+    return false;
+}
 void Lock::Acquire() {
   // Disable the interrupts to make Acquire an atomic operation
   IntStatus old = interrupt->SetLevel(IntOff);
@@ -253,4 +261,10 @@ void Condition::Signal(Lock* conditionLock) {
   interrupt->SetLevel(old);
 }
 
-void Condition::Broadcast(Lock* conditionLock) { }
+void Condition::Broadcast(Lock* conditionLock) {
+
+  while(!wait_queue->IsEmpty()) {
+    Signal(conditionLock);
+  }
+ 
+}

@@ -81,6 +81,8 @@ class Lock {
     char* name;				// for debugging
     // plus some other stuff you'll need to define
     List *wait_queue, *ready_queue;
+    
+    // This thread pointer points to the thread that owns the lock
     Thread* thread;
     bool FREE,BUSY;
 };

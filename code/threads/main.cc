@@ -60,6 +60,7 @@ extern void ThreadTest(void), Copy(char *unixFile, char *nachosFile);
 extern void Print(char *file), PerformanceTest(void);
 extern void StartProcess(char *file), ConsoleTest(char *in, char *out);
 extern void MailTest(int networkID);
+extern void TestSuite(void);
 
 //----------------------------------------------------------------------
 // main
@@ -85,6 +86,7 @@ main(int argc, char **argv)
     (void) Initialize(argc, argv);
     
 #ifdef THREADS
+    // TestSuite();
     ThreadTest();
 #endif
 
