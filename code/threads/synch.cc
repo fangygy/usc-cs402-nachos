@@ -100,13 +100,24 @@ Semaphore::V()
 // Dummy functions -- so we can compile our later assignments 
 // Note -- without a correct implementation of Condition::Wait(), 
 // the test case in the network assignment won't work!
-Lock::Lock(char* debugName) {}
+Lock::Lock(char* debugName) { 
+  name = debugName;
+  thread = NULL;
+
+  FREE = true;
+  BUSY = false;
+
+  // Create the wait queues for waiting threads
+  wait_queue  = new List;
+  ready_queue = new List;
+
+}
 Lock::~Lock() {
   // Implement Lock Class here
   // Lock Class should have several Condition Variables
   // As well, Lock Class should have a Queue of Waiting Threads
   
-  *thread = NULL;
+  thread = NULL;
 
   FREE = true;
   BUSY = false;
