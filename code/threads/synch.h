@@ -80,6 +80,9 @@ class Lock {
   private:
     char* name;				// for debugging
     // plus some other stuff you'll need to define
+    List *wait_queue, *ready_queue;
+    Thread* thread;
+    bool FREE,BUSY;
 };
 
 // The following class defines a "condition variable".  A condition
@@ -132,5 +135,8 @@ class Condition {
   private:
     char* name;
     // plus some other stuff you'll need to define
+
+    List *wait_queue, *ready_queue;
+    Lock *lock;
 };
 #endif // SYNCH_H

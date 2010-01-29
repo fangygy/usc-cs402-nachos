@@ -106,11 +106,10 @@ Lock::~Lock() {
   // Lock Class should have several Condition Variables
   // As well, Lock Class should have a Queue of Waiting Threads
   
-  Thread *thread;
   *thread = NULL;
 
-  bool FREE = true;
-  bool BUSY = false;
+  FREE = true;
+  BUSY = false;
 
   // Create the wait queues for waiting threads
   wait_queue  = new List;
@@ -119,7 +118,7 @@ Lock::~Lock() {
 }
 void Lock::Acquire() {
   // Disable the interrupts to make Acquire an atomic operation
-  int old = interrupt->SetLevel(IntOff);
+  IntStatus old = interrupt->SetLevel(IntOff);
 
   /*
     if("I am lock owner") {
@@ -140,8 +139,8 @@ void Lock::Acquire() {
   // If currentThread is equal to thread, that means that currentThread
   // owns the lock. In this case, we don't need to do anything except
   // restore the interrupts and return
-  if(currentThread == thread) {
-    interrupt->setLevel(old);
+  if(isHeldByCurrentThread()) {
+    interrupt->SetLevel(old);
     return;
   }
   
@@ -157,11 +156,11 @@ void Lock::Acquire() {
   }
 
   // Restore interrupts
-  interrupt->setLevel(old);
+  interrupt->SetLevel(old);
 }
 void Lock::Release() {
   // Disable the interrupts to make Release an atomic operation
-  int old = interrupt->SetLevel(IntOff);
+  IntStatus old = interrupt->SetLevel(IntOff);
 
   /*
     if("I am not the lock owner") {
@@ -181,12 +180,12 @@ void Lock::Release() {
     
   */
 
-  if(currentThread!=thread) {
+  if(!isHeldByCurrentThread()) {
     DEBUG('e',"This thread does not own the lock");
-    interrupts->SetLevel(old);
+    interrupt->SetLevel(old);
   }
   
-  if(wait_queue.size > 0) {
+  if(!wait_queue->IsEmpty()) {
     Thread *newthread = (Thread*)wait_queue->Remove();
     ready_queue->Append(newthread);
     thread = currentThread;
@@ -197,15 +196,61 @@ void Lock::Release() {
   }
 
   // Restore interrupts to allow context switching
-  interrupts->SetLevel(old);
+  interrupt->SetLevel(old);
 }
 
-Condition::Condition(char* debugName) { }
+Condition::Condition(char* debugName) { 
+  
+  wait_queue = new List;
+
+}
 
 Condition::~Condition() { }
 
-void Condition::Wait(Lock* conditionLock) { ASSERT(FALSE); }
+void Condition::Wait(Lock* conditionLock) { 
 
-void Condition::Signal(Lock* conditionLock) { }
+  // Disable interrupts
+  IntStatus old = interrupt->SetLevel(IntOff);
+
+  lock = conditionLock;
+  if(conditionLock == NULL) {
+    DEBUG('f',"Condition Lock is NULL");
+    interrupt->SetLevel(old);
+    return;
+  }
+  wait_queue->Append(currentThread);
+  conditionLock->Release();
+  currentThread->Sleep();
+  conditionLock->Acquire();
+
+  // Restore interrupts
+  interrupt->SetLevel(old);
+
+}
+
+void Condition::Signal(Lock* conditionLock) { 
+  // Disable interrupts
+  IntStatus old = interrupt->SetLevel(IntOff);
+  if(wait_queue->IsEmpty()) {
+    interrupt->SetLevel(old);
+    return;
+  }
+  
+  if(lock != conditionLock) {
+    DEBUG('g',"Condition Lock does not Equal Lock");
+    interrupt->SetLevel(old);
+    return;
+  }
+
+  Thread *thread = (Thread *)wait_queue->Remove();
+  ready_queue->Append(thread);
+
+  if(wait_queue->IsEmpty()) {
+    lock = NULL;
+  }
+
+  // Restore interrupts
+  interrupt->SetLevel(old);
+}
 
 void Condition::Broadcast(Lock* conditionLock) { }
