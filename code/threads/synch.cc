@@ -105,18 +105,28 @@ Lock::~Lock() {
   // Implement Lock Class here
   // Lock Class should have several Condition Variables
   // As well, Lock Class should have a Queue of Waiting Threads
+  
+  Thread *thread;
+  *thread = NULL;
 
+  bool FREE = true;
+  bool BUSY = false;
+
+  // Create the wait queues for waiting threads
   wait_queue  = new List;
   ready_queue = new List;
-
-
 
 }
 void Lock::Acquire() {
   // Disable the interrupts to make Acquire an atomic operation
+  int old = interrupt->SetLevel(IntOff);
 
   /*
     if("I am lock owner") {
+    already own the lock 
+    restore interrupts and return
+    } 
+    if("Lock Available") {
     thread becomes busy
     thread becomes the lock owner 
     therad pointer goes to current thread 
@@ -127,10 +137,31 @@ void Lock::Acquire() {
     }
   */
 
-  // Enable interrupts 
+  // If currentThread is equal to thread, that means that currentThread
+  // owns the lock. In this case, we don't need to do anything except
+  // restore the interrupts and return
+  if(currentThread == thread) {
+    interrupt->setLevel(old);
+    return;
+  }
+  
+  // If the lock is free, then we assign the thread owner to the currentThread
+  // Else, the thread must be added to the wait queue and then put to sleep
+  if(FREE) {
+    BUSY = true;
+    thread = currentThread;
+    FREE = false;
+  } else {
+    wait_queue->Append(currentThread);
+    currentThread->Sleep();
+  }
+
+  // Restore interrupts
+  interrupt->setLevel(old);
 }
 void Lock::Release() {
   // Disable the interrupts to make Release an atomic operation
+  int old = interrupt->SetLevel(IntOff);
 
   /*
     if("I am not the lock owner") {
@@ -150,8 +181,23 @@ void Lock::Release() {
     
   */
 
-  // Restore interrupts to allow context switching
+  if(currentThread!=thread) {
+    DEBUG('e',"This thread does not own the lock");
+    interrupts->SetLevel(old);
+  }
+  
+  if(wait_queue.size > 0) {
+    Thread *newthread = (Thread*)wait_queue->Remove();
+    ready_queue->Append(newthread);
+    thread = currentThread;
+  } else {
+    FREE   = true;
+    BUSY   = false;
+    thread = NULL;
+  }
 
+  // Restore interrupts to allow context switching
+  interrupts->SetLevel(old);
 }
 
 Condition::Condition(char* debugName) { }
