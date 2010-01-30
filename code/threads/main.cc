@@ -62,6 +62,7 @@ extern void StartProcess(char *file), ConsoleTest(char *in, char *out);
 extern void MailTest(int networkID);
 extern void TestSuite(void);
 
+
 //----------------------------------------------------------------------
 // main
 // 	Bootstrap the operating system kernel.  
@@ -85,15 +86,17 @@ main(int argc, char **argv)
     DEBUG('t', "Entering main");
     (void) Initialize(argc, argv);
     
-#ifdef THREADS
-    // TestSuite();
-    ThreadTest();
-#endif
+
 
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
 	argCount = 1;
         if (!strcmp(*argv, "-z"))               // print copyright
             printf (copyright);
+#ifdef THREADS
+	if(!strcmp(*argv, "-T")) 
+	  ThreadTest();
+
+#endif
 #ifdef USER_PROGRAM
         if (!strcmp(*argv, "-x")) {        	// run a user program
 	    ASSERT(argc > 1);

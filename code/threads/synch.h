@@ -80,7 +80,7 @@ class Lock {
   private:
     char* name;				// for debugging
     // plus some other stuff you'll need to define
-    List *wait_queue, *ready_queue;
+    List *wait_queue;
     
     // This thread pointer points to the thread that owns the lock
     Thread* thread;
@@ -138,7 +138,7 @@ class Condition {
     char* name;
     // plus some other stuff you'll need to define
 
-    List *wait_queue, *ready_queue;
+    List *wait_queue;
     Lock *lock;
 };
 #endif // SYNCH_H

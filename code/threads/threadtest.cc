@@ -311,7 +311,7 @@ void TestSuite() {
     
     // Test 1
 
-    printf("Starting Test 1\n");
+    printf("\nStarting Test 1\n");
 
     t = new Thread("t1_t1");
     t->Fork((VoidFunctionPtr)t1_t1,0);
@@ -328,7 +328,7 @@ void TestSuite() {
 
     // Test 2
 
-    printf("Starting Test 2.  Note that it is an error if thread t2_t2\n");
+    printf("\nStarting Test 2.  Note that it is an error if thread t2_t2\n");
     printf("completes\n");
 
     t = new Thread("t2_t1");
@@ -342,7 +342,7 @@ void TestSuite() {
 
     // Test 3
 
-    printf("Starting Test 3\n");
+    printf("\nStarting Test 3\n");
 
     for (  i = 0 ; i < 5 ; i++ ) {
 	name = new char [20];
@@ -359,7 +359,7 @@ void TestSuite() {
 
     // Test 4
 
-    printf("Starting Test 4\n");
+    printf("\nStarting Test 4\n");
 
     for (  i = 0 ; i < 5 ; i++ ) {
 	name = new char [20];
@@ -376,7 +376,7 @@ void TestSuite() {
 
     // Test 5
 
-    printf("Starting Test 5.  Note that it is an error if thread t5_t1\n");
+    printf("\nStarting Test 5.  Note that it is an error if thread t5_t1\n");
     printf("completes\n");
 
     t = new Thread("t5_t1");
@@ -399,12 +399,11 @@ ThreadTest()
 {
     
   DEBUG('t', "Entering SimpleTest");
-
+  /*
     Thread *t = new Thread("forked thread");
 
     t->Fork(SimpleThread, 1);
     SimpleThread(0);
-  
-
-   TestSuite();
+  */
+    TestSuite();
 }

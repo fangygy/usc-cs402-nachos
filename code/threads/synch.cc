@@ -109,7 +109,6 @@ Lock::Lock(char* debugName) {
 
   // Create the wait queues for waiting threads
   wait_queue  = new List;
-  ready_queue = new List;
 
 }
 Lock::~Lock() {
@@ -124,7 +123,6 @@ Lock::~Lock() {
 
   // Create the wait queues for waiting threads
   wait_queue  = new List;
-  ready_queue = new List;
 
 }
 bool Lock::isHeldByCurrentThread() {
@@ -159,6 +157,7 @@ void Lock::Acquire() {
   // owns the lock. In this case, we don't need to do anything except
   // restore the interrupts and return
   if(isHeldByCurrentThread()) {
+    printf("%s owns this Lock already\n", currentThread->getName());
     interrupt->SetLevel(old);
     return;
   }
@@ -166,9 +165,11 @@ void Lock::Acquire() {
   // If the lock is free, then we assign the thread owner to the currentThread
   // Else, the thread must be added to the wait queue and then put to sleep
   if(FREE) {
+    printf("%s is acquiring the lock\n", currentThread->getName());
     BUSY = true;
     thread = currentThread;
     FREE = false;
+    printf("Lock is now BUSY\n");
   } else {
     wait_queue->Append(currentThread);
     currentThread->Sleep();
@@ -202,11 +203,12 @@ void Lock::Release() {
   if(!isHeldByCurrentThread()) {
     DEBUG('e',"This thread does not own the lock");
     interrupt->SetLevel(old);
+    return;
   }
   
   if(!wait_queue->IsEmpty()) {
     Thread *newthread = (Thread*)wait_queue->Remove();
-    ready_queue->Append(newthread);
+    scheduler->ReadyToRun(newthread);
     thread = currentThread;
   } else {
     FREE   = true;
@@ -220,7 +222,9 @@ void Lock::Release() {
 
 Condition::Condition(char* debugName) { 
   
+  name       = debugName;
   wait_queue = new List;
+  lock       = NULL;
 
 }
 
@@ -237,8 +241,8 @@ void Condition::Wait(Lock* conditionLock) {
     interrupt->SetLevel(old);
     return;
   }
-  wait_queue->Append(currentThread);
   conditionLock->Release();
+  wait_queue->Append(currentThread);
   currentThread->Sleep();
   conditionLock->Acquire();
 
@@ -262,7 +266,7 @@ void Condition::Signal(Lock* conditionLock) {
   }
 
   Thread *thread = (Thread *)wait_queue->Remove();
-  ready_queue->Append(thread);
+  scheduler->ReadyToRun(thread);
 
   if(wait_queue->IsEmpty()) {
     lock = NULL;
