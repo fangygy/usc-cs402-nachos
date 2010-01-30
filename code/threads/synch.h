@@ -79,11 +79,30 @@ class Lock {
 
   private:
     char* name;				// for debugging
-    // plus some other stuff you'll need to define
+    
+    // A wait queue is needed to keep track of threads that are
+    // "waiting" for a lock. This occurs when the the lock has already
+    // been acquired by another thread, and this currentThread is
+    // trying to do an Acquire().
+    // Obviously, it cannot Acquire(), so the thread is placed into
+    // a wait queue where they will have to wait for the lock to be
+    // released. 
+
     List *wait_queue;
     
-    // This thread pointer points to the thread that owns the lock
+    // This thread pointer points to the thread that owns the lock.
+    // Having this thread pointer will enable to us to know which thread
+    // owns the lock.
+    // This will be necessary in the Release() method. By knowing who
+    // controls the lock, we will be able to control who is able to
+    // release the lock. 
+
     Thread* thread;
+
+    // The boolean variables FREE and BUSY represent the state of the
+    // lock.When a Lock has been acquired, it will be in the Busy state.
+    // Otherwise, it will be in the FREE state. 
+    
     bool FREE,BUSY;
 };
 
@@ -136,9 +155,24 @@ class Condition {
 
   private:
     char* name;
-    // plus some other stuff you'll need to define
+
+    // A wait queue is needed to keep track of the sleeping threads. 
+    // The reasons for this is because, on a Wait command, the thread 
+    // will relinquish the lock so that another thread can Acquire() it. 
+    // This enforces that a thread will not hog CPU time. 
+    // However, we need to keep track of the thread, so that when it 
+    // comes time to wake up the thread, to Signal() it, we can reference
+    // it easily. 
 
     List *wait_queue;
+
+    // The lock pointer will help us keep associate Condition Variables with 
+    // locks. The reason for this is it is possible for multiple condition 
+    // variables to exist. However, when a Condition Variable command is sent
+    // we want it to be sent to only relevant threads - that is, threads that
+    // are waiting in its wait queue, which coincides with the lock that the
+    // thread is associated with. 
+
     Lock *lock;
 };
 #endif // SYNCH_H

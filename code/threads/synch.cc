@@ -97,10 +97,11 @@ Semaphore::V()
     (void) interrupt->SetLevel(oldLevel);
 }
 
-// Dummy functions -- so we can compile our later assignments 
-// Note -- without a correct implementation of Condition::Wait(), 
-// the test case in the network assignment won't work!
 Lock::Lock(char* debugName) { 
+
+  // Initialization of private variables in synch.h file
+  // Refer to synch.h for detailed notes on each private variable
+
   name = debugName;
   thread = NULL;
 
@@ -111,18 +112,9 @@ Lock::Lock(char* debugName) {
   wait_queue  = new List;
 
 }
-Lock::~Lock() {
-  // Implement Lock Class here
-  // Lock Class should have several Condition Variables
-  // As well, Lock Class should have a Queue of Waiting Threads
-  
-  thread = NULL;
+Lock::~Lock() { 
 
-  FREE = true;
-  BUSY = false;
-
-  // Create the wait queues for waiting threads
-  wait_queue  = new List;
+  delete wait_queue; // De allocate memeory
 
 }
 bool Lock::isHeldByCurrentThread() {
@@ -138,18 +130,18 @@ void Lock::Acquire() {
   IntStatus old = interrupt->SetLevel(IntOff);
 
   /*
+    - GENERAL ALGORITHM FOR ACQUIRE() -
     if("I am lock owner") {
-    already own the lock 
-    restore interrupts and return
+       already own the lock 
+       restore interrupts and return
     } 
     if("Lock Available") {
-    thread becomes busy
-    thread becomes the lock owner 
-    therad pointer goes to current thread 
+       thread becomes busy
+       thread becomes the lock owner 
+       therad pointer goes to current thread 
     } else { 
-    add myself to the wait queue
-    put myself to sleep
-
+       add myself to the wait queue
+       put myself to sleep
     }
   */
 
@@ -165,12 +157,14 @@ void Lock::Acquire() {
   // If the lock is free, then we assign the thread owner to the currentThread
   // Else, the thread must be added to the wait queue and then put to sleep
   if(FREE) {
-    printf("%s is acquiring the lock\n", currentThread->getName());
-    BUSY = true;
-    thread = currentThread;
-    FREE = false;
-    printf("Lock is now BUSY\n");
-  } else {
+    // printf("%s is acquiring the lock\n", currentThread->getName());
+
+    DEBUG('e',"LOCK IS BEING ACQUIRED");
+    BUSY   = true; // The lock state becomes busy
+    thread = currentThread; // The owner of the lock is the currentThread
+    FREE   = false; // The lock state is not free (busy)  
+
+  } else { // If the lock is not free, then we must attach the currentThread to the wait queue 
     wait_queue->Append(currentThread);
     currentThread->Sleep();
   }
@@ -183,35 +177,42 @@ void Lock::Release() {
   IntStatus old = interrupt->SetLevel(IntOff);
 
   /*
+    - GENERAL ALGORITHM FOR RELEASE -
     if("I am not the lock owner") {
-    print error message using DEBUG('some character',"some String message");
-    restore interrupts
-    return 
+       print error message using DEBUG('some character',"some String message");
+       restore interrupts
+       return 
     } 
     if("A thread is waiting") {
-    remove a thread from the wait queue
-    put the thread on the ready queue
-    make this therad the lock owner
+       remove a thread from the wait queue
+       put the thread on the ready queue
+       make this therad the lock owner
     } else {
     // there is no thread waiting 
-    make the lock available 
-    clear lock ownership
+       make the lock available 
+       clear lock ownership
     }
-    
   */
 
-  if(!isHeldByCurrentThread()) {
+  if(!isHeldByCurrentThread()) { // If the currentThread does not own this lock
+                                 // then it cannot release it. In that case, we will 
+                                 // "ignore" this request and return. 
     DEBUG('e',"This thread does not own the lock");
     interrupt->SetLevel(old);
     return;
   }
   
-  if(!wait_queue->IsEmpty()) {
+  if(!wait_queue->IsEmpty()) {   // If the wait queue is not empty that means there
+                                 // are threads waiting to use this lock
+                                 // We have to remove a thread from the wait queue
+                                 // wake it up, and set it as the new owner of the lock
     Thread *newthread = (Thread*)wait_queue->Remove();
-    scheduler->ReadyToRun(newthread);
-    thread = currentThread;
-  } else {
-    FREE   = true;
+    scheduler->ReadyToRun(newthread); // Waking up the thread (adding it to CPU Scheduler Ready Queue) 
+    thread = newthread; // The thread removed from the wait queue is now the lock owner
+  } else {                       // If the wait queue is empty
+                                 // then there is no one to acquire this lock 
+                                 // and therefore the lock will have no owner
+    FREE   = true; 
     BUSY   = false;
     thread = NULL;
   }
@@ -222,29 +223,43 @@ void Lock::Release() {
 
 Condition::Condition(char* debugName) { 
   
+  // Initialization of private variables in Condition Class
+  // Refer to synch.h for further details 
+
   name       = debugName;
   wait_queue = new List;
   lock       = NULL;
 
 }
 
-Condition::~Condition() { }
+Condition::~Condition() { 
+  delete wait_queue; // De allocate memory
+}
 
 void Condition::Wait(Lock* conditionLock) { 
 
   // Disable interrupts
   IntStatus old = interrupt->SetLevel(IntOff);
 
-  lock = conditionLock;
-  if(conditionLock == NULL) {
-    DEBUG('f',"Condition Lock is NULL");
+  lock = conditionLock; // Associate the lock with the conditionLock, so we can keep track 
+                        // of which Condition Variable goes with which Lock (essentially)
+  
+  if(conditionLock == NULL) {   // If a NULL lock is passed through
+                                // then we simply ignore it and return
+    DEBUG('d',"Condition Lock is NULL");
     interrupt->SetLevel(old);
     return;
   }
+
+  // If the conditionLock is not null, however, we want the conditionLock to be released
+  // so that another thread can go and Acquire() the lock. This ensures that each thread 
+  // gets a fair amount of time, and that no one thread can hog a lock. 
+
   conditionLock->Release();
-  wait_queue->Append(currentThread);
-  currentThread->Sleep();
-  conditionLock->Acquire();
+  wait_queue->Append(currentThread); // add the currentThread to the wait queue, so that we can 
+                                     // Signal() it later 
+  currentThread->Sleep();            // Sleep the Thread
+  conditionLock->Acquire();          // When the thread is woken up, it will reAcquire the lock
 
   // Restore interrupts
   interrupt->SetLevel(old);
@@ -254,21 +269,30 @@ void Condition::Wait(Lock* conditionLock) {
 void Condition::Signal(Lock* conditionLock) { 
   // Disable interrupts
   IntStatus old = interrupt->SetLevel(IntOff);
-  if(wait_queue->IsEmpty()) {
+
+  if(wait_queue->IsEmpty()) {   // If the wait queue is empty, there is no one to Signal
     interrupt->SetLevel(old);
     return;
   }
   
-  if(lock != conditionLock) {
+  if(lock != conditionLock) {   // If the lock is not the conditionLock 
+                                // then all the threads in the wait queue don't care
+                                // since they only want a conditionLock that is the same as the 
+                                // the lock
     DEBUG('g',"Condition Lock does not Equal Lock");
     interrupt->SetLevel(old);
     return;
   }
 
+  // If we get down here, the lock is equal to the conditionLock, therefore we remove a thread 
+  // that is waiting, and essentially wake them up.
+  
   Thread *thread = (Thread *)wait_queue->Remove();
   scheduler->ReadyToRun(thread);
 
-  if(wait_queue->IsEmpty()) {
+  if(wait_queue->IsEmpty()) {  // If the wait queue is empty, but the Lock is the same as the 
+                               // the condition Lock, then no threads are associated with that lock
+                               // so we can reassign the lcok pointer to null
     lock = NULL;
   }
 
@@ -277,6 +301,9 @@ void Condition::Signal(Lock* conditionLock) {
 }
 
 void Condition::Broadcast(Lock* conditionLock) {
+
+  // Broadcast simply finds all the threads that are in the wait queue, and tells each one 
+  // to wake up
 
   while(!wait_queue->IsEmpty()) {
     Signal(conditionLock);
