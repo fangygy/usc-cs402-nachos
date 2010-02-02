@@ -61,7 +61,7 @@ extern void Print(char *file), PerformanceTest(void);
 extern void StartProcess(char *file), ConsoleTest(char *in, char *out);
 extern void MailTest(int networkID);
 extern void TestSuite(void);
-
+extern void AirportSimulation(void);
 
 //----------------------------------------------------------------------
 // main
@@ -95,6 +95,8 @@ main(int argc, char **argv)
 #ifdef THREADS
 	if(!strcmp(*argv, "-T")) 
 	  ThreadTest();
+	if(!strcmp(*argv, "-2"))
+	  AirportSimulation();
 
 #endif
 #ifdef USER_PROGRAM
