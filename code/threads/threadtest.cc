@@ -428,7 +428,7 @@ void AirportSimulation() {
     t = new Thread(name);
     t->Fork((VoidFunctionPtr)CheckInStaff,i);
   }
-
+  /*
   // Create the Security Officer Staff
   for(i=0; i < numberOfSO; i++) {
     name = new char[20];
@@ -436,7 +436,7 @@ void AirportSimulation() {
     t = new Thread(name);
     t->Fork((VoidFunctionPtr)SecurityOfficer,i);
   }
-
+  */
   // Create the Airline Check In Staff
   for(i=0; i < numberOfSO; i++) {
     name = new char[20];
