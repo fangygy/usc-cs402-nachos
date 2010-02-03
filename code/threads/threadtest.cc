@@ -457,12 +457,12 @@ void Passenger(int myNumber) {
   
   if((alLineLengths[myLineNumber] > 0)||(al_busy[myLineNumber])) {
     alLineLengths[myLineNumber]++;
+    printf("%s chose Liaison %d to with a line of length %d\n",currentThread->getName(),myLineNumber,alLineLengths[myLineNumber]);
     waitingForAL_C[myLineNumber]->Wait(&alLineLock);
   }
 
   alLineLock.Release();
   alLock[myLineNumber]->Acquire();
-  printf("%s chose Liaison %d to with a line of length %d\n",currentThread->getName(),myLineNumber,alLineLengths[myLineNumber]);
 
   // Releases the line lock so other Passengers can go search for shortest 
   // Airport Liaison Lines
