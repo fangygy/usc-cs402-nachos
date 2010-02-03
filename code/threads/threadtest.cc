@@ -461,6 +461,7 @@ void Passenger(int myNumber) {
     alLineLengths[myLineNumber]++;
     printf("%s chose Liaison %d to with a line of length %d\n",currentThread->getName(),myLineNumber,alLineLengths[myLineNumber]);
     waitingForAL_C[myLineNumber]->Wait(&alLineLock);
+    al_busy[myLineNumber] == true;
   }
 
   alLineLock.Release();
