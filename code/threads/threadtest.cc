@@ -640,7 +640,7 @@ void AirportSimulation() {
 
    
   //--------------------------------------------------
-W
+
   // -------------------------------------------------
   // Initialize Airport Liaison Locks
   // printf("creating al locks\n");
