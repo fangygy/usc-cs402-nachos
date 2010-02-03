@@ -64,7 +64,7 @@ void SecurityOfficer(int myNumber) {
     soLineLock.Release();
 
     waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
-    waitingForTicket_SO_C[myNumber]->Signal(SoLock[myNumber]);
+    waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]);
     // Clear passenger and direct to Security Officer
     printf("%s: moving Passenger to Security Officer", currentThread->getName());
   }
@@ -263,7 +263,6 @@ void Passenger(int myNumber) {
   soLineLock.Release();
   soLock[myLineNumber]->Acquire();
   
-  print
 }
 
 void AirportSimulation() {
