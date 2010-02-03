@@ -438,7 +438,8 @@ void AirportLiaison(int myNumber) {
     alLineLock.Release();
 
     printf("%s telling Passenger to step up to counter\n",currentThread->getName());
-    waitingForTicket_AL_C[myNumber]->Wait(alLock[myNumber]);    
+    waitingForTicket_AL_C[myNumber]->Wait(alLock[myNumber]);
+    printf("%s: Directing Passenger to Airline check in counter", currentThread->getName());
   }
 }
 
@@ -468,18 +469,9 @@ void Passenger(int myNumber) {
   // Airport Liaison Lines
   waitingForAL_C[myLineNumber]->Signal(&alLineLock);
   printf("%s: Going to see Liaison %d\n",currentThread->getName(),myLineNumber);
-  // alLineLock.Release();
-
-  // Passenger obtains lock to interact with Airport Liaison
-  // alLock[myLineNumber]->Acquire();
-  
-  // Passenger waits for Airport Liaison to signal them to come to counter
-
-  // waitingForTicket_AL_C[myLineNumber]->Wait(alLock[myLineNumber]);
   alLineLengths[myLineNumber]--;
 
   // Passenger is told to go to counter, and hands their ticket to Liaison
-  // printf("%s going to Liaison and giving them ticket\n", currentThread->getName());
   waitingForTicket_AL_C[myLineNumber]->Signal(alLock[myLineNumber]);
   waitingForTicket_AL_C[myLineNumber]->Wait(alLock[myLineNumber]);
 
