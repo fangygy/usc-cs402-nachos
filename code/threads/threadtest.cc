@@ -490,10 +490,7 @@ void CheckInStaff(int myNumber) {
     
     if(cisLineLengths[myNumber]==0) {
       // go on break
-      // onBreakCIS_C->Wait(&cisLineLock);
-      for(int i = 0; i < 10; i++) {
-	currentThread->Yield();
-      }
+      onBreakCIS_C[myNumber]->Wait(&cisLineLock);
     }
     
     if(cisLineLengths[myNumber] > 0) {
@@ -572,6 +569,7 @@ void Passenger(int myNumber) {
     // Increment the length of the Passenger's line by one, since the Passenger
     // is now in that line
   cisLineLengths[myLineNumber]++;
+  onBreakCIS_C[myLineNumber]->Signal(&cisLineLock);
   printf("%s chose Airline Check In %d with length %d\n", currentThread->getName(), myLineNumber, cisLineLengths[myLineNumber]);
   waitingForCIS_C[myLineNumber]->Wait(&cisLineLock);
   cisLineLengths[myLineNumber]--;
@@ -636,10 +634,16 @@ void AirportSimulation() {
   // waitingForTicket_CIS_C condition variable
   for(i = 0; i < numberOfCIS; i++) {
     name = new char[20];
-    sprintf(name,"CISTICKET_AL_C%d",i);
+    sprintf(name,"CISTICKET_C%d",i);
     waitingForTicket_CIS_C[i] = new Condition(name);
   }
 
+  // onBreakCIS_C condition variable
+  for(i = 0; i < numberOfCIS; i++) {
+    name = new char[20];
+    sprintf(name, "CISBREAK_C%d",i);
+    onBreakCIS_C[i] = new Condition(name);
+  }
    
   //--------------------------------------------------
 
