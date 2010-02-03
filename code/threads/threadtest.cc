@@ -428,7 +428,7 @@ void AirportLiaison(int myNumber) {
   while(true) {
     alLineLock.Acquire();
 
-    if(alLineLengths[myNumber]>0) {
+    if(alLineLengths[myNumber]>0&&!al_busy[myNumber]) {
       waitingForAL_C[myNumber]->Signal(&alLineLock);
     } else {
       al_busy[myNumber] = false;
@@ -460,7 +460,7 @@ void Passenger(int myNumber) {
   
   if((alLineLengths[myLineNumber] > 0)||(al_busy[myLineNumber])) {
     alLineLengths[myLineNumber]++;
-    printf(message,"%s chose Liaison %d to with a line of length %d\n",currentThread->getName(),myLineNumber,alLineLengths[myLineNumber]);
+    printf("%s chose Liaison %d to with a line of length %d\n",currentThread->getName(),myLineNumber,alLineLengths[myLineNumber]);
     waitingForAL_C[myLineNumber]->Wait(&alLineLock);
     al_busy[myLineNumber] == true;
   }
