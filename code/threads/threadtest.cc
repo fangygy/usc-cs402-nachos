@@ -469,6 +469,7 @@ Condition *onBreakCIS_C[5];
 Lock cisLineLock("cis_LL");
 Lock *cisLock[5];
 int cisLineLengths[5];
+bool cis_busy[5];
 
 
 void CheckInStaff(int myNumber) {
@@ -502,6 +503,7 @@ void CheckInStaff(int myNumber) {
     cisLock[myNumber]->Acquire();
     cisLineLock.Release();
     waitingForTicket_CIS_C[myNumber]->Wait(cisLock[myNumber]);
+    waitingForTicket_CIS_C[myNumber]->Signal(cisLock[myNumber]);
     printf("%s giving Passenger ticket number and directing them to gate\n", currentThread->getName());
     cisLock[myNumber]->Release();
     
@@ -622,6 +624,7 @@ void AirportSimulation() {
     name = new char [20];
     sprintf(name,"WFCIS_C%d",i);
     waitingForCIS_C[i] = new Condition(name);
+    cis_busy[i] = true;
   }
 
   // waitingForTicket_AL condition variable
