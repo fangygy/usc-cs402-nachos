@@ -491,7 +491,9 @@ void CheckInStaff(int myNumber) {
     if(cisLineLengths[myNumber]==0) {
       // go on break
       // onBreakCIS_C->Wait(&cisLineLock);
-      currentThread->Yield();
+      for(int i = 0; i < 10; i++) {
+	currentThread->Yield();
+      }
     }
     
     if(cisLineLengths[myNumber] > 0) {
