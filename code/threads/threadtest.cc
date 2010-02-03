@@ -440,6 +440,7 @@ void AirportLiaison(int myNumber) {
     printf("%s telling Passenger to step up to counter\n",currentThread->getName());
     waitingForTicket_AL_C[myNumber]->Wait(alLock[myNumber]);
     printf("%s: Directing Passenger to Airline check in counter\n", currentThread->getName());
+    alLock[myNumber]->Release();
   }
 }
 
