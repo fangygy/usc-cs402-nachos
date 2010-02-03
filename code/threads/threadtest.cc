@@ -498,15 +498,16 @@ void CheckInStaff(int myNumber) {
       printf("line %d has more than one passenger", myNumber);
       waitingForCIS_C[myNumber]->Signal(&cisLineLock);
       printf("%s telling Passenger to come to counter ", currentThread->getName());
-    }
+    
 
     cisLock[myNumber]->Acquire();
     cisLineLock.Release();
 
     waitingForTicket_CIS_C[myNumber]->Wait(cisLock[myNumber]);
     printf("%s giving Passenger ticket number and directing them to gate\n", currentThread->getName());
+    }
     cisLock[myNumber]->Release();
-
+    
   }
 }
 
@@ -573,12 +574,13 @@ void Passenger(int myNumber) {
   cisLineLengths[myLineNumber]++;
   printf("%s chose Airline Check In %d with length %d\n", currentThread->getName(), myLineNumber, cisLineLengths[myLineNumber]);
   waitingForCIS_C[myLineNumber]->Wait(&cisLineLock);
+  cisLineLengths[myLineNumber]--;
+
     //}
   printf("%s going to see Airline Check In Staff %d\n",currentThread->getName(), myLineNumber); 
   cisLineLock.Release();
   cisLock[myLineNumber]->Acquire();
   
-  cisLineLengths[myLineNumber]--;
 
   // The Passenger now has the line number, so they should go to sleep and
   // release the line lock, letting another Passenger search for a line
