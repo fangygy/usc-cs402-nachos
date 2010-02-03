@@ -494,7 +494,7 @@ void CheckInStaff(int myNumber) {
     }
     
     if(cisLineLengths[myNumber] > 0) {
-      printf("line %d has more than one passenger\n", myNumber);
+      //printf("line %d has more than one passenger\n", myNumber);
       waitingForCIS_C[myNumber]->Signal(&cisLineLock);
       printf("%s telling Passenger to come to counter\n", currentThread->getName());
     }
