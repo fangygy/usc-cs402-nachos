@@ -149,7 +149,7 @@ void Lock::Acquire() {
   // owns the lock. In this case, we don't need to do anything except
   // restore the interrupts and return
   if(isHeldByCurrentThread()) {
-    printf("%s owns this Lock already\n", currentThread->getName());
+    DEBUG('e',"This thread owns this Lock already\n");
     interrupt->SetLevel(old);
     return;
   }
@@ -246,7 +246,7 @@ void Condition::Wait(Lock* conditionLock) {
   
   if(conditionLock == NULL) {   // If a NULL lock is passed through
                                 // then we simply ignore it and return
-    DEBUG('d',"Condition Lock is NULL");
+    DEBUG('e',"Condition Lock is NULL");
     interrupt->SetLevel(old);
     return;
   }
@@ -279,7 +279,7 @@ void Condition::Signal(Lock* conditionLock) {
                                 // then all the threads in the wait queue don't care
                                 // since they only want a conditionLock that is the same as the 
                                 // the lock
-    DEBUG('g',"Condition Lock does not Equal Lock");
+    DEBUG('e',"Condition Lock does not Equal Lock");
     interrupt->SetLevel(old);
     return;
   }
