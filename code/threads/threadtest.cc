@@ -404,7 +404,7 @@ void AirportSimulation() {
   }
 
   // Create the Security Officer Staff
-  for(i=0; i < numberOfSO); i++) {
+  for(i=0; i < numberOfSO; i++) {
     name = new char[20];
     sprintf(name, "SecurityOfficer%d",i);
     t = new Thread(name);
@@ -438,5 +438,5 @@ ThreadTest()
     t->Fork(SimpleThread, 1);
     SimpleThread(0);
   */
-    TestSuite();
+  // TestSuite();
 }
