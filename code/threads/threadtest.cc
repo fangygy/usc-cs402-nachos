@@ -421,7 +421,7 @@ void AirportLiaison(int myNumber) {
   while(true) {
     // Acquire the Line Lock
     // No one can acquire the line lock (not Passengers)
-    // When the AirportLiaison has the LineLock, Passengers cannot search for the shortest
+    // When the Airport Liaison has the LineLock, Passengers cannot search for the shortest
     // line
     alLineLock.Acquire();
 
@@ -504,6 +504,7 @@ void CheckInStaff(int myNumber) {
 
     waitingForTicket_CIS_C[myNumber]->Wait(cisLock[myNumber]);
     printf("%s giving Passenger ticket number and directing them to gate\n", currentThread->getName());
+    cisLock[myNumber]->Release();
 
   }
 }
