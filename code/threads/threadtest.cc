@@ -54,7 +54,20 @@ int soLineLengths[7];
 bool so_busy[7];
 
 void SecurityOfficer(int myNumber) {
+  while(true) {
+    soLineLock.Acquire();
+    if(soLineLengths[myNumber]) {
+      printf("%s: Telling passenger to come through Security", currentThread->getName());
+      waitingForSO_C[myNumber]->Signal(&soLineLock);
+    }
+    soLock[myNumber]->Acquire();
+    soLineLock.Release();
 
+    waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
+    waitingForTicket_SO_C[myNumber]->Signal(SoLock[myNumber]);
+    // Clear passenger and direct to Security Officer
+    printf("%s: moving Passenger to Security Officer", currentThread->getName());
+  }
 }
 
 // Objects for Airport Liaison
@@ -237,6 +250,20 @@ void Passenger(int myNumber) {
   //
   //
   // --------------------------------------------------------
+
+  soLineLock.Acquire();
+  myLineNumber = findShortestLine(soLineLengths, 7);
+
+  soLineLengths[myLineNumber]++;
+  printf("%s: chose Security %d with length %d\n", currentThread->getName(), myLineNumber, cisLineLengths[myLineNumber]);
+  waitingForSO_C[myLineNumber]->Wait(&soLineLock);
+  
+  soLineLengths[myLineNumber]--;
+
+  soLineLock.Release();
+  soLock[myLineNumber]->Acquire();
+  
+  print
 }
 
 void AirportSimulation() {
