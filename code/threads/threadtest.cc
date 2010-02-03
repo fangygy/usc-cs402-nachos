@@ -12,392 +12,11 @@
 #include "copyright.h"
 #include "system.h"
 #include "functions.h"
+#include "passenger.h"
+#include "testsuite.h"
 #ifdef CHANGED
 #include "synch.h"
 #endif
-
-//----------------------------------------------------------------------
-// SimpleThread
-// 	Loop 5 times, yielding the CPU to another ready thread 
-//	each iteration.
-//
-//	"which" is simply a number identifying the thread, for debugging
-//	purposes.
-//----------------------------------------------------------------------
-
-void
-SimpleThread(int which)
-{
-    int num;
-    
-    for (num = 0; num < 5; num++) {
-	printf("*** thread %d looped %d times\n", which, num);
-        currentThread->Yield();
-    }
-}
-
-// ---------------------------------------------------------------------
-/*
- * PART ONE PART ONE PART ONE PART ONE PART ONE PART ONE PART ONE PART ONE 
- * RUN TEST SUITE
- *
- *
- *
-*/
-// ---------------------------------------------------------------------
-
-// --------------------------------------------------
-// Test Suite
-// --------------------------------------------------
-
-
-// --------------------------------------------------
-// Test 1 - see TestSuite() for details
-// --------------------------------------------------
-Semaphore t1_s1("t1_s1",0);       // To make sure t1_t1 acquires the
-                                  // lock before t1_t2
-Semaphore t1_s2("t1_s2",0);       // To make sure t1_t2 Is waiting on the 
-                                  // lock before t1_t3 releases it
-Semaphore t1_s3("t1_s3",0);       // To make sure t1_t1 does not release the
-                                  // lock before t1_t3 tries to acquire it
-Semaphore t1_done("t1_done",0);   // So that TestSuite knows when Test 1 is
-                                  // done
-Lock t1_l1("t1_l1");		  // the lock tested in Test 1
-
-// --------------------------------------------------
-// t1_t1() -- test1 thread 1
-//     This is the rightful lock owner
-// --------------------------------------------------
-void t1_t1() {
-    t1_l1.Acquire();
-    t1_s1.V();  // Allow t1_t2 to try to Acquire Lock
- 
-    printf ("%s: Acquired Lock %s, waiting for t3\n",currentThread->getName(),
-	    t1_l1.getName());
-    t1_s3.P();
-    printf ("%s: working in CS\n",currentThread->getName());
-    for (int i = 0; i < 1000000; i++) ;
-    printf ("%s: Releasing Lock %s\n",currentThread->getName(),
-	    t1_l1.getName());
-    t1_l1.Release();
-    t1_done.V();
-}
-
-// --------------------------------------------------
-// t1_t2() -- test1 thread 2
-//     This thread will wait on the held lock.
-// --------------------------------------------------
-void t1_t2() {
-
-    t1_s1.P();	// Wait until t1 has the lock
-    t1_s2.V();  // Let t3 try to acquire the lock
-
-    printf("%s: trying to acquire lock %s\n",currentThread->getName(),
-	    t1_l1.getName());
-    t1_l1.Acquire();
-
-    printf ("%s: Acquired Lock %s, working in CS\n",currentThread->getName(),
-	    t1_l1.getName());
-    for (int i = 0; i < 10; i++)
-	;
-    printf ("%s: Releasing Lock %s\n",currentThread->getName(),
-	    t1_l1.getName());
-    t1_l1.Release();
-    t1_done.V();
-}
-
-// --------------------------------------------------
-// t1_t3() -- test1 thread 3
-//     This thread will try to release the lock illegally
-// --------------------------------------------------
-void t1_t3() {
-
-    t1_s2.P();	// Wait until t2 is ready to try to acquire the lock
-
-    t1_s3.V();	// Let t1 do it's stuff
-    for ( int i = 0; i < 3; i++ ) {
-	printf("%s: Trying to release Lock %s\n",currentThread->getName(),
-	       t1_l1.getName());
-	t1_l1.Release();
-    }
-}
-
-// --------------------------------------------------
-// Test 2 - see TestSuite() for details
-// --------------------------------------------------
-Lock t2_l1("t2_l1");		// For mutual exclusion
-Condition t2_c1("t2_c1");	// The condition variable to test
-Semaphore t2_s1("t2_s1",0);	// To ensure the Signal comes before the wait
-Semaphore t2_done("t2_done",0);     // So that TestSuite knows when Test 2 is
-                                  // done
-
-// --------------------------------------------------
-// t2_t1() -- test 2 thread 1
-//     This thread will signal a variable with nothing waiting
-// --------------------------------------------------
-void t2_t1() {
-    t2_l1.Acquire();
-    printf("%s: Lock %s acquired, signalling %s\n",currentThread->getName(),
-	   t2_l1.getName(), t2_c1.getName());
-    t2_c1.Signal(&t2_l1);
-    printf("%s: Releasing Lock %s\n",currentThread->getName(),
-	   t2_l1.getName());
-    t2_l1.Release();
-    t2_s1.V();	// release t2_t2
-    t2_done.V();
-}
-
-// --------------------------------------------------
-// t2_t2() -- test 2 thread 2
-//     This thread will wait on a pre-signalled variable
-// --------------------------------------------------
-void t2_t2() {
-    t2_s1.P();	// Wait for t2_t1 to be done with the lock
-    t2_l1.Acquire();
-    printf("%s: Lock %s acquired, waiting on %s\n",currentThread->getName(),
-	   t2_l1.getName(), t2_c1.getName());
-    t2_c1.Wait(&t2_l1);
-    printf("%s: Releasing Lock %s\n",currentThread->getName(),
-	   t2_l1.getName());
-    t2_l1.Release();
-}
-// --------------------------------------------------
-// Test 3 - see TestSuite() for details
-// --------------------------------------------------
-Lock t3_l1("t3_l1");		// For mutual exclusion
-Condition t3_c1("t3_c1");	// The condition variable to test
-Semaphore t3_s1("t3_s1",0);	// To ensure the Signal comes before the wait
-Semaphore t3_done("t3_done",0); // So that TestSuite knows when Test 3 is
-                                // done
-
-// --------------------------------------------------
-// t3_waiter()
-//     These threads will wait on the t3_c1 condition variable.  Only
-//     one t3_waiter will be released
-// --------------------------------------------------
-void t3_waiter() {
-    t3_l1.Acquire();
-    t3_s1.V();		// Let the signaller know we're ready to wait
-    printf("%s: Lock %s acquired, waiting on %s\n",currentThread->getName(),
-	   t3_l1.getName(), t3_c1.getName());
-    t3_c1.Wait(&t3_l1);
-    printf("%s: freed from %s\n",currentThread->getName(), t3_c1.getName());
-    t3_l1.Release();
-    t3_done.V();
-}
-
-
-// --------------------------------------------------
-// t3_signaller()
-//     This threads will signal the t3_c1 condition variable.  Only
-//     one t3_signaller will be released
-// --------------------------------------------------
-void t3_signaller() {
-
-    // Don't signal until someone's waiting
-    
-    for ( int i = 0; i < 5 ; i++ ) 
-	t3_s1.P();
-    t3_l1.Acquire();
-    printf("%s: Lock %s acquired, signalling %s\n",currentThread->getName(),
-	   t3_l1.getName(), t3_c1.getName());
-    t3_c1.Signal(&t3_l1);
-    printf("%s: Releasing %s\n",currentThread->getName(), t3_l1.getName());
-    t3_l1.Release();
-    t3_done.V();
-}
- 
-// --------------------------------------------------
-// Test 4 - see TestSuite() for details
-// --------------------------------------------------
-Lock t4_l1("t4_l1");		// For mutual exclusion
-Condition t4_c1("t4_c1");	// The condition variable to test
-Semaphore t4_s1("t4_s1",0);	// To ensure the Signal comes before the wait
-Semaphore t4_done("t4_done",0); // So that TestSuite knows when Test 4 is
-                                // done
-
-// --------------------------------------------------
-// t4_waiter()
-//     These threads will wait on the t4_c1 condition variable.  All
-//     t4_waiters will be released
-// --------------------------------------------------
-void t4_waiter() {
-    t4_l1.Acquire();
-    t4_s1.V();		// Let the signaller know we're ready to wait
-    printf("%s: Lock %s acquired, waiting on %s\n",currentThread->getName(),
-	   t4_l1.getName(), t4_c1.getName());
-    t4_c1.Wait(&t4_l1);
-    printf("%s: freed from %s\n",currentThread->getName(), t4_c1.getName());
-    t4_l1.Release();
-    t4_done.V();
-}
-
-
-// --------------------------------------------------
-// t2_signaller()
-//     This thread will broadcast to the t4_c1 condition variable.
-//     All t4_waiters will be released
-// --------------------------------------------------
-void t4_signaller() {
-
-    // Don't broadcast until someone's waiting
-    
-    for ( int i = 0; i < 5 ; i++ ) 
-	t4_s1.P();
-    t4_l1.Acquire();
-    printf("%s: Lock %s acquired, broadcasting %s\n",currentThread->getName(),
-	   t4_l1.getName(), t4_c1.getName());
-    t4_c1.Broadcast(&t4_l1);
-    printf("%s: Releasing %s\n",currentThread->getName(), t4_l1.getName());
-    t4_l1.Release();
-    t4_done.V();
-}
-// --------------------------------------------------
-// Test 5 - see TestSuite() for details
-// --------------------------------------------------
-Lock t5_l1("t5_l1");		// For mutual exclusion
-Lock t5_l2("t5_l2");		// Second lock for the bad behavior
-Condition t5_c1("t5_c1");	// The condition variable to test
-Semaphore t5_s1("t5_s1",0);	// To make sure t5_t2 acquires the lock after
-                                // t5_t1
-
-// --------------------------------------------------
-// t5_t1() -- test 5 thread 1
-//     This thread will wait on a condition under t5_l1
-// --------------------------------------------------
-void t5_t1() {
-    t5_l1.Acquire();
-    t5_s1.V();	// release t5_t2
-    printf("%s: Lock %s acquired, waiting on %s\n",currentThread->getName(),
-	   t5_l1.getName(), t5_c1.getName());
-    t5_c1.Wait(&t5_l1);
-    printf("%s: Releasing Lock %s\n",currentThread->getName(),
-	   t5_l1.getName());
-    t5_l1.Release();
-}
-
-// --------------------------------------------------
-// t5_t1() -- test 5 thread 1
-//     This thread will wait on a t5_c1 condition under t5_l2, which is
-//     a Fatal error
-// --------------------------------------------------
-void t5_t2() {
-    t5_s1.P();	// Wait for t5_t1 to get into the monitor
-    t5_l1.Acquire();
-    t5_l2.Acquire();
-    printf("%s: Lock %s acquired, signalling %s\n",currentThread->getName(),
-	   t5_l2.getName(), t5_c1.getName());
-    t5_c1.Signal(&t5_l2);
-    printf("%s: Releasing Lock %s\n",currentThread->getName(),
-	   t5_l2.getName());
-    t5_l2.Release();
-    printf("%s: Releasing Lock %s\n",currentThread->getName(),
-	   t5_l1.getName());
-    t5_l1.Release();
-}
-
-// --------------------------------------------------
-// TestSuite()
-//     This is the main thread of the test suite.  It runs the
-//     following tests:
-//
-//       1.  Show that a thread trying to release a lock it does not
-//       hold does not work
-//
-//       2.  Show that Signals are not stored -- a Signal with no
-//       thread waiting is ignored
-//
-//       3.  Show that Signal only wakes 1 thread
-//
-//	 4.  Show that Broadcast wakes all waiting threads
-//
-//       5.  Show that Signalling a thread waiting under one lock
-//       while holding another is a Fatal error
-//
-//     Fatal errors terminate the thread in question.
-// --------------------------------------------------
-void TestSuite() {
-    Thread *t;
-    char *name;
-    int i;
-    
-    // Test 1
-
-    printf("\nStarting Test 1\n");
-
-    t = new Thread("t1_t1");
-    t->Fork((VoidFunctionPtr)t1_t1,0);
-
-    t = new Thread("t1_t2");
-    t->Fork((VoidFunctionPtr)t1_t2,0);
-
-    t = new Thread("t1_t3");
-    t->Fork((VoidFunctionPtr)t1_t3,0);
-
-    // Wait for Test 1 to complete
-    for (  i = 0; i < 2; i++ )
-	t1_done.P();
-
-    // Test 2
-
-    printf("\nStarting Test 2.  Note that it is an error if thread t2_t2\n");
-    printf("completes\n");
-
-    t = new Thread("t2_t1");
-    t->Fork((VoidFunctionPtr)t2_t1,0);
-
-    t = new Thread("t2_t2");
-    t->Fork((VoidFunctionPtr)t2_t2,0);
-
-    // Wait for Test 2 to complete
-    t2_done.P();
-
-    // Test 3
-
-    printf("\nStarting Test 3\n");
-
-    for (  i = 0 ; i < 5 ; i++ ) {
-	name = new char [20];
-	sprintf(name,"t3_waiter%d",i);
-	t = new Thread(name);
-	t->Fork((VoidFunctionPtr)t3_waiter,0);
-    }
-    t = new Thread("t3_signaller");
-    t->Fork((VoidFunctionPtr)t3_signaller,0);
-
-    // Wait for Test 3 to complete
-    for (  i = 0; i < 2; i++ )
-	t3_done.P();
-
-    // Test 4
-
-    printf("\nStarting Test 4\n");
-
-    for (  i = 0 ; i < 5 ; i++ ) {
-	name = new char [20];
-	sprintf(name,"t4_waiter%d",i);
-	t = new Thread(name);
-	t->Fork((VoidFunctionPtr)t4_waiter,0);
-    }
-    t = new Thread("t4_signaller");
-    t->Fork((VoidFunctionPtr)t4_signaller,0);
-
-    // Wait for Test 4 to complete
-    for (  i = 0; i < 6; i++ )
-	t4_done.P();
-
-    // Test 5
-
-    printf("\nStarting Test 5.  Note that it is an error if thread t5_t1\n");
-    printf("completes\n");
-
-    t = new Thread("t5_t1");
-    t->Fork((VoidFunctionPtr)t5_t1,0);
-
-    t = new Thread("t5_t2");
-    t->Fork((VoidFunctionPtr)t5_t2,0);
-
-}
 
 // ---------------------------------------------------------------------
 /*
@@ -408,6 +27,36 @@ void TestSuite() {
  *
 */
 // ---------------------------------------------------------------------
+
+void AirportManager(int myNumber) {
+
+}
+
+void CargoHandler(int myNumber) {
+
+}
+
+Condition *waitingForSI_C[7];
+Condition *waitingForTicket_SI_C[7];
+Lock siLineLock("al_LL");
+Lock *siLock[7];
+int siLineLengths[7];
+bool si_busy[7];
+
+void SecurityInspector(int myNumber) {
+
+}
+
+Condition *waitingForSO_C[7];
+Condition *waitingForTicket_SO_C[7];
+Lock soLineLock("al_LL");
+Lock *soLock[7];
+int soLineLengths[7];
+bool so_busy[7];
+
+void SecurityOfficer(int myNumber) {
+
+}
 
 // Objects for Airport Liaison
 Condition *waitingForAL_C[7];
@@ -510,86 +159,6 @@ void CheckInStaff(int myNumber) {
   }
 }
 
-void Passenger(int myNumber) {
-
-  // --------------------------------------------------------
-  // 1. Passenger goes to see Airport Liaison
-  //
-  //
-  // --------------------------------------------------------
-
-  // Passenger acquires the lock so they can search for shortest line amongst all lines
-  alLineLock.Acquire();
-  char *message[30];
-
-  // Declare the variable for the Passenger's line number
-  // We will reuse this variable for all 
-  int myLineNumber;
-
-  // Set the Passenger's Line number
-  printf("%s: Searching for the shortest line\n", currentThread->getName());
-  myLineNumber = findShortestLine(alLineLengths,7);
-  
-  // If there are people in the line, or the Airport Liaison is busy
-  // then the Passenger must wait in line and NOT approach the Airport Liaison
-  if((alLineLengths[myLineNumber] > 0)||(al_busy[myLineNumber])) {
-    alLineLengths[myLineNumber]++;
-    printf("%s chose Liaison %d  with a line of length %d\n",currentThread->getName(),myLineNumber,alLineLengths[myLineNumber]);
-    waitingForAL_C[myLineNumber]->Wait(&alLineLock);
-    al_busy[myLineNumber] == true;
-  }
-
-  alLineLock.Release();
-  alLock[myLineNumber]->Acquire();
-
-  printf("%s: Going to see Liaison %d\n",currentThread->getName(),myLineNumber);
-  alLineLengths[myLineNumber]--;
-
-  // Passenger is told to go to counter, and hands their ticket to Liaison
-  waitingForTicket_AL_C[myLineNumber]->Signal(alLock[myLineNumber]);
-  waitingForTicket_AL_C[myLineNumber]->Wait(alLock[myLineNumber]);
-
-  alLock[myLineNumber]->Release();
-
-  // --------------------------------------------------------
-  // 2. Passenger goes to see Airport check in staff
-  //
-  //
-  // --------------------------------------------------------
-
-  // Acquire the Lock to the line
-  // Only use one lock for all 5 lines, because only one Passenger at 
-  // a time can be looking for the shortest line 
-  // printf("Acquiring Lock...");
-  cisLineLock.Acquire();
-
-  // Set the Passenger's line number
-  myLineNumber = findShortestLine(cisLineLengths, 5);
-
-  // If there are other Passengers in line, then wait in line
-  // if(cisLineLengths[myLineNumber]>0) {
-    // Increment the length of the Passenger's line by one, since the Passenger
-    // is now in that line
-  cisLineLengths[myLineNumber]++;
-  onBreakCIS_C[myLineNumber]->Signal(&cisLineLock);
-  printf("%s chose Airline Check In %d with length %d\n", currentThread->getName(), myLineNumber, cisLineLengths[myLineNumber]);
-  waitingForCIS_C[myLineNumber]->Wait(&cisLineLock);
-  cisLineLengths[myLineNumber]--;
-
-    //}
-  printf("%s going to see Airline Check In Staff %d\n",currentThread->getName(), myLineNumber); 
-  cisLineLock.Release();
-  cisLock[myLineNumber]->Acquire();
-  
-
-  // The Passenger now has the line number, so they should go to sleep and
-  // release the line lock, letting another Passenger search for a line
-  printf("%s giving airline ticket to Airline Check In Staff %d\n", currentThread->getName(), myLineNumber);
-  waitingForTicket_CIS_C[myLineNumber]->Signal(cisLock[myLineNumber]);
-  waitingForTicket_CIS_C[myLineNumber]->Wait(cisLock[myLineNumber]);
-  cisLock[myLineNumber]->Release();
-}
-
 void AirportSimulation() {
 
   Thread *t; // Create a thread pointer variable
@@ -598,9 +167,10 @@ void AirportSimulation() {
 
   int numberOfAL  = 7;
   int numberOfCIS = 5;
+  int numberOfSO  = 7;
 
   /*
-   * Needs Airline
+   * Needs Airlines
    * Bags and weights
    *
    */
@@ -627,6 +197,22 @@ void AirportSimulation() {
     cis_busy[i] = true;
   }
 
+  // waitingForSO condition variable
+  for(i = 0; i < numberOfSO; i++) {
+    name = new char [20];
+    sprintf(name,"WFSO_C%d",i);
+    waitingForSO_C[i] = new Condition(name);
+    so_busy[i] = true;
+  }
+
+  // waitingForSI condition variable
+  for(i = 0; i < numberOfSO; i++) {
+    name = new char [20];
+    sprintf(name,"WFSI_C%d",i);
+    waitingForSI_C[i] = new Condition(name);
+    si_busy[i] = true;
+  }
+
   // waitingForTicket_AL condition variable
   for(i = 0; i < numberOfAL; i++) {
     name = new char [20];
@@ -639,6 +225,20 @@ void AirportSimulation() {
     name = new char[20];
     sprintf(name,"CISTICKET_C%d",i);
     waitingForTicket_CIS_C[i] = new Condition(name);
+  }
+
+  // waitingForTicket_SO_C condition variable
+  for(i = 0; i < numberOfSO; i++) {
+    name = new char[20];
+    sprintf(name,"SOTICKET_C%d",i);
+    waitingForTicket_SO_C[i] = new Condition(name);
+  }
+
+  // waitingForTicket_SI_C condition variable
+  for(i = 0; i < numberOfSO; i++) {
+    name = new char[20];
+    sprintf(name,"SITICKET_C%d",i);
+    waitingForTicket_SI_C[i] = new Condition(name);
   }
 
   // onBreakCIS_C condition variable
@@ -682,6 +282,16 @@ void AirportSimulation() {
   for( i = 0; i < numberOfCIS; i++) {
     cisLineLengths[i] = 0;
   }
+
+  // Line length for Airline check in staff
+  for( i = 0; i < numberOfSO; i++) {
+    soLineLengths[i] = 0;
+  }
+
+  // Line length for Airline check in staff
+  for( i = 0; i < numberOfSO; i++) {
+    siLineLengths[i] = 0;
+  }
   // -------------------------------------------------
 
 
@@ -713,8 +323,20 @@ void AirportSimulation() {
     t->Fork((VoidFunctionPtr)CheckInStaff,i);
   }
 
-  for(i = 0; i < numberOfAL; i++) {
-    // printf("%d",alLineLengths[i]);
+  // Create the Security Officer Staff
+  for(i=0; i < numberOfSO); i++) {
+    name = new char[20];
+    sprintf(name, "SecurityOfficer%d",i);
+    t = new Thread(name);
+    t->Fork((VoidFunctionPtr)SecurityOfficer,i);
+  }
+
+  // Create the Airline Check In Staff
+  for(i=0; i < numberOfSO; i++) {
+    name = new char[20];
+    sprintf(name, "SecurityInspector%d",i);
+    t = new Thread(name);
+    t->Fork((VoidFunctionPtr)SecurityInspector,i);
   }
  
 }
