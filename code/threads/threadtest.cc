@@ -467,7 +467,7 @@ void Passenger(int myNumber) {
   // Releases the line lock so other Passengers can go search for shortest 
   // Airport Liaison Lines
   waitingForAL_C[myLineNumber]->Signal(&alLineLock);
-  printf("%s: Going to see Liaison %d",currentThread->getName(),myLineNumber);
+  printf("%s: Going to see Liaison %d\n",currentThread->getName(),myLineNumber);
   // alLineLock.Release();
 
   // Passenger obtains lock to interact with Airport Liaison
