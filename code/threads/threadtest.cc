@@ -426,7 +426,7 @@ int cisLineLengths[5];
 
 void AirportLiaison(int myNumber) {
   while(true) {
-    alLineLock.Acquire();
+    //alLineLock.Acquire();
 
     if(alLineLengths[myNumber]>0) {
     printf("%s telling Passenger to step up to counter\n",currentThread->getName());
@@ -437,7 +437,7 @@ void AirportLiaison(int myNumber) {
     }
     
     alLock[myNumber]->Acquire();
-    alLineLock.Release();
+    //alLineLock.Release();
 
     waitingForTicket_AL_C[myNumber]->Wait(alLock[myNumber]);
     waitingForTicket_AL_C[myNumber]->Signal(alLock[myNumber]);
