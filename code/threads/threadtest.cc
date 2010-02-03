@@ -495,6 +495,7 @@ void CheckInStaff(int myNumber) {
     }
     */
     if(cisLineLengths[myNumber] > 0) {
+      printf("line %d has more than one passenger", myNumber);
       waitingForCIS_C[myNumber]->Signal(&cisLineLock);
       printf("%s telling Passenger to come to counter ", currentThread->getName());
     }
@@ -533,7 +534,7 @@ void Passenger(int myNumber) {
   // then the Passenger must wait in line and NOT approach the Airport Liaison
   if((alLineLengths[myLineNumber] > 0)||(al_busy[myLineNumber])) {
     alLineLengths[myLineNumber]++;
-    printf("%s chose Liaison %d to with a line of length %d\n",currentThread->getName(),myLineNumber,alLineLengths[myLineNumber]);
+    printf("%s chose Liaison %d  with a line of length %d\n",currentThread->getName(),myLineNumber,alLineLengths[myLineNumber]);
     waitingForAL_C[myLineNumber]->Wait(&alLineLock);
     al_busy[myLineNumber] == true;
   }
@@ -639,7 +640,7 @@ void AirportSimulation() {
 
    
   //--------------------------------------------------
-
+W
   // -------------------------------------------------
   // Initialize Airport Liaison Locks
   // printf("creating al locks\n");
