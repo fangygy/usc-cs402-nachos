@@ -569,7 +569,7 @@ void Passenger(int myNumber) {
     // Increment the length of the Passenger's line by one, since the Passenger
     // is now in that line
   cisLineLengths[myLineNumber]++;
-  printf("%s chose line %d\n", currentThread->getName(), myLineNumber);
+  printf("%s chose Airline Check In %d with length %d\n", currentThread->getName(), myLineNumber, cisLineLengths[myLineNumber]);
   waitingForCIS_C[myLineNumber]->Wait(&cisLineLock);
     //}
   printf("%s going to see Airline Check In Staff %d\n",currentThread->getName(), myLineNumber); 
@@ -697,7 +697,7 @@ void AirportSimulation() {
   // Create the Airline Check In Staff
   for(i=0; i < numberOfCIS; i++) {
     name = new char[20];
-    sprintf(name, "Airline check-in-staff %d",i);
+    sprintf(name, "Airline check-in-staff%d",i);
     t = new Thread(name);
     t->Fork((VoidFunctionPtr)CheckInStaff,i);
   }
