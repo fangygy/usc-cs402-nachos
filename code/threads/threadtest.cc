@@ -560,6 +560,7 @@ void AirportSimulation() {
     name = new char [20];
     sprintf(name, "WFAL_C%d",i);
     waitingForAL_C[i] = new Condition(name);
+    al_busy[i] = true;
   }
 
   // waitingForCIS condition variable
