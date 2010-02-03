@@ -417,37 +417,104 @@ Lock *alLock[7];
 int alLineLengths[7];
 bool al_busy[7];
 
-// Objects for Check In Staff
-Condition *waitingForCIS_C[5];
-Lock cisLineLock("cis_LL");
-int cisLineLengths[5];
-
-
-
 void AirportLiaison(int myNumber) {
   while(true) {
+    // Acquire the Line Lock
+    // No one can acquire the line lock (not Passengers)
+    // When the AirportLiaison has the LineLock, Passengers cannot search for the shortest
+    // line
     alLineLock.Acquire();
 
+    // If there are passengers in the line, then
+    // the Airport Liaison must tell the Passenger to step up to the counter
+    // He does this by Signaling the Condition Variable which puts the first Passenger
+    // on to the Ready Queue
     if(alLineLengths[myNumber]>0) {
-    printf("%s telling Passenger to step up to counter\n",currentThread->getName());
-
+      printf("%s telling Passenger to step up to counter\n",currentThread->getName());
+      // The first passenger waiting for the LineLock gets put on to the Ready Queue
       waitingForAL_C[myNumber]->Signal(&alLineLock);
     } else {
+      // Airport Liaison is not busy if there is no one in line
       al_busy[myNumber] = false;
     }
     
+    // Acquire the lock to the Airport Liaison
+    // We will use this lock to control the interactions between the Passenger
+    // and the Airport Liaison
     alLock[myNumber]->Acquire();
+    
+    // After acquiring that lock, we release the Line Lock so who ever is waiting for the 
+    // Line Lock can then search for the shortest line and then get into the appropriate line 
     alLineLock.Release();
-
+    
+    // The Airport Liaison must now wait for the Passenger to go up to their counter 
+    // and give them their ticket 
+    // Sleeping the Airport Liaison frees up the alLock, wakes up one Passenger and puts them on the 
+    // Ready Queue 
     waitingForTicket_AL_C[myNumber]->Wait(alLock[myNumber]);
+    
+    // The Airport Liaison signals a Passenger, who is asleep waiting for the Airport
+    // Liaison to tell them where to go
     waitingForTicket_AL_C[myNumber]->Signal(alLock[myNumber]);
     printf("%s: Directing Passenger to Airline check in counter\n", currentThread->getName());
     alLock[myNumber]->Release();
   }
 }
 
+
+// Objects for Check In Staff
+Condition *waitingForCIS_C[5];
+Condition *waitingForTicket_CIS_C[5];
+Condition *onBreakCIS_C[5];
+Lock cisLineLock("cis_LL");
+Lock *cisLock[5];
+int cisLineLengths[5];
+
+
+void CheckInStaff(int myNumber) {
+  while(true) {
+    // Acquire the line lock
+    cisLineLock.Acquire();
+
+    /*
+     * if there is no one in line 
+     * check in staff goes on break
+     *
+     * there are people in line 
+     * signal someone to come into the line
+     * wait for them to hand their ticket
+     * generate boarding pass
+     * signal passenger with boarding pass
+     * 
+     */
+    /*
+    if(cisLineLengths[myNumber]==0) {
+      // go on break
+      onBreakCIS_C->Wait(&cisLineLock);
+      currentThread->Yield();
+    }
+    */
+    if(cisLineLengths[myNumber] > 0) {
+      waitingForCIS_C[myNumber]->Signal(&cisLineLock);
+    }
+
+    cisLock[myNumber]->Acquire();
+    cisLineLock.Release();
+
+    waitingForTicket_CIS_C[myNumber]->Wait(cisLock[myNumber]);
+    printf("%s giving Passenger ticket number and directing them to gate", currentThread->getName());
+
+  }
+}
+
 void Passenger(int myNumber) {
-  
+
+  // --------------------------------------------------------
+  // 1. Passenger goes to see Airport Liaison
+  //
+  //
+  // --------------------------------------------------------
+
   // Passenger acquires the lock so they can search for shortest line amongst all lines
   alLineLock.Acquire();
   char *message[30];
@@ -460,6 +527,8 @@ void Passenger(int myNumber) {
   printf("%s: Searching for the shortest line\n", currentThread->getName());
   myLineNumber = findShortestLine(alLineLengths,7);
   
+  // If there are people in the line, or the Airport Liaison is busy
+  // then the Passenger must wait in line and NOT approach the Airport Liaison
   if((alLineLengths[myLineNumber] > 0)||(al_busy[myLineNumber])) {
     alLineLengths[myLineNumber]++;
     printf("%s chose Liaison %d to with a line of length %d\n",currentThread->getName(),myLineNumber,alLineLengths[myLineNumber]);
@@ -470,7 +539,6 @@ void Passenger(int myNumber) {
   alLineLock.Release();
   alLock[myLineNumber]->Acquire();
 
-  // waitingForAL_C[myLineNumber]->Signal(&alLineLock);
   printf("%s: Going to see Liaison %d\n",currentThread->getName(),myLineNumber);
   alLineLengths[myLineNumber]--;
 
@@ -480,22 +548,41 @@ void Passenger(int myNumber) {
 
   alLock[myLineNumber]->Release();
 
+  // --------------------------------------------------------
+  // 2. Passenger goes to see Airport check in staff
+  //
+  //
+  // --------------------------------------------------------
+
   // Acquire the Lock to the line
   // Only use one lock for all 5 lines, because only one Passenger at 
   // a time can be looking for the shortest line 
   // printf("Acquiring Lock...");
-  //cisLineLock.Acquire();
+  cisLineLock.Acquire();
 
   // Set the Passenger's line number
-  //myLineNumber = findShortestLine(cisLineLengths, 5);
+  myLineNumber = findShortestLine(cisLineLengths, 5);
 
-  // Increment the length of the Passenger's line by one, since the Passenger
-  // is now in that line
-  //cisLineLengths[myLineNumber]++;
+  // If there are other Passengers in line, then wait in line
+  // if(cisLineLengths[myLineNumber]>0) {
+    // Increment the length of the Passenger's line by one, since the Passenger
+    // is now in that line
+  cisLineLengths[myLineNumber]++;
+  printf("%s chose line %d", currentThread->getName(), myLineNumber);
+  waitingForCIS_C[myLineNumber]->Wait(&cisLineLock);
+    //}
+  printf("%s going to see Airline Check In Staff %d",currentThread->getName(), myLineNumber); 
+  cisLineLock.Release();
+  cisLock[myLineNumber]->Acquire();
+  
+  cisLineLengths[myLineNumber]--;
 
   // The Passenger now has the line number, so they should go to sleep and
   // release the line lock, letting another Passenger search for a line
-  //waitingForCIS_C[myLineNumber]->Wait(&cisLineLock);
+  printf("%s giving airline ticket to Airline Check In Staff %d", currentThread->getName(), myLineNumber);
+  waitingForTicket_CIS_C[myLineNumber]->Signal(cisLock[myLineNumber]);
+  waitingForTicket_CIS_C[myLineNumber]->Wait(cisLock[myLineNumber]);
+  cisLock[myLineNumber]->Release();
 }
 
 void AirportSimulation() {
@@ -534,12 +621,21 @@ void AirportSimulation() {
     waitingForCIS_C[i] = new Condition(name);
   }
 
-  // waitingForAL condition variable
+  // waitingForTicket_AL condition variable
   for(i = 0; i < numberOfAL; i++) {
     name = new char [20];
     sprintf(name, "WFTICKET_AL_C%d",i);
     waitingForTicket_AL_C[i] = new Condition(name);
   }
+  
+  // waitingForTicket_CIS_C condition variable
+  for(i = 0; i < numberOfCIS; i++) {
+    name = new char[20];
+    sprintf(name,"CISTICKET_AL_C%d",i);
+    waitingForTicket_CIS_C[i] = new Condition(name);
+  }
+
+   
   //--------------------------------------------------
 
   // -------------------------------------------------
@@ -553,6 +649,16 @@ void AirportSimulation() {
   // -------------------------------------------------
 
   // -------------------------------------------------
+  // Initialize Airline check in staff Locks
+  // printf("creating al locks\n");
+  for(i = 0; i < numberOfCIS; i++) {
+    name = new char[20];
+    sprintf(name,"cisLock%d",i);
+    cisLock[i] = new Lock(name);
+  }
+  // -------------------------------------------------
+
+  // -------------------------------------------------
   // Initialize the Line Lengths 
 
   // Line length for Airport Liaison
@@ -560,7 +666,7 @@ void AirportSimulation() {
     alLineLengths[i] = 0;
   }
 
-  // Line length for check in staff
+  // Line length for Airline check in staff
   for( i = 0; i < numberOfCIS; i++) {
     cisLineLengths[i] = 0;
   }
@@ -579,13 +685,20 @@ void AirportSimulation() {
 
   // Create all the Airport Staff First
 
-  // printf("Creating als\n");
   // Create the Airport Liaison
   for(i = 0; i < numberOfAL; i++) {
     name = new char[20];
     sprintf(name, "AL%d",i);
     t = new Thread(name);
     t->Fork((VoidFunctionPtr)AirportLiaison,i);
+  }
+
+  // Create the Airline Check In Staff
+  for(i=0; i < numberOfCIS; i++) {
+    name = new char[20];
+    sprintf(name, "Airline check-in-staff %d",i);
+    t = new Thread(name);
+    t->Fork((VoidFunctionPtr)CheckInStaff,i);
   }
 
   for(i = 0; i < numberOfAL; i++) {
@@ -604,7 +717,6 @@ void AirportSimulation() {
 void
 ThreadTest()
 {
-    
   DEBUG('t', "Entering SimpleTest");
   /*
     Thread *t = new Thread("forked thread");
