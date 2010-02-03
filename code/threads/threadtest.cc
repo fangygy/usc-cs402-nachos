@@ -429,6 +429,8 @@ void AirportLiaison(int myNumber) {
     alLineLock.Acquire();
 
     if(alLineLengths[myNumber]>0) {
+    printf("%s telling Passenger to step up to counter\n",currentThread->getName());
+
       waitingForAL_C[myNumber]->Signal(&alLineLock);
     } else {
       al_busy[myNumber] = false;
@@ -437,7 +439,6 @@ void AirportLiaison(int myNumber) {
     alLock[myNumber]->Acquire();
     alLineLock.Release();
 
-    printf("%s telling Passenger to step up to counter\n",currentThread->getName());
     waitingForTicket_AL_C[myNumber]->Wait(alLock[myNumber]);
     waitingForTicket_AL_C[myNumber]->Signal(alLock[myNumber]);
     printf("%s: Directing Passenger to Airline check in counter\n", currentThread->getName());
