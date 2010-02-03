@@ -428,7 +428,7 @@ void AirportLiaison(int myNumber) {
   while(true) {
     alLineLock.Acquire();
 
-    if(alLineLengths[myNumber]>0&&!al_busy[myNumber]) {
+    if(alLineLengths[myNumber]>0) {
       waitingForAL_C[myNumber]->Signal(&alLineLock);
     } else {
       al_busy[myNumber] = false;
@@ -524,7 +524,7 @@ void AirportSimulation() {
     name = new char [20];
     sprintf(name, "WFAL_C%d",i);
     waitingForAL_C[i] = new Condition(name);
-    al_busy[i] = false;
+    al_busy[i] = busy;
   }
 
   // waitingForCIS condition variable
