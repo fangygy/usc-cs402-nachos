@@ -479,7 +479,7 @@ void Passenger(int myNumber) {
   alLineLengths[myLineNumber]--;
 
   // Passenger is told to go to counter, and hands their ticket to Liaison
-  printf("%s going to Liaison and giving them ticket\n", currentThread->getName());
+  // printf("%s going to Liaison and giving them ticket\n", currentThread->getName());
   waitingForTicket_AL_C[myLineNumber]->Signal(alLock[myLineNumber]);
   waitingForTicket_AL_C[myLineNumber]->Wait(alLock[myLineNumber]);
 
