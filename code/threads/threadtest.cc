@@ -625,7 +625,7 @@ void AirportSimulation() {
   }
 
   for(i = 0; i < numberOfAL; i++) {
-    printf("%d",alLineLengths[i]);
+    // printf("%d",alLineLengths[i]);
   }
  
 }
