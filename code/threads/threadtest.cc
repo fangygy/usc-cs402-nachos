@@ -90,8 +90,8 @@ void SecurityOfficer(int myNumber) {
 
     waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
     waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]);
-    // Clear passenger and direct to Security Officer
-    printf("%s: moving Passenger to Security Officer", currentThread->getName());
+    // Clear passenger and direct to Security Inspector
+    printf("%s: moving Passenger to Security Inspector", currentThread->getName());
   }
 }
 
@@ -307,8 +307,8 @@ void Passenger(int myNumber) {
   waitingForSO_C[myLineNumber]->Wait(&soLineLock);
   
   soLineLengths[myLineNumber]--;
-
   soLineLock.Release();
+
   soLock[myLineNumber]->Acquire();
   
 }
