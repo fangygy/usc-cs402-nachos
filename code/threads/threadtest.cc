@@ -31,7 +31,7 @@
 
 // Global variables
 
-#define numberOfPassengers 20
+#define numberOfPassengers 50
 #define numberOfAL 7
 #define numberOfCIS 15
 #define numberOfSO 7
