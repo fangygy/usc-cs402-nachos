@@ -267,6 +267,7 @@ void CheckInStaff(int myNumber) {
      * 
      */
 
+    cisLineLock[myAirline]->Acquire();
     if(cisLineLengths[myNumber]==0 && execLineLengths[myAirline]==0) {
       // go on break
       onBreakCIS_C[myNumber]->Wait(cisLineLock[myAirline]);
@@ -304,20 +305,21 @@ void CheckInStaff(int myNumber) {
 
     if(cisLineLengths[myNumber] > 0) {
       //printf("line %d has more than one passenger\n", myNumber);
-      cisLineLock[myAirline]->Acquire();
+      //cisLineLock[myAirline]->Acquire();
       waitingForCIS_C[myNumber]->Signal(cisLineLock[myAirline]);
       printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
-    
-
-    cisLock[myNumber]->Acquire();
-    cisLineLock[myAirline]->Release();
-    waitingForTicket_CIS_C[myNumber]->Wait(cisLock[myNumber]);
-    waitingForTicket_CIS_C[myNumber]->Signal(cisLock[myNumber]);
-    
-    printf("%s giving Passenger %d ticket number and directing them to gate\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
-    cisFlightCount[myAirline]++;
-    cisLock[myNumber]->Release();
     }
+
+      cisLock[myNumber]->Acquire();
+      cisLineLock[myAirline]->Release();
+      waitingForTicket_CIS_C[myNumber]->Wait(cisLock[myNumber]);
+      waitingForTicket_CIS_C[myNumber]->Signal(cisLock[myNumber]);
+      
+      printf("%s giving Passenger %d ticket number and directing them to gate\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
+      cisFlightCount[myAirline]++;
+      cisLock[myNumber]->Release();
+    
+  
   }
 }
 
