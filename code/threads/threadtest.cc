@@ -629,7 +629,7 @@ void AirportSimulation() {
   }
   
   name = new char[20];
-  sprintf(name, "AirportManager",1);
+  sprintf(name, "AirportManager%d",1);
   t = new Thread(name);
   t->Fork((VoidFunctionPtr)AirportManager,1);
  
