@@ -160,8 +160,17 @@ bool cis_busy[numberOfCIS];
 
 void CheckInStaff(int myNumber) {
   while(true) {
+    int myAirline;
+    if(myNumber > 9) {
+      myAirline = 2;
+    } else if (myNumber > 4) {
+      myAirline = 1;
+    } else {
+      myAirline = 0;
+    }
+    
     // Acquire the line lock
-    cisLineLock.Acquire();
+    cisLineLock[myAirline]->Acquire();
 
     /*
      * if there is no one in line 
@@ -189,7 +198,7 @@ void CheckInStaff(int myNumber) {
     }
 
     cisLock[myNumber]->Acquire();
-    cisLineLock.Release();
+    cisLineLock[myAirline]->Release();
     waitingForTicket_CIS_C[myNumber]->Wait(cisLock[myNumber]);
     waitingForTicket_CIS_C[myNumber]->Signal(cisLock[myNumber]);
     
@@ -250,10 +259,10 @@ void Passenger(int myNumber) {
   // Only use one lock for all 5 lines, because only one Passenger at 
   // a time can be looking for the shortest line 
   int checkin_counter_number = pass_ticket_buffer[myNumber].checkin_counter;
-  cisLineLock[checkin_counter_number].Acquire();
+  cisLineLock[checkin_counter_number]->Acquire();
   int start, stop;
   start = (pass_ticket_buffer[myNumber].checkin_counter)*(numberOfCIS/3);
-  stop  = start + (numberOfCIS/3)-1;
+  stop  = start + (numberOfCIS/3) - 1;
   // Figure out which 
 
   // Set the Passenger's line number
@@ -267,7 +276,7 @@ void Passenger(int myNumber) {
   cisLineLengths[myLineNumber]--;
 
   printf("%s going to see Airline Check In Staff %d\n",currentThread->getName(), myLineNumber); 
-  cisLineLock[checkin_counter_number].Release();
+  cisLineLock[checkin_counter_number]->Release();
   cisLock[myLineNumber]->Acquire();
   
 
