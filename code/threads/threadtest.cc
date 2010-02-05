@@ -58,6 +58,7 @@ int al_current_passenger_serving[7]; // must be equal to the number of airport l
 Condition *waitingForCallAM_C[numberOfAirlines];
 Lock *airlineLock[numberOfAirlines];
 int flightCount[3];
+int cisFlightCount[3];
 
 void AirportManager(int myNumber) {
   while(true) {
@@ -206,7 +207,6 @@ Lock *cisLineLock[numberOfAirlines];
 Lock *cisLock[numberOfCIS];
 int cisLineLengths[numberOfCIS];
 bool cis_busy[numberOfCIS];
-int cisFlightCount[3];
 
 void CheckInStaff(int myNumber) {
   while(true) {
@@ -404,11 +404,11 @@ void Passenger(int myNumber) {
   //
   //
   // --------------------------------------------------------
-  myFlightNumber = boarding_pass_buffer[myNumber];
+  myFlightNumber = boarding_pass_buffer[myNumber].flight_number;
   airlineLock[myFlightNumber]->Acquire();
   flightCount[myFlightNumber]++;
   waitingForCallAM_C[myFlightNumber]->Wait(airlineLock[myFlightNumber]);
-  airlinelock[myFlightNumber]->Release();
+  airlineLock[myFlightNumber]->Release();
   printf("Passenger %d boarding flight %d", currentThread->getName(),myFlightNumber);
   // FIN
 }
