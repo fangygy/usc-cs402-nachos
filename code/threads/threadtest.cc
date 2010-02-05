@@ -37,8 +37,8 @@ struct ticket {
 
 ticket passenger_ticket_buffer[20]; // must be equal to the number of passengers
 int al_current_passenger_serving[7]; // must be equal to the number of airport liaisons
-int passenger_cis_line[20] // must be equal to the number of passengers
-                           // the airport liaison writes to this "telling" the passenger where to go
+int passenger_cis_line[20]; // must be equal to the number of passengers
+                            // the airport liaison writes to this "telling" the passenger where to go
 
 
 
@@ -295,7 +295,7 @@ void AirportSimulation() {
   int numberOfCIS = 5;
   int numberOfSO  = 7;
 
-  Ticket pass_ticket;
+  ticket pass_ticket;
   /*
    * Needs Airlines
    * Bags and weights
