@@ -65,7 +65,7 @@ void AirportManager(int myNumber) {
   while(true) {
     // if all passengers are accounted for
     // issue broadcast
-    
+    */
     for(int i = 0; i < numberOfAirlines; i++) {
       airlineLock[i]->Acquire();
       if(flightCount[i] == cisFlightCount[i]) {
@@ -76,7 +76,7 @@ void AirportManager(int myNumber) {
     
     currentThread->Yield();
   }
-  */
+  
   
 }
 
