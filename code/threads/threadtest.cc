@@ -422,10 +422,11 @@ void Passenger(int myNumber) {
       printf("passenger 14: check in counter %d my line number %d\n",checkin_counter_number,myLineNumber);
     }
     waitingForCIS_C[myLineNumber]->Wait(cisLineLock[checkin_counter_number]);
-    cisLineLengths[myLineNumber]--;
+    // cisLineLengths[myLineNumber]--;
     
     printf("%s going to see Airline Check In Staff %d\n",currentThread->getName(), myLineNumber); 
     cisLock[myLineNumber]->Acquire();
+    cisLineLengths[myLineNumber]--;
     cisLineLock[checkin_counter_number]->Release();
     //cisLock[myLineNumber]->Acquire();
     
