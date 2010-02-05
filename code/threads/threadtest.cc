@@ -86,6 +86,8 @@ void SecurityOfficer(int myNumber) {
     if(soLineLengths[myNumber]>0) {
       printf("%s: Telling passenger to come through Security", currentThread->getName());
       waitingForSO_C[myNumber]->Signal(&soLineLock);
+    } else {
+      waitingForSO_C[myNumber]->Wait(&soLineLock);
     }
     
     soLock[myNumber]->Acquire();
@@ -309,6 +311,7 @@ void Passenger(int myNumber) {
 
   soLineLengths[myLineNumber]++;
   printf("%s: chose Security %d with length %d\n", currentThread->getName(), myLineNumber, cisLineLengths[myLineNumber]);
+  waitingForSO_C[myLineNumber]->Signal(&soLineLock);
   waitingForSO_C[myLineNumber]->Wait(&soLineLock);
   
   soLineLengths[myLineNumber]--;
