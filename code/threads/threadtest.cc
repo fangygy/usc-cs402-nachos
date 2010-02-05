@@ -184,7 +184,7 @@ void CheckInStaff(int myNumber) {
      * 
      */
     if(myNumber == 0) {
-      printf("%s has %d passengers in their line",currentThread->getName(), cisLineLengths[myNumber]);
+      printf("%s has %d passengers in their line\n",currentThread->getName(), cisLineLengths[myNumber]);
     }
 
     if(cisLineLengths[myNumber]==0) {
