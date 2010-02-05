@@ -61,7 +61,7 @@ int flightCount[3];
 int cisFlightCount[3];
 
 void AirportManager(int myNumber) {
-  /*
+  
   while(true) {
     // if all passengers are accounted for
     // issue broadcast
@@ -76,7 +76,7 @@ void AirportManager(int myNumber) {
     
     currentThread->Yield();
   }
-  */
+  
   
 }
 
