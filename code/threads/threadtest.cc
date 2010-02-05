@@ -93,6 +93,7 @@ void SecurityInspector(int myNumber) {
     // Clear passenger and direct to Security Inspector
     printf("%s: moving Passenger to Boarding: passengers moved: %d \n", currentThread->getName(), sicount);
     sicount++;
+    siLock[myNumber]->Release();
   }
 }
 
@@ -125,6 +126,7 @@ void SecurityOfficer(int myNumber) {
     // Clear passenger and direct to Security Inspector
     printf("%s: moving Passenger to Security Inspector: number of Passengers moved: %d\n", currentThread->getName(),socount);
     socount++;
+    soLock[myNumber]->Release();
   }
 }
 
