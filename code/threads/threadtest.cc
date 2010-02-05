@@ -283,13 +283,13 @@ void CheckInStaff(int myNumber) {
       execLineCV[myAirline]->Wait(execLineLock[myAirline]);
       // give boarding pass
     
-    execCISLock[myNumber]->Acquire();
-    execLineLock[myAirline]->Release();
-    waitingForExec_CIS_C[myNumber]->Wait(execCISLock[myNumber]);
-    waitingForExec_CIS_C[myNumber]->Signal(execCISLock[myNumber]);
-    printf("%s giving exec passenger boarding pass",currentThread->getName());
-    cisFlightCount[myAirline]++;
-    execCISLock[myNumber]->Release();
+      execCISLock[myNumber]->Acquire();
+      execLineLock[myAirline]->Release();
+      waitingForExec_CIS_C[myNumber]->Wait(execCISLock[myNumber]);
+      waitingForExec_CIS_C[myNumber]->Signal(execCISLock[myNumber]);
+      printf("%s giving exec passenger boarding pass",currentThread->getName());
+      cisFlightCount[myAirline]++;
+      execCISLock[myNumber]->Release();
     }
     if(cisLineLengths[myNumber] > 0) {
       //printf("line %d has more than one passenger\n", myNumber);
@@ -327,6 +327,8 @@ void Passenger(int myNumber) {
   int myFlightNumber;
   bool amExecutive;
   amExecutive = pass_ticket_buffer[myNumber].executive;
+  if(amExecutive)
+    printf("Passenger %d is an executive passenger",myNumber);
 
   // Set the Passenger's Line number
   printf("%s: Searching for the shortest line\n", currentThread->getName());
