@@ -298,7 +298,7 @@ void Passenger(int myNumber) {
   //
   //
   // --------------------------------------------------------
-
+  /*
   soLineLock.Acquire();
   
   myLineNumber = findShortestLine(soLineLengths, 7);
@@ -311,7 +311,7 @@ void Passenger(int myNumber) {
   soLineLock.Release();
 
   soLock[myLineNumber]->Acquire();
-  
+  */
 }
 
 void AirportSimulation() {
