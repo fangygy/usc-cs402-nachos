@@ -498,6 +498,12 @@ void AirportSimulation() {
     onBreakCIS_C[i] = new Condition(name);
   }
    
+  // waitingForCallAM_C condition variable
+  for(i = 0; i < numberOfAirlines; i++) {
+    name = new char[20];
+    sprintf(name, "AM_C%d",i);
+    waitingForCallAM_C[i] = new Condition(name);
+  }
   //--------------------------------------------------
 
   // -------------------------------------------------
@@ -545,6 +551,17 @@ void AirportSimulation() {
     siLock[i] = new Lock(name);
   }
   // -------------------------------------------------
+  // -------------------------------------------------
+  // Initialize Security Officer check in staff Locks
+  // printf("creating al locks\n");
+  for(i = 0; i < numberOfAirlines; i++) {
+    name = new char[20];
+    sprintf(name,"airLineLock%d",i);
+    airlineLock[i] = new Lock(name);
+  }
+
+  // -------------------------------------------------
+
   // -------------------------------------------------
   // Initialize the Line Lengths 
 
