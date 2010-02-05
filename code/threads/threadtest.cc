@@ -68,7 +68,7 @@ void AirportManager(int myNumber) {
    
     for(int i = 0; i < numberOfAirlines; i++) {
       airlineLock[i]->Acquire();
-      printf("flight %d count %d , cisflightcount &i",i,flightCount[i],cisFlightCount[i]); 
+      printf("flight %d count %d , cisflightcount &i\n",i,flightCount[i],cisFlightCount[i]); 
       if(flightCount[i] == cisFlightCount[i]) {
 	printf("issuing boarding call for flight %d \n",i);
 	waitingForCallAM_C[i]->Broadcast(airlineLock[i]);
@@ -78,6 +78,7 @@ void AirportManager(int myNumber) {
     
     currentThread->Yield();
   }
+  
 }
 
 void CargoHandler(int myNumber) {
@@ -413,13 +414,13 @@ void Passenger(int myNumber) {
   // --------------------------------------------------------
   
   myFlightNumber = boarding_pass_buffer[myNumber].flight_number;
-  /*
+  
   airlineLock[myFlightNumber]->Acquire();
   flightCount[myFlightNumber]++;
   waitingForCallAM_C[myFlightNumber]->Wait(airlineLock[myFlightNumber]);
   airlineLock[myFlightNumber]->Release();
   printf("Passenger %s boarding flight %d", currentThread->getName(),myFlightNumber);
-  */
+  
   // FIN
   
 }
