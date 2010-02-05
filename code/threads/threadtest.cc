@@ -68,16 +68,14 @@ void AirportManager(int myNumber) {
     */
     for(int i = 0; i < numberOfAirlines; i++) {
       airlineLock[i]->Acquire();
-      //if(flightCount[i] == cisFlightCount[i]) {
-      //waitingForCallAM_C[i]->Broadcast(airlineLock[i]);
-      //}
-      //airlineLock[i]->Release();
+      if(flightCount[i] == cisFlightCount[i]) {
+	waitingForCallAM_C[i]->Broadcast(airlineLock[i]);
+      }
+      airlineLock[i]->Release();
     }
     
-    //currentThread->Yield();
-  
-  
-  
+    currentThread->Yield();
+ 
 }
 
 void CargoHandler(int myNumber) {
