@@ -55,9 +55,22 @@ struct boarding_pass {
 
 int al_current_passenger_serving[7]; // must be equal to the number of airport liaisons
 
+Condition *waitingForCallAM_C[numberOfAirlines];
+Lock *airlineLock[numberOfAirlines];
+int flightCount[3];
 
 void AirportManager(int myNumber) {
-
+  while(true) {
+    // if all passengers are accounted for
+    // issue broadcast
+    for(int i = 0; i < numberOfAirlines; i++) {
+      airlineLock[i]->Acquire();
+      if(flightCount[i] = cisFlightCount[i]) {
+	waitingForCallAM_C->BroadCast(airlineLock[i]);
+      }
+      airlineLock[i]->Release();
+    }
+  }
 }
 
 void CargoHandler(int myNumber) {
@@ -70,7 +83,6 @@ Lock siLineLock("si_LL");
 Lock *siLock[numberOfSO];
 int siLineLengths[numberOfSO];
 bool si_busy[numberOfSO];
-
 
 void SecurityInspector(int myNumber) {
   while(true) {
@@ -194,7 +206,7 @@ Lock *cisLineLock[numberOfAirlines];
 Lock *cisLock[numberOfCIS];
 int cisLineLengths[numberOfCIS];
 bool cis_busy[numberOfCIS];
-
+int cisFlightCount[3];
 
 void CheckInStaff(int myNumber) {
   while(true) {
@@ -241,6 +253,7 @@ void CheckInStaff(int myNumber) {
     waitingForTicket_CIS_C[myNumber]->Signal(cisLock[myNumber]);
     
     printf("%s giving Passenger ticket number and directing them to gate\n", currentThread->getName());
+    cisFlightCount[myNumber]++;
     cisLock[myNumber]->Release();
     
   }
@@ -260,6 +273,8 @@ void Passenger(int myNumber) {
   // Declare the variable for the Passenger's line number
   // We will reuse this variable for all 
   int myLineNumber;
+
+  int myFlightNumber;
 
   // Set the Passenger's Line number
   printf("%s: Searching for the shortest line\n", currentThread->getName());
@@ -382,7 +397,20 @@ void Passenger(int myNumber) {
   siLock[myLineNumber]->Release();
   printf("-----Number of Passengers chosen inspector: %d\n",pass_si_count);
   pass_si_count++;
-  
+
+
+  // --------------------------------------------------------
+  // 5. Passenger goes to boarding lounge
+  //
+  //
+  // --------------------------------------------------------
+  myFlightNumber = boarding_pass_buffer[myNumber];
+  airlineLock[myFlightNumber]->Acquire();
+  flightCount[myFlightNumber]++;
+  waitingForCallAM_C[myFlightNumber]->Wait(airlineLock[myFlightNumber]);
+  airlinelock[myFlightNumber]->Release();
+  printf("Passenger %d boarding flight %d", currentThread->getName(),myFlightNumber);
+  // FIN
 }
 
 void AirportSimulation() {
@@ -540,6 +568,11 @@ void AirportSimulation() {
   }
   // -------------------------------------------------
 
+
+  for(i=0; i < numberOfAirlines; i++) {
+    flightCount[i]=0;
+    cisFlightCount[i]=0;
+  }
 
   // Create the 20 passenger for our airport simulation
   printf("Creating Passengers\n");
