@@ -499,12 +499,14 @@ void AirportSimulation() {
   }
   
   // Create the Airline Check In Staff
+  /*
   for(i=0; i < numberOfSO; i++) {
     name = new char[20];
     sprintf(name, "SecurityInspector%d",i);
     t = new Thread(name);
     t->Fork((VoidFunctionPtr)SecurityInspector,i);
   }
+  */
  
 }
 
