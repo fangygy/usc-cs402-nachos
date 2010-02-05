@@ -33,7 +33,7 @@ struct ticket {
   int passenger_number;
   int flight_number;
   int checkin_counter;
-}
+};
 
 ticket passenger_ticket_buffer[20]; // must be equal to the number of passengers
 int al_current_passenger_serving[7]; // must be equal to the number of airport liaisons
