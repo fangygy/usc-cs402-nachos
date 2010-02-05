@@ -256,7 +256,7 @@ void CheckInStaff(int myNumber) {
     waitingForTicket_CIS_C[myNumber]->Signal(cisLock[myNumber]);
     
     printf("%s giving Passenger ticket number and directing them to gate\n", currentThread->getName());
-    cisFlightCount[myNumber]++;
+    //cisFlightCount[myNumber]++;
     cisLock[myNumber]->Release();
     
   }
@@ -407,12 +407,14 @@ void Passenger(int myNumber) {
   //
   //
   // --------------------------------------------------------
+  /*
   myFlightNumber = boarding_pass_buffer[myNumber].flight_number;
   airlineLock[myFlightNumber]->Acquire();
   flightCount[myFlightNumber]++;
   waitingForCallAM_C[myFlightNumber]->Wait(airlineLock[myFlightNumber]);
   airlineLock[myFlightNumber]->Release();
   printf("Passenger %s boarding flight %d", currentThread->getName(),myFlightNumber);
+  */
   // FIN
   
 }
