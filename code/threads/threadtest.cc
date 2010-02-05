@@ -67,7 +67,7 @@ void AirportManager(int myNumber) {
     for(int i = 0; i < numberOfAirlines; i++) {
       airlineLock[i]->Acquire();
       if(flightCount[i] = cisFlightCount[i]) {
-	waitingForCallAM_C->BroadCast(airlineLock[i]);
+	waitingForCallAM_C->Broadcast(airlineLock[i]);
       }
       airlineLock[i]->Release();
     }
