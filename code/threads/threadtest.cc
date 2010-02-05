@@ -71,6 +71,7 @@ void AirportManager(int myNumber) {
       }
       airlineLock[i]->Release();
     }
+    currentThread->Yield();
   }
 }
 
@@ -627,6 +628,10 @@ void AirportSimulation() {
     t->Fork((VoidFunctionPtr)SecurityInspector,i);
   }
   
+  name = new char[20];
+  sprintf(name, "AirportManager",1);
+  t = new Thread(name);
+  t->Fork((VoidFunctionPtr)AirportManager,1);
  
 }
 
