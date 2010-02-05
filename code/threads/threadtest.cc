@@ -291,13 +291,14 @@ void CheckInStaff(int myNumber) {
       waitingForExec_CIS_C[myNumber]->Signal(execCISLock[myNumber]);
       printf("%s giving exec passenger boarding pass\n",currentThread->getName());
       cisFlightCount[myAirline]++;
+      waitingForExec[myNumber]=false;
       execCISLock[myNumber]->Release();
     }
     // execLineLock[myAirline]->Release();
     // execCISLock[myNumber]->Release();
 
     cisLineLock[myAirline]->Acquire();
-    if(myNumber == 14) {
+    if(myNumber == 11) {
       printf("!!!!!!!!!!AIRLINE CHECK IN STAFF 14 HAS %d passengers\n",cisLineLengths[myNumber]); 
     }
 
