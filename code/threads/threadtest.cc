@@ -67,14 +67,14 @@ void AirportManager(int myNumber) {
     // issue broadcast
     */
     for(int i = 0; i < numberOfAirlines; i++) {
-      airlineLock[i]->Acquire();
-      if(flightCount[i] == cisFlightCount[i]) {
-	waitingForCallAM_C[i]->Broadcast(airlineLock[i]);
-      }
-      airlineLock[i]->Release();
+      //airlineLock[i]->Acquire();
+      //if(flightCount[i] == cisFlightCount[i]) {
+      //waitingForCallAM_C[i]->Broadcast(airlineLock[i]);
+      //}
+      //airlineLock[i]->Release();
     }
     
-    currentThread->Yield();
+    //currentThread->Yield();
   
   
   
