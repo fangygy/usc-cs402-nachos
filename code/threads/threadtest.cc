@@ -36,7 +36,8 @@
 #define numberOfCIS 15
 #define numberOfSO 7
 #define numberOfAirlines 3
-#define sicount = 1
+
+int sicount = 1;
 
 struct ticket {
   int passenger_number;
