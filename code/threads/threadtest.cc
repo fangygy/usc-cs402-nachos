@@ -82,11 +82,12 @@ void SecurityOfficer(int myNumber) {
   while(true) {
     
     soLineLock.Acquire();
-    /*
+    
     if(soLineLengths[myNumber]>0) {
       printf("%s: Telling passenger to come through Security", currentThread->getName());
       waitingForSO_C[myNumber]->Signal(&soLineLock);
     }
+    /*
     soLock[myNumber]->Acquire();
     soLineLock.Release();
 
