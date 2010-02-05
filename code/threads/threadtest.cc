@@ -62,7 +62,7 @@ void CargoHandler(int myNumber) {
 
 Condition *waitingForSI_C[numberOfSO];
 Condition *waitingForTicket_SI_C[numberOfSO];
-Lock siLineLock("al_LL");
+Lock siLineLock("si_LL");
 Lock *siLock[numberOfSO];
 int siLineLengths[numberOfSO];
 bool si_busy[numberOfSO];
@@ -73,7 +73,7 @@ void SecurityInspector(int myNumber) {
 
 Condition *waitingForSO_C[numberOfSO];
 Condition *waitingForTicket_SO_C[numberOfSO];
-Lock soLineLock("al_LL");
+Lock soLineLock("sl_LL");
 Lock *soLock[numberOfSO];
 int soLineLengths[numberOfSO];
 bool so_busy[numberOfSO];
@@ -300,7 +300,7 @@ void Passenger(int myNumber) {
   // --------------------------------------------------------
 
   soLineLock.Acquire();
-  /*
+  
   myLineNumber = findShortestLine(soLineLengths, 7);
 
   soLineLengths[myLineNumber]++;
@@ -311,7 +311,7 @@ void Passenger(int myNumber) {
   soLineLock.Release();
 
   soLock[myLineNumber]->Acquire();
-  */
+  
 }
 
 void AirportSimulation() {
