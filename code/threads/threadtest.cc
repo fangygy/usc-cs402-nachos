@@ -27,6 +27,24 @@
 */
 // ---------------------------------------------------------------------
 
+// Global variables
+
+struct ticket {
+  int passenger_number;
+  int flight_number;
+  int checkin_counter;
+}
+
+ticket passenger_ticket_buffer[20]; // must be equal to the number of passengers
+int al_current_passenger_serving[7]; // must be equal to the number of airport liaisons
+int passenger_cis_line[20] // must be equal to the number of passengers
+                           // the airport liaison writes to this "telling" the passenger where to go
+
+
+
+
+
+
 void AirportManager(int myNumber) {
 
 }
@@ -155,6 +173,8 @@ void CheckInStaff(int myNumber) {
       onBreakCIS_C[myNumber]->Wait(&cisLineLock);
     }
     
+    // If executive line > 0
+    // Help the executives
     if(cisLineLengths[myNumber] > 0) {
       //printf("line %d has more than one passenger\n", myNumber);
       waitingForCIS_C[myNumber]->Signal(&cisLineLock);
@@ -275,6 +295,7 @@ void AirportSimulation() {
   int numberOfCIS = 5;
   int numberOfSO  = 7;
 
+  Ticket pass_ticket;
   /*
    * Needs Airlines
    * Bags and weights
@@ -404,6 +425,11 @@ void AirportSimulation() {
   // Create the 20 passenger for our airport simulation
   printf("Creating Passengers\n");
   for( i=0; i < 20; i++) {
+    // Create a ticket for the passenger
+    pass_ticket = new ticket;
+    pass_ticket.passenger_number = i;
+    pass_ticket.flight_number = 1;
+    passenger_ticket_buffer[i] = pass_ticket;
     name = new char [20]; 
     sprintf(name,"Passenger%d",i);
     //printf("Creating %s\n",name);
