@@ -297,6 +297,10 @@ void CheckInStaff(int myNumber) {
     // execCISLock[myNumber]->Release();
 
     cisLineLock[myAirline]->Acquire();
+    if(myNumber == 14) {
+      printf("!!!!!!!!!!AIRLINE CHECK IN STAFF 14 HAS %d passengers\n",cisLineLengths[myNumber]); 
+    }
+
     if(cisLineLengths[myNumber] > 0) {
       //printf("line %d has more than one passenger\n", myNumber);
       waitingForCIS_C[myNumber]->Signal(cisLineLock[myAirline]);
