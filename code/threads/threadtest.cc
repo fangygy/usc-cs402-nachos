@@ -80,6 +80,7 @@ bool so_busy[numberOfSO];
 
 void SecurityOfficer(int myNumber) {
   while(true) {
+    /*
     soLineLock.Acquire();
     if(soLineLengths[myNumber]>0) {
       printf("%s: Telling passenger to come through Security", currentThread->getName());
@@ -92,6 +93,7 @@ void SecurityOfficer(int myNumber) {
     waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]);
     // Clear passenger and direct to Security Inspector
     printf("%s: moving Passenger to Security Inspector", currentThread->getName());
+    */
   }
 }
 
