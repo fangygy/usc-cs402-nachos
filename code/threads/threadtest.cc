@@ -29,20 +29,18 @@
 
 // Global variables
 
+
+static int numberOfAL  = 7;
+static int numberOfCIS = 15;
+static int numberOfSO  = 7;
+
 struct ticket {
   int passenger_number;
   int flight_number;
   int checkin_counter;
 } pass_ticket_buffer[20];
 
-// ticket passenger_ticket_buffer[20]; // must be equal to the number of passengers
 int al_current_passenger_serving[7]; // must be equal to the number of airport liaisons
-int passenger_cis_line[20]; // must be equal to the number of passengers
-                            // the airport liaison writes to this "telling" the passenger where to go
-
-
-
-
 
 
 void AirportManager(int myNumber) {
@@ -53,12 +51,12 @@ void CargoHandler(int myNumber) {
 
 }
 
-Condition *waitingForSI_C[7];
-Condition *waitingForTicket_SI_C[7];
+Condition *waitingForSI_C[numberOfSO];
+Condition *waitingForTicket_SI_C[numberOfSO];
 Lock siLineLock("al_LL");
-Lock *siLock[7];
-int siLineLengths[7];
-bool si_busy[7];
+Lock *siLock[numberOfSO];
+int siLineLengths[nuberOfSO];
+bool si_busy[numberOfSO];
 
 void SecurityInspector(int myNumber) {
 
@@ -291,9 +289,6 @@ void AirportSimulation() {
   char *name;
   int i; 
 
-  int numberOfAL  = 7;
-  int numberOfCIS = 5;
-  int numberOfSO  = 7;
 
   /*
    * Needs Airlines
