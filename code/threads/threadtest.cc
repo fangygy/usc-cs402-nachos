@@ -38,6 +38,7 @@
 #define numberOfAirlines 3
 
 int sicount = 1;
+int socount = 1;
 
 struct ticket {
   int passenger_number;
@@ -122,8 +123,8 @@ void SecurityOfficer(int myNumber) {
     waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
     waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]);
     // Clear passenger and direct to Security Inspector
-    printf("%s: moving Passenger to Security Inspector\n", currentThread->getName());
-    
+    printf("%s: moving Passenger to Security Inspector: number of Passengers moved: %d\n", currentThread->getName(),socount);
+    socount++;
   }
 }
 
