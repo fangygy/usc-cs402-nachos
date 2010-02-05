@@ -65,7 +65,7 @@ void AirportManager(int myNumber) {
   while(true) {
     // if all passengers are accounted for
     // issue broadcast
-    /*
+    
     for(int i = 0; i < numberOfAirlines; i++) {
       airlineLock[i]->Acquire();
       if(flightCount[i] == cisFlightCount[i]) {
@@ -652,12 +652,12 @@ void AirportSimulation() {
     t = new Thread(name);
     t->Fork((VoidFunctionPtr)SecurityInspector,i);
   }
-
+  /*
   name = new char[20];
   name = "AirportManager";
   t = new Thread(name);
   t->Fork((VoidFunctionPtr)AirportManager,1);
- 
+  */
 }
 
 
