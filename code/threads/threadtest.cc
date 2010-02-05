@@ -252,7 +252,7 @@ void CheckInStaff(int myNumber) {
     }
     
     // Acquire the line lock
-    cisLineLock[myAirline]->Acquire();
+    // cisLineLock[myAirline]->Acquire();
 
     /*
      * if there is no one in line 
@@ -291,6 +291,7 @@ void CheckInStaff(int myNumber) {
       cisFlightCount[myAirline]++;
       execCISLock[myNumber]->Release();
     }
+    cisLineLock[myAirline]->Acquire();
     if(cisLineLengths[myNumber] > 0) {
       //printf("line %d has more than one passenger\n", myNumber);
       waitingForCIS_C[myNumber]->Signal(cisLineLock[myAirline]);
