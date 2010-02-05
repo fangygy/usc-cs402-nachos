@@ -612,6 +612,9 @@ void AirportSimulation() {
     name = new char[20];
     sprintf(name,"execLineLock%d",i);
     execLineLock[i] = new Lock(name);
+    name = new char [20];
+    sprintf(name,"execLineCV%d",i);
+    execLineCV[i]  = new Condition(name);
   }
   // -------------------------------------------------
 
@@ -625,6 +628,9 @@ void AirportSimulation() {
     name = new char[20];
     sprintf(name,"cisExecLock%d",i);
     execCISLock[i] = new Lock(name);
+    name = new char[20];
+    sprintf(name,"waitingForExec_CIS_C%d",i);
+    waitingForExec_CIS_C[i] = new Condition(name);
   }
   // -------------------------------------------------
 
