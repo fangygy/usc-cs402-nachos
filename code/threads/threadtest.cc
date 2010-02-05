@@ -276,8 +276,8 @@ void Passenger(int myNumber) {
   cisLineLengths[myLineNumber]++;
   onBreakCIS_C[myLineNumber]->Signal(cisLineLock[checkin_counter_number]);
   printf("%s chose Airline Check In %d with length %d\n", currentThread->getName(), myLineNumber, cisLineLengths[myLineNumber]);
-  cisLineLock[checkin_counter_number]->Release();
   waitingForCIS_C[myLineNumber]->Wait(cisLineLock[checkin_counter_number]);
+  cisLineLock[checkin_counter_number]->Release();
   cisLineLengths[myLineNumber]--;
 
   printf("%s going to see Airline Check In Staff %d\n",currentThread->getName(), myLineNumber); 
