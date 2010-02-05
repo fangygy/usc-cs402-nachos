@@ -412,12 +412,13 @@ void Passenger(int myNumber) {
   // --------------------------------------------------------
   
   myFlightNumber = boarding_pass_buffer[myNumber].flight_number;
+  /*
   airlineLock[myFlightNumber]->Acquire();
   flightCount[myFlightNumber]++;
   waitingForCallAM_C[myFlightNumber]->Wait(airlineLock[myFlightNumber]);
   airlineLock[myFlightNumber]->Release();
   printf("Passenger %s boarding flight %d", currentThread->getName(),myFlightNumber);
-  
+  */
   // FIN
   
 }
