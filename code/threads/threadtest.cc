@@ -564,9 +564,9 @@ void AirportSimulation() {
   // Initialize Security Officer check in staff Locks
   // printf("creating al locks\n");
   for(i = 0; i < numberOfAirlines; i++) {
-    //name = new char[20];
-    //sprintf(name,"airLineLock%d",i);
-    //airlineLock[i] = new Lock(name);
+    name = new char[20];
+    sprintf(name,"airLineLock%d",i);
+    airlineLock[i] = new Lock(name);
   }
 
   // -------------------------------------------------
