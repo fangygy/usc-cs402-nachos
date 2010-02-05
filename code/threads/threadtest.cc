@@ -383,13 +383,13 @@ void Passenger(int myNumber) {
 
   siLineLengths[myLineNumber]++;
   printf("%s: chose SInspect %d with length %d\n", currentThread->getName(), myLineNumber, siLineLengths[myLineNumber]);
-
+  /*
   waitingForSI_C[myLineNumber]->Signal(&siLineLock);
   waitingForSI_C[myLineNumber]->Wait(&siLineLock);
   
   siLineLengths[myLineNumber]--;
   siLineLock.Release();
-  /*
+  
   siLock[myLineNumber]->Acquire();
 
  // The Passenger now has the line number, so they should go to sleep and
