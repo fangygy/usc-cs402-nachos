@@ -376,7 +376,7 @@ void Passenger(int myNumber) {
   //
   //
   // --------------------------------------------------------
-  
+  /*
   siLineLock.Acquire();
   
   myLineNumber = findShortestLine(siLineLengths, 7);
@@ -414,6 +414,7 @@ void Passenger(int myNumber) {
   airlineLock[myFlightNumber]->Release();
   printf("Passenger %s boarding flight %d", currentThread->getName(),myFlightNumber);
   // FIN
+  */
 }
 
 void AirportSimulation() {
