@@ -412,9 +412,14 @@ void Passenger(int myNumber) {
     // Set the Passenger's line number
     myLineNumber = findCISShortestLine(cisLineLengths,start,stop);
     
+ 
     cisLineLengths[myLineNumber]++;
     onBreakCIS_C[myLineNumber]->Signal(cisLineLock[checkin_counter_number]);
     printf("%s chose Airline Check In %d with length %d\n", currentThread->getName(), myLineNumber, cisLineLengths[myLineNumber]);
+
+   if(myNumber == 14) {
+      printf("passenger 14: check in counter %d my line number %d",checkin_counter_number,myLineNumber);
+    }
     waitingForCIS_C[myLineNumber]->Wait(cisLineLock[checkin_counter_number]);
     cisLineLengths[myLineNumber]--;
     
