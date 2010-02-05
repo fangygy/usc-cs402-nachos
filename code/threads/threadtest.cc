@@ -507,9 +507,9 @@ void AirportSimulation() {
    
   // waitingForCallAM_C condition variable
   for(i = 0; i < numberOfAirlines; i++) {
-    //name = new char[20];
-    //sprintf(name, "AM_C%d",i);
-    //waitingForCallAM_C[i] = new Condition(name);
+    name = new char[20];
+    sprintf(name, "AM_C%d",i);
+    waitingForCallAM_C[i] = new Condition(name);
   }
   //--------------------------------------------------
 
