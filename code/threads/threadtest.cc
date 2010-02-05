@@ -383,7 +383,7 @@ void Passenger(int myNumber) {
 
   siLineLengths[myLineNumber]++;
   printf("%s: chose SInspect %d with length %d\n", currentThread->getName(), myLineNumber, siLineLengths[myLineNumber]);
-  /*
+  
   waitingForSI_C[myLineNumber]->Signal(&siLineLock);
   waitingForSI_C[myLineNumber]->Wait(&siLineLock);
   
@@ -414,7 +414,7 @@ void Passenger(int myNumber) {
   airlineLock[myFlightNumber]->Release();
   printf("Passenger %s boarding flight %d", currentThread->getName(),myFlightNumber);
   // FIN
-  */
+  
 }
 
 void AirportSimulation() {
