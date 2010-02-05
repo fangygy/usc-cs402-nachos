@@ -30,9 +30,9 @@
 // Global variables
 
 
-static int numberOfAL  = 7;
-static int numberOfCIS = 15;
-static int numberOfSO  = 7;
+#define numberOfAL 7
+#define numberOfCIS 15
+#define numberOfSO 7
 
 struct ticket {
   int passenger_number;
