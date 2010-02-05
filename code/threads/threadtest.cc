@@ -374,7 +374,7 @@ void Passenger(int myNumber) {
     execLineLock[checkin_counter_number]->Acquire();
     execLineLengths[checkin_counter_number]++;
 
-    for(i = start; i <= stop; i++) {
+    for(int i = start; i <= stop; i++) {
       if(waitingForExec[i] == true) {
 	myLineNumber = i;
 	break;
