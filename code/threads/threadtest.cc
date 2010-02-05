@@ -363,7 +363,6 @@ void Passenger(int myNumber) {
   // a time can be looking for the shortest line 
   int checkin_counter_number = pass_ticket_buffer[myNumber].checkin_counter;
   
-  cisLineLock[checkin_counter_number]->Acquire();
 
   int start, stop;
   start = (pass_ticket_buffer[myNumber].checkin_counter)*(numberOfCIS/3);
@@ -381,7 +380,7 @@ void Passenger(int myNumber) {
       }
     }
 
-    // execLineCV[checkin_counter_number]->Wait(execCISLock[myLineNumber]);
+    execLineCV[checkin_counter_number]->Wait(execLineLock[checkin_counter_number]);
     // Tell CIS that passenger is ready
     execLineCV[checkin_counter_number]->Signal(execLineLock[checkin_counter_number]);
     printf("exec %s is chose counter %d", currentThread->getName(), myLineNumber);
@@ -397,6 +396,9 @@ void Passenger(int myNumber) {
     execCISLock[myLineNumber]->Release();
   
   } else {
+
+    cisLineLock[checkin_counter_number]->Acquire();
+
     // Set the Passenger's line number
     myLineNumber = findCISShortestLine(cisLineLengths,start,stop);
     
