@@ -152,7 +152,7 @@ void AirportLiaison(int myNumber) {
 Condition *waitingForCIS_C[numberOfCIS];
 Condition *waitingForTicket_CIS_C[numberOfCIS];
 Condition *onBreakCIS_C[numberOfCIS];
-Lock *cisLineLock(numberOfAirlines);
+Lock *cisLineLock[numberOfAirlines];
 Lock *cisLock[numberOfCIS];
 int cisLineLengths[numberOfCIS];
 bool cis_busy[numberOfCIS];
