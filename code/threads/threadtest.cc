@@ -88,6 +88,7 @@ void SecurityOfficer(int myNumber) {
       waitingForSO_C[myNumber]->Signal(&soLineLock);
     } else {
       waitingForSO_C[myNumber]->Wait(&soLineLock);
+      waitingForSO_C[myNumber]->Signal(&soLineLock);
     }
     
     soLock[myNumber]->Acquire();
@@ -191,9 +192,6 @@ void CheckInStaff(int myNumber) {
      * signal passenger with boarding pass
      * 
      */
-    if(myNumber == 0) {
-      printf("%s has %d passengers in their line\n",currentThread->getName(), cisLineLengths[myNumber]);
-    }
 
     if(cisLineLengths[myNumber]==0) {
       // go on break
