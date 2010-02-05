@@ -36,6 +36,7 @@
 #define numberOfCIS 15
 #define numberOfSO 7
 #define numberOfAirlines 3
+#define sicount = 1
 
 struct ticket {
   int passenger_number;
@@ -67,8 +68,30 @@ Lock *siLock[numberOfSO];
 int siLineLengths[numberOfSO];
 bool si_busy[numberOfSO];
 
-void SecurityInspector(int myNumber) {
 
+void SecurityInspector(int myNumber) {
+  while(true) {
+    
+    siLineLock.Acquire();
+    
+    if(siLineLengths[myNumber]>0) {
+      printf("%s: Telling passenger to come through Security\n", currentThread->getName());
+      waitingForSI_C[myNumber]->Signal(&siLineLock);
+    } else {
+      waitingForSI_C[myNumber]->Wait(&siLineLock);
+      printf("%s: Telling passenger to come through Security\n", currentThread->getName());
+      waitingForSI_C[myNumber]->Signal(&siLineLock);
+    }
+    
+    siLock[myNumber]->Acquire();
+    siLineLock.Release();
+    
+    waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
+    waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
+    // Clear passenger and direct to Security Inspector
+    printf("%s: moving Passenger to Boarding: passengers moved: %d \n", currentThread->getName(), sicount);
+    sicount++;
+  }
 }
 
 Condition *waitingForSO_C[numberOfSO];
@@ -309,7 +332,7 @@ void Passenger(int myNumber) {
   myLineNumber = findShortestLine(soLineLengths, 7);
 
   soLineLengths[myLineNumber]++;
-  printf("%s: chose Security %d with length %d\n", currentThread->getName(), myLineNumber, cisLineLengths[myLineNumber]);
+  printf("%s: chose Security %d with length %d\n", currentThread->getName(), myLineNumber, soLineLengths[myLineNumber]);
   waitingForSO_C[myLineNumber]->Signal(&soLineLock);
   waitingForSO_C[myLineNumber]->Wait(&soLineLock);
   
@@ -325,6 +348,32 @@ void Passenger(int myNumber) {
   waitingForTicket_SO_C[myLineNumber]->Wait(soLock[myLineNumber]);
   soLock[myLineNumber]->Release();
 
+  // --------------------------------------------------------
+  // 4. Passenger goes to see Airport Security Inspector
+  //
+  //
+  // --------------------------------------------------------
+  
+  siLineLock.Acquire();
+  
+  myLineNumber = findShortestLine(siLineLengths, 7);
+
+  siLineLengths[myLineNumber]++;
+  printf("%s: chose SInspect %d with length %d\n", currentThread->getName(), myLineNumber, siLineLengths[myLineNumber]);
+  waitingForSI_C[myLineNumber]->Signal(&siLineLock);
+  waitingForSI_C[myLineNumber]->Wait(&siLineLock);
+  
+  siLineLengths[myLineNumber]--;
+  siLineLock.Release();
+
+  siLock[myLineNumber]->Acquire();
+
+ // The Passenger now has the line number, so they should go to sleep and
+  // release the line lock, letting another Passenger search for a line
+  printf("%s giving airline ticket to Security Officer %d\n", currentThread->getName(), myLineNumber);
+  waitingForTicket_SI_C[myLineNumber]->Signal(siLock[myLineNumber]);
+  waitingForTicket_SI_C[myLineNumber]->Wait(siLock[myLineNumber]);
+  siLock[myLineNumber]->Release();
   
 }
 
@@ -449,8 +498,14 @@ void AirportSimulation() {
   // printf("creating al locks\n");
   for(i = 0; i < numberOfSO; i++) {
     name = new char[20];
-    sprintf(name,"cisLock%d",i);
+    sprintf(name,"soLock%d",i);
     soLock[i] = new Lock(name);
+  }
+
+  for(i = 0; i < numberOfSO; i++) {
+    name = new char[20];
+    sprintf(name,"siLock%d",i);
+    siLock[i] = new Lock(name);
   }
   // -------------------------------------------------
   // -------------------------------------------------
