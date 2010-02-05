@@ -67,7 +67,7 @@ void AirportManager(int myNumber) {
     for(int i = 0; i < numberOfAirlines; i++) {
       airlineLock[i]->Acquire();
       if(flightCount[i] = cisFlightCount[i]) {
-	waitingForCallAM_C->Broadcast(airlineLock[i]);
+	waitingForCallAM_C[i]->Broadcast(airlineLock[i]);
       }
       airlineLock[i]->Release();
     }
@@ -409,7 +409,7 @@ void Passenger(int myNumber) {
   flightCount[myFlightNumber]++;
   waitingForCallAM_C[myFlightNumber]->Wait(airlineLock[myFlightNumber]);
   airlineLock[myFlightNumber]->Release();
-  printf("Passenger %d boarding flight %d", currentThread->getName(),myFlightNumber);
+  printf("Passenger %s boarding flight %d", currentThread->getName(),myFlightNumber);
   // FIN
 }
 
