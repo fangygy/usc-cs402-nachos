@@ -24,7 +24,7 @@ int findCISShortestLine(int line[], int start, int stop) {
   // shortest_line[0] is the length of the shortest length 
   // shortest_line[1] is which line is the shortest line (lines start-stop)
   shortest_line[0] = line[start];
-  shortest_line[1] = 0;
+  shortest_line[1] = start;
 
   for(int i = start; i <= stop; i++) {
     if(shortest_line[0] > line[i]) {
