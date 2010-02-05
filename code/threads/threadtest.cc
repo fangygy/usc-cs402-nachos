@@ -84,10 +84,11 @@ void SecurityOfficer(int myNumber) {
     soLineLock.Acquire();
     
     if(soLineLengths[myNumber]>0) {
-      printf("%s: Telling passenger to come through Security", currentThread->getName());
+      printf("%s: Telling passenger to come through Security\n", currentThread->getName());
       waitingForSO_C[myNumber]->Signal(&soLineLock);
     } else {
       waitingForSO_C[myNumber]->Wait(&soLineLock);
+      printf("%s: Telling passenger to come through Security\n", currentThread->getName());
       waitingForSO_C[myNumber]->Signal(&soLineLock);
     }
     
@@ -97,7 +98,7 @@ void SecurityOfficer(int myNumber) {
     waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
     waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]);
     // Clear passenger and direct to Security Inspector
-    printf("%s: moving Passenger to Security Inspector", currentThread->getName());
+    printf("%s: moving Passenger to Security Inspector\n", currentThread->getName());
     
   }
 }
