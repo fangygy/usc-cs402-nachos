@@ -61,6 +61,7 @@ struct baggage {
 } baggage_buffer[numberOfPassengers];
 
 int al_current_passenger_serving[7]; // must be equal to the number of airport liaisons
+int cis_current_passenger_serving[numberOfCIS];
 
 Condition *waitingForCallAM_C[numberOfAirlines];
 Lock *airlineLock[numberOfAirlines];
@@ -299,7 +300,7 @@ void CheckInStaff(int myNumber) {
     if(cisLineLengths[myNumber] > 0) {
       //printf("line %d has more than one passenger\n", myNumber);
       waitingForCIS_C[myNumber]->Signal(cisLineLock[myAirline]);
-      printf("%s telling Passenger to come to counter\n", currentThread->getName());
+      printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
     }
 
     cisLock[myNumber]->Acquire();
@@ -307,7 +308,7 @@ void CheckInStaff(int myNumber) {
     waitingForTicket_CIS_C[myNumber]->Wait(cisLock[myNumber]);
     waitingForTicket_CIS_C[myNumber]->Signal(cisLock[myNumber]);
     
-    printf("%s giving Passenger ticket number and directing them to gate\n", currentThread->getName());
+    printf("%s giving Passenger %d ticket number and directing them to gate\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
     cisFlightCount[myAirline]++;
     cisLock[myNumber]->Release();
     
@@ -414,6 +415,7 @@ void Passenger(int myNumber) {
  
     cisLineLengths[myLineNumber]++;
     onBreakCIS_C[myLineNumber]->Signal(cisLineLock[checkin_counter_number]);
+    cis_current_passenger_serving[myLineNumber] = myNumber;
     printf("%s chose Airline Check In %d with length %d\n", currentThread->getName(), myLineNumber, cisLineLengths[myLineNumber]);
 
    if(myNumber == 14) {
@@ -685,6 +687,7 @@ void AirportSimulation() {
   // Line length for Airline check in staff
   for( i = 0; i < numberOfCIS; i++) {
     cisLineLengths[i] = 0;
+    cis_current_passenger_serving[i] = 0;
   }
 
   // Line length for Airline check in staff
