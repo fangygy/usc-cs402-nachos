@@ -93,6 +93,7 @@ Lock alLineLock("al_LL");
 Lock *alLock[numberOfAL];
 int alLineLengths[numberOfAL];
 bool al_busy[numberOfAL];
+int alPassenger[numberOfAL];
 
 void AirportLiaison(int myNumber) {
   while(true) {
@@ -133,7 +134,8 @@ void AirportLiaison(int myNumber) {
     // The Airport Liaison signals a Passenger, who is asleep waiting for the Airport
     // Liaison to tell them where to go
     waitingForTicket_AL_C[myNumber]->Signal(alLock[myNumber]);
-    printf("%s: Directing Passenger to Airline check in counter\n", currentThread->getName());
+    pass_ticket_buffer[alPassenger[myNumber]].checkin_counter = pass_ticket_buffer[alPassenger[myNumber]].flight_number;  
+    printf("%s: Directing Passenger%d to Airline check in counter %d\n", currentThread->getName(), alPassenger[myNumber], pass_ticket_buffer[alPassenger[myNumber]].checkin_counter);
     alLock[myNumber]->Release();
   }
 }
@@ -183,6 +185,7 @@ void CheckInStaff(int myNumber) {
     cisLineLock.Release();
     waitingForTicket_CIS_C[myNumber]->Wait(cisLock[myNumber]);
     waitingForTicket_CIS_C[myNumber]->Signal(cisLock[myNumber]);
+    
     printf("%s giving Passenger ticket number and directing them to gate\n", currentThread->getName());
     cisLock[myNumber]->Release();
     
@@ -224,6 +227,7 @@ void Passenger(int myNumber) {
   alLineLengths[myLineNumber]--;
 
   // Passenger is told to go to counter, and hands their ticket to Liaison
+  alPassenger[myLineNumber] = myNumber;
   waitingForTicket_AL_C[myLineNumber]->Signal(alLock[myLineNumber]);
   waitingForTicket_AL_C[myLineNumber]->Wait(alLock[myLineNumber]);
 
@@ -421,7 +425,7 @@ void AirportSimulation() {
   for( i=0; i < 20; i++) {
     // Create a ticket for the passenger
     pass_ticket_buffer[i].passenger_number = i;
-    pass_ticket_buffer[i].flight_number = 1;
+    pass_ticket_buffer[i].flight_number = (i%3);
     pass_ticket_buffer[i].checkin_counter = -1;
     name = new char [20]; 
     sprintf(name,"Passenger%d",i);
