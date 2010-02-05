@@ -378,6 +378,7 @@ void Passenger(int myNumber) {
   
   if(amExecutive) {
     execLineLock[checkin_counter_number]->Acquire();
+    printf("Executive %s standing in line %d\n",currentThread->getName(),checkin_counter_number);
     execLineLengths[checkin_counter_number]++;
     execLineCV[checkin_counter_number]->Wait(execLineLock[checkin_counter_number]);
 
@@ -390,7 +391,7 @@ void Passenger(int myNumber) {
 
     // Tell CIS that passenger is ready
     // execLineCV[checkin_counter_number]->Signal(execLineLock[checkin_counter_number]);
-    printf("exec %s chose counter %d \n", currentThread->getName(), myLineNumber);
+    printf("Executive %s chose counter %d \n", currentThread->getName(), myLineNumber);
     // Waiting for CIS to give them boarding pass
     // execLineCV[checkin_counter_number]->Wait(execLineLock[checkin_counter_number]);
     execLineLengths[checkin_counter_number]--;
