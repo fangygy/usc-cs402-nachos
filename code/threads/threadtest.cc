@@ -57,8 +57,9 @@ int al_current_passenger_serving[7]; // must be equal to the number of airport l
 
 Condition *waitingForCallAM_C[numberOfAirlines];
 Lock *airlineLock[numberOfAirlines];
-int flightCount[3];
-int cisFlightCount[3];
+int flightCount[numberOfAirlines];
+int cisFlightCount[numberOfAirlines];
+bool alreadyCalled[numberOfAirlines];
 
 void AirportManager(int myNumber) {
     
@@ -66,12 +67,19 @@ void AirportManager(int myNumber) {
     // if all passengers are accounted for
     // issue broadcast
    
+    if(alreadyCalled[0]&&alreadyCalled[1]&&alreadyCalled[2]) {
+      currentThread->Sleep();
+    }
+
     for(int i = 0; i < numberOfAirlines; i++) {
       airlineLock[i]->Acquire();
       printf("flight %d count %d , cisflightcount %d\n",i,flightCount[i],cisFlightCount[i]); 
-      if(flightCount[i] == cisFlightCount[i]) {
+      if(!alreadyCalled[i]&&(flightCount[i] == cisFlightCount[i])) {
 	printf("issuing boarding call for flight %d \n",i);
 	waitingForCallAM_C[i]->Broadcast(airlineLock[i]);
+	alreadyCalled[i] = true;
+      } else {
+	
       }
       airlineLock[i]->Release();
     }
@@ -601,6 +609,10 @@ void AirportSimulation() {
   for(i=0; i < numberOfAirlines; i++) {
     flightCount[i]=0;
     cisFlightCount[i]=0;
+  }
+
+  for(i = 0; i < numberOfAirlines; i++) {
+    alreadyCalled[i] = false; 
   }
 
   // Create the 20 passenger for our airport simulation
