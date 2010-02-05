@@ -316,6 +316,14 @@ void Passenger(int myNumber) {
   soLineLock.Release();
 
   soLock[myLineNumber]->Acquire();
+
+ // The Passenger now has the line number, so they should go to sleep and
+  // release the line lock, letting another Passenger search for a line
+  printf("%s giving airline ticket to Security Officer %d\n", currentThread->getName(), myLineNumber);
+  waitingForTicket_SO_C[myLineNumber]->Signal(soLock[myLineNumber]);
+  waitingForTicket_SO_C[myLineNumber]->Wait(soLock[myLineNumber]);
+  soLock[myLineNumber]->Release();
+
   
 }
 
