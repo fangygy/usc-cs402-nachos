@@ -297,16 +297,17 @@ void CheckInStaff(int myNumber) {
     // execLineLock[myAirline]->Release();
     // execCISLock[myNumber]->Release();
 
-    cisLineLock[myAirline]->Acquire();
+    // cisLineLock[myAirline]->Acquire();
     if(myNumber == 11) {
-      printf("!!!!!!!!!!AIRLINE CHECK IN STAFF 14 HAS %d passengers\n",cisLineLengths[myNumber]); 
+      printf("!!!!!!!!!!AIRLINE CHECK IN STAFF 11 HAS %d passengers\n",cisLineLengths[myNumber]); 
     }
 
     if(cisLineLengths[myNumber] > 0) {
       //printf("line %d has more than one passenger\n", myNumber);
+      cisLineLock[myAirline]->Acquire();
       waitingForCIS_C[myNumber]->Signal(cisLineLock[myAirline]);
       printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
-    }
+    
 
     cisLock[myNumber]->Acquire();
     cisLineLock[myAirline]->Release();
@@ -316,7 +317,7 @@ void CheckInStaff(int myNumber) {
     printf("%s giving Passenger %d ticket number and directing them to gate\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
     cisFlightCount[myAirline]++;
     cisLock[myNumber]->Release();
-    
+    }
   }
 }
 
