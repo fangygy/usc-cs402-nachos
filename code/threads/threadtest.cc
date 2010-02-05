@@ -39,6 +39,7 @@
 
 int sicount = 1;
 int socount = 1;
+int pass_si_count = 1;
 
 struct ticket {
   int passenger_number;
@@ -364,6 +365,8 @@ void Passenger(int myNumber) {
 
   siLineLengths[myLineNumber]++;
   printf("%s: chose SInspect %d with length %d\n", currentThread->getName(), myLineNumber, siLineLengths[myLineNumber]);
+  printf("-----Number of Passengers chosen inspector: %d\n",pass_si_count);
+  pass_si_count++;
   waitingForSI_C[myLineNumber]->Signal(&siLineLock);
   waitingForSI_C[myLineNumber]->Wait(&siLineLock);
   
