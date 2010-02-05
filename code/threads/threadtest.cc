@@ -110,8 +110,8 @@ void SecurityInspector(int myNumber) {
     waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
     waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
     // Clear passenger and direct to Security Inspector
-    printf("%s: moving Passenger to Boarding: passengers moved: %d \n", currentThread->getName(), sicount);
     sicount++;
+    printf("%s: moving Passenger to Boarding: passengers moved: %d \n", currentThread->getName(), sicount);
     siLock[myNumber]->Release();
   }
 }
@@ -143,8 +143,9 @@ void SecurityOfficer(int myNumber) {
     waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
     waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]);
     // Clear passenger and direct to Security Inspector
-    printf("%s: moving Passenger to Security Inspector: number of Passengers moved: %d\n", currentThread->getName(),socount);
     socount++;
+    printf("%s: moving Passenger to Security Inspector: number of Passengers moved: %d\n", currentThread->getName(),socount);
+   
     soLock[myNumber]->Release();
   }
 }
