@@ -9,6 +9,8 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
+// Authors Alex Lee
+
 #include "copyright.h"
 #include "system.h"
 #include "functions.h"
