@@ -263,6 +263,9 @@ void Passenger(int myNumber) {
   // a time can be looking for the shortest line 
   int checkin_counter_number = pass_ticket_buffer[myNumber].checkin_counter;
   
+  if(myNumber == 7) {
+    printf("passenger %d has check in counter number: %d\n",myNumber,checkin_counter_number);
+  }
   cisLineLock[checkin_counter_number]->Acquire();
 
   int start, stop;
@@ -277,11 +280,10 @@ void Passenger(int myNumber) {
   onBreakCIS_C[myLineNumber]->Signal(cisLineLock[checkin_counter_number]);
   printf("%s chose Airline Check In %d with length %d\n", currentThread->getName(), myLineNumber, cisLineLengths[myLineNumber]);
   waitingForCIS_C[myLineNumber]->Wait(cisLineLock[checkin_counter_number]);
-  cisLineLock[checkin_counter_number]->Release();
   cisLineLengths[myLineNumber]--;
 
   printf("%s going to see Airline Check In Staff %d\n",currentThread->getName(), myLineNumber); 
-  // cisLineLock[checkin_counter_number]->Release();
+  cisLineLock[checkin_counter_number]->Release();
   cisLock[myLineNumber]->Acquire();
   
 
