@@ -365,8 +365,7 @@ void Passenger(int myNumber) {
 
   siLineLengths[myLineNumber]++;
   printf("%s: chose SInspect %d with length %d\n", currentThread->getName(), myLineNumber, siLineLengths[myLineNumber]);
-  printf("-----Number of Passengers chosen inspector: %d\n",pass_si_count);
-  pass_si_count++;
+
   waitingForSI_C[myLineNumber]->Signal(&siLineLock);
   waitingForSI_C[myLineNumber]->Wait(&siLineLock);
   
@@ -377,10 +376,12 @@ void Passenger(int myNumber) {
 
  // The Passenger now has the line number, so they should go to sleep and
   // release the line lock, letting another Passenger search for a line
-  printf("%s giving airline ticket to Security Officer %d\n", currentThread->getName(), myLineNumber);
+  printf("%s giving airline ticket to Security Inspector %d\n", currentThread->getName(), myLineNumber);
   waitingForTicket_SI_C[myLineNumber]->Signal(siLock[myLineNumber]);
   waitingForTicket_SI_C[myLineNumber]->Wait(siLock[myLineNumber]);
   siLock[myLineNumber]->Release();
+  printf("-----Number of Passengers chosen inspector: %d\n",pass_si_count);
+  pass_si_count++;
   
 }
 
