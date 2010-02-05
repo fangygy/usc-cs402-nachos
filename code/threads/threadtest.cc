@@ -70,7 +70,7 @@ bool alreadyCalled[numberOfAirlines];
 Condition goToSleep("goToSleep");
 
 void AirportManager(int myNumber) {
-  /*  
+    
   while(true) {
     // if all passengers are accounted for
     // issue broadcast
@@ -93,7 +93,7 @@ void AirportManager(int myNumber) {
     
     currentThread->Yield();
   }
-  */
+  
   
 }
 
