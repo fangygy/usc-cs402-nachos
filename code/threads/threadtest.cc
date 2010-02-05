@@ -61,7 +61,7 @@ int flightCount[3];
 int cisFlightCount[3];
 
 void AirportManager(int myNumber) {
-  /*
+  
   while(true) {
     // if all passengers are accounted for
     // issue broadcast
@@ -74,7 +74,7 @@ void AirportManager(int myNumber) {
     }
     currentThread->Yield();
   }
-  */
+  
 }
 
 void CargoHandler(int myNumber) {
@@ -256,7 +256,7 @@ void CheckInStaff(int myNumber) {
     waitingForTicket_CIS_C[myNumber]->Signal(cisLock[myNumber]);
     
     printf("%s giving Passenger ticket number and directing them to gate\n", currentThread->getName());
-    //cisFlightCount[myNumber]++;
+    cisFlightCount[myAirline]++;
     cisLock[myNumber]->Release();
     
   }
@@ -407,14 +407,14 @@ void Passenger(int myNumber) {
   //
   //
   // --------------------------------------------------------
-  /*
+  
   myFlightNumber = boarding_pass_buffer[myNumber].flight_number;
   airlineLock[myFlightNumber]->Acquire();
   flightCount[myFlightNumber]++;
   waitingForCallAM_C[myFlightNumber]->Wait(airlineLock[myFlightNumber]);
   airlineLock[myFlightNumber]->Release();
   printf("Passenger %s boarding flight %d", currentThread->getName(),myFlightNumber);
-  */
+  
   // FIN
   
 }
@@ -649,12 +649,12 @@ void AirportSimulation() {
     t = new Thread(name);
     t->Fork((VoidFunctionPtr)SecurityInspector,i);
   }
-  /********
+
   name = new char[20];
   sprintf(name, "AirportManager%d",1);
   t = new Thread(name);
   t->Fork((VoidFunctionPtr)AirportManager,1);
-  */
+ 
 }
 
 
