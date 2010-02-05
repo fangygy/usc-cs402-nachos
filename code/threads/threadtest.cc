@@ -74,7 +74,7 @@ void AirportManager(int myNumber) {
     for(int i = 0; i < numberOfAirlines; i++) {
       airlineLock[i]->Acquire();
       printf("flight %d count %d , cisflightcount %d\n",i,flightCount[i],cisFlightCount[i]); 
-      if(!alreadyCalled[i]&&(flightCount[i] == cisFlightCount[i])) {
+      if(!alreadyCalled[i]&&(flightCount[i] == cisFlightCount[i])&&(flightCount[i]!=0)&&(cisFlightCount[i]!=0)) {
 	printf("issuing boarding call for flight %d \n",i);
 	waitingForCallAM_C[i]->Broadcast(airlineLock[i]);
 	alreadyCalled[i] = true;
