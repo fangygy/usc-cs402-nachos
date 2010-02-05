@@ -90,12 +90,12 @@ void SecurityOfficer(int myNumber) {
     
     soLock[myNumber]->Acquire();
     soLineLock.Release();
-    /*
+    
     waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
     waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]);
     // Clear passenger and direct to Security Inspector
     printf("%s: moving Passenger to Security Inspector", currentThread->getName());
-    */
+    
   }
 }
 
@@ -302,7 +302,7 @@ void Passenger(int myNumber) {
   //
   //
   // --------------------------------------------------------
-  /*
+  
   soLineLock.Acquire();
   
   myLineNumber = findShortestLine(soLineLengths, 7);
@@ -315,7 +315,7 @@ void Passenger(int myNumber) {
   soLineLock.Release();
 
   soLock[myLineNumber]->Acquire();
-  */
+  
 }
 
 void AirportSimulation() {
@@ -434,6 +434,15 @@ void AirportSimulation() {
   }
   // -------------------------------------------------
 
+  // -------------------------------------------------
+  // Initialize Security Officer check in staff Locks
+  // printf("creating al locks\n");
+  for(i = 0; i < numberOfSO; i++) {
+    name = new char[20];
+    sprintf(name,"cisLock%d",i);
+    soLock[i] = new Lock(name);
+  }
+  // -------------------------------------------------
   // -------------------------------------------------
   // Initialize the Line Lengths 
 
