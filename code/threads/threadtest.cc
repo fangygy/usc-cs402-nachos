@@ -81,7 +81,7 @@ bool so_busy[numberOfSO];
 void SecurityOfficer(int myNumber) {
   while(true) {
     soLineLock.Acquire();
-    if(soLineLengths[myNumber]) {
+    if(soLineLengths[myNumber]>0) {
       printf("%s: Telling passenger to come through Security", currentThread->getName());
       waitingForSO_C[myNumber]->Signal(&soLineLock);
     }
@@ -265,9 +265,6 @@ void Passenger(int myNumber) {
   // a time can be looking for the shortest line 
   int checkin_counter_number = pass_ticket_buffer[myNumber].checkin_counter;
   
-  if(myNumber == 7) {
-    printf("passenger %d has check in counter number: %d\n",myNumber,checkin_counter_number);
-  }
   cisLineLock[checkin_counter_number]->Acquire();
 
   int start, stop;
@@ -275,9 +272,6 @@ void Passenger(int myNumber) {
   stop  = start + (numberOfCIS/3) - 1;
   // Figure out which 
 
-  if(myNumber == 7) {
-    printf("passenger 7 chose start %d stop %d \n",start,stop);
-  }
   // Set the Passenger's line number
   myLineNumber = findCISShortestLine(cisLineLengths,start,stop);
 
@@ -325,13 +319,11 @@ void AirportSimulation() {
   char *name;
   int i; 
 
-
   /*
    * Needs Airlines
    * Bags and weights
    *
    */
-
 
   printf("Starting Airport Simulation\n");
 
@@ -497,7 +489,7 @@ void AirportSimulation() {
     t = new Thread(name);
     t->Fork((VoidFunctionPtr)CheckInStaff,i);
   }
-  /*
+  
   // Create the Security Officer Staff
   for(i=0; i < numberOfSO; i++) {
     name = new char[20];
@@ -505,7 +497,7 @@ void AirportSimulation() {
     t = new Thread(name);
     t->Fork((VoidFunctionPtr)SecurityOfficer,i);
   }
-  */
+  
   // Create the Airline Check In Staff
   for(i=0; i < numberOfSO; i++) {
     name = new char[20];
