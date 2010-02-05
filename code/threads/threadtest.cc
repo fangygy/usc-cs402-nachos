@@ -55,19 +55,19 @@ Condition *waitingForSI_C[numberOfSO];
 Condition *waitingForTicket_SI_C[numberOfSO];
 Lock siLineLock("al_LL");
 Lock *siLock[numberOfSO];
-int siLineLengths[nuberOfSO];
+int siLineLengths[numberOfSO];
 bool si_busy[numberOfSO];
 
 void SecurityInspector(int myNumber) {
 
 }
 
-Condition *waitingForSO_C[7];
-Condition *waitingForTicket_SO_C[7];
+Condition *waitingForSO_C[numberOfSO];
+Condition *waitingForTicket_SO_C[numberOfSO];
 Lock soLineLock("al_LL");
-Lock *soLock[7];
-int soLineLengths[7];
-bool so_busy[7];
+Lock *soLock[numberOfSO];
+int soLineLengths[numberOfSO];
+bool so_busy[numberOfSO];
 
 void SecurityOfficer(int myNumber) {
   while(true) {
@@ -87,12 +87,12 @@ void SecurityOfficer(int myNumber) {
 }
 
 // Objects for Airport Liaison
-Condition *waitingForAL_C[7];
-Condition *waitingForTicket_AL_C[7];
+Condition *waitingForAL_C[numberOfAL];
+Condition *waitingForTicket_AL_C[numberOfAL];
 Lock alLineLock("al_LL");
-Lock *alLock[7];
-int alLineLengths[7];
-bool al_busy[7];
+Lock *alLock[numberOfAL];
+int alLineLengths[numberOfAL];
+bool al_busy[numberOfAL];
 
 void AirportLiaison(int myNumber) {
   while(true) {
@@ -140,13 +140,13 @@ void AirportLiaison(int myNumber) {
 
 
 // Objects for Check In Staff
-Condition *waitingForCIS_C[5];
-Condition *waitingForTicket_CIS_C[5];
-Condition *onBreakCIS_C[5];
+Condition *waitingForCIS_C[numberOfCIS];
+Condition *waitingForTicket_CIS_C[numberOfCIS];
+Condition *onBreakCIS_C[numberOfCIS];
 Lock cisLineLock("cis_LL");
-Lock *cisLock[5];
-int cisLineLengths[5];
-bool cis_busy[5];
+Lock *cisLock[numberOfCIS];
+int cisLineLengths[numberOfCIS];
+bool cis_busy[numberOfCIS];
 
 
 void CheckInStaff(int myNumber) {
