@@ -328,7 +328,7 @@ void Passenger(int myNumber) {
   bool amExecutive;
   amExecutive = pass_ticket_buffer[myNumber].executive;
   if(amExecutive)
-    printf("Passenger %d is an executive passenger",myNumber);
+    printf("Passenger %d is an executive passenger\n",myNumber);
 
   // Set the Passenger's Line number
   printf("%s: Searching for the shortest line\n", currentThread->getName());
@@ -387,7 +387,7 @@ void Passenger(int myNumber) {
     execLineCV[checkin_counter_number]->Wait(execLineLock[checkin_counter_number]);
     // Tell CIS that passenger is ready
     execLineCV[checkin_counter_number]->Signal(execLineLock[checkin_counter_number]);
-    printf("exec %s is chose counter %d", currentThread->getName(), myLineNumber);
+    printf("exec %s chose counter %d \n", currentThread->getName(), myLineNumber);
     // Waiting for CIS to give them boarding pass
     execLineCV[checkin_counter_number]->Wait(execLineLock[checkin_counter_number]);
     execLineLengths[checkin_counter_number]--;
