@@ -273,6 +273,9 @@ void Passenger(int myNumber) {
   stop  = start + (numberOfCIS/3) - 1;
   // Figure out which 
 
+  if(myNumber == 7) {
+    printf("passenger 7 chose start %d stop %d \n",start,stop);
+  }
   // Set the Passenger's line number
   myLineNumber = findCISShortestLine(cisLineLengths,start,stop);
 
