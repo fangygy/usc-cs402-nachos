@@ -280,17 +280,18 @@ void CheckInStaff(int myNumber) {
       // Tell an executive that I am ready 
       execLineCV[myAirline]->Signal(execLineLock[myAirline]);
       // Now waiting for the executive to signal 
-      execLineCV[myAirline]->Wait(execLineLock[myAirline]);
-      // give boarding pass
+      // execLineCV[myAirline]->Wait(execLineLock[myAirline]);
     
       execCISLock[myNumber]->Acquire();
       execLineLock[myAirline]->Release();
+
       waitingForExec_CIS_C[myNumber]->Wait(execCISLock[myNumber]);
       waitingForExec_CIS_C[myNumber]->Signal(execCISLock[myNumber]);
       printf("%s giving exec passenger boarding pass",currentThread->getName());
       cisFlightCount[myAirline]++;
       execCISLock[myNumber]->Release();
     }
+
     cisLineLock[myAirline]->Acquire();
     if(cisLineLengths[myNumber] > 0) {
       //printf("line %d has more than one passenger\n", myNumber);
@@ -387,7 +388,7 @@ void Passenger(int myNumber) {
     }
 
     // Tell CIS that passenger is ready
-    execLineCV[checkin_counter_number]->Signal(execLineLock[checkin_counter_number]);
+    // execLineCV[checkin_counter_number]->Signal(execLineLock[checkin_counter_number]);
     printf("exec %s chose counter %d \n", currentThread->getName(), myLineNumber);
     // Waiting for CIS to give them boarding pass
     // execLineCV[checkin_counter_number]->Wait(execLineLock[checkin_counter_number]);
