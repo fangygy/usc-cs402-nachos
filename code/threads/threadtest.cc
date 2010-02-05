@@ -186,14 +186,14 @@ void CheckInStaff(int myNumber) {
     
     if(cisLineLengths[myNumber]==0) {
       // go on break
-      onBreakCIS_C[myNumber]->Wait(&cisLineLock);
+      onBreakCIS_C[myNumber]->Wait(cisLineLock[myAirline]);
     }
     
     // If executive line > 0
     // Help the executives
     if(cisLineLengths[myNumber] > 0) {
       //printf("line %d has more than one passenger\n", myNumber);
-      waitingForCIS_C[myNumber]->Signal(&cisLineLock);
+      waitingForCIS_C[myNumber]->Signal(cisLineLock[myAirline]);
       printf("%s telling Passenger to come to counter\n", currentThread->getName());
     }
 
@@ -270,9 +270,9 @@ void Passenger(int myNumber) {
 
  
   cisLineLengths[myLineNumber]++;
-  onBreakCIS_C[myLineNumber]->Signal(&cisLineLock[checkin_counter_number]);
+  onBreakCIS_C[myLineNumber]->Signal(cisLineLock[checkin_counter_number]);
   printf("%s chose Airline Check In %d with length %d\n", currentThread->getName(), myLineNumber, cisLineLengths[myLineNumber]);
-  waitingForCIS_C[myLineNumber]->Wait(&cisLineLock[checkin_counter_number]);
+  waitingForCIS_C[myLineNumber]->Wait(cisLineLock[checkin_counter_number]);
   cisLineLengths[myLineNumber]--;
 
   printf("%s going to see Airline Check In Staff %d\n",currentThread->getName(), myLineNumber); 
