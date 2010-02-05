@@ -71,7 +71,7 @@ void AirportManager(int myNumber) {
     for(int i = 0; i < numberOfAirlines; i++) {
       airlineLock[i]->Acquire();
       if(alreadyCalled[0]&&alreadyCalled[1]&&alreadyCalled[2]) {
-	goToSleep->Wait(airlineLock[i]);
+	goToSleep.Wait(airlineLock[i]);
       }
       printf("flight %d count %d , cisflightcount %d\n",i,flightCount[i],cisFlightCount[i]); 
       if(!alreadyCalled[i]&&(flightCount[i] == cisFlightCount[i])&&(flightCount[i]!=0)&&(cisFlightCount[i]!=0)) {
