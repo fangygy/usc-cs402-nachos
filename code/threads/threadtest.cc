@@ -376,7 +376,7 @@ void Passenger(int myNumber) {
   //
   //
   // --------------------------------------------------------
-  /*
+  
   siLineLock.Acquire();
   
   myLineNumber = findShortestLine(siLineLengths, 7);
@@ -389,7 +389,7 @@ void Passenger(int myNumber) {
   
   siLineLengths[myLineNumber]--;
   siLineLock.Release();
-
+  /*
   siLock[myLineNumber]->Acquire();
 
  // The Passenger now has the line number, so they should go to sleep and
