@@ -60,6 +60,7 @@ Lock *airlineLock[numberOfAirlines];
 int flightCount[numberOfAirlines];
 int cisFlightCount[numberOfAirlines];
 bool alreadyCalled[numberOfAirlines];
+Condition goToSleep("goToSleep");
 
 void AirportManager(int myNumber) {
     
@@ -67,12 +68,11 @@ void AirportManager(int myNumber) {
     // if all passengers are accounted for
     // issue broadcast
    
-    if(alreadyCalled[0]&&alreadyCalled[1]&&alreadyCalled[2]) {
-      currentThread->Sleep();
-    }
-
     for(int i = 0; i < numberOfAirlines; i++) {
       airlineLock[i]->Acquire();
+      if(alreadyCalled[0]&&alreadyCalled[1]&&alreadyCalled[2]) {
+	goToSleep->Wait(airlineLock[i]);
+      }
       printf("flight %d count %d , cisflightcount %d\n",i,flightCount[i],cisFlightCount[i]); 
       if(!alreadyCalled[i]&&(flightCount[i] == cisFlightCount[i])&&(flightCount[i]!=0)&&(cisFlightCount[i]!=0)) {
 	printf("issuing boarding call for flight %d \n",i);
@@ -427,7 +427,7 @@ void Passenger(int myNumber) {
   flightCount[myFlightNumber]++;
   waitingForCallAM_C[myFlightNumber]->Wait(airlineLock[myFlightNumber]);
   airlineLock[myFlightNumber]->Release();
-  printf("Passenger %s boarding flight %d", currentThread->getName(),myFlightNumber);
+  printf("Passenger %s boarding flight %d\n", currentThread->getName(),myFlightNumber);
   
   // FIN
   
