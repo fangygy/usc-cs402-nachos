@@ -87,10 +87,10 @@ void SecurityOfficer(int myNumber) {
       printf("%s: Telling passenger to come through Security", currentThread->getName());
       waitingForSO_C[myNumber]->Signal(&soLineLock);
     }
-    /*
+    
     soLock[myNumber]->Acquire();
     soLineLock.Release();
-
+    /*
     waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
     waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]);
     // Clear passenger and direct to Security Inspector
