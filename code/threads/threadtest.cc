@@ -389,7 +389,7 @@ void Passenger(int myNumber) {
     execLineCV[checkin_counter_number]->Signal(execLineLock[checkin_counter_number]);
     printf("exec %s chose counter %d \n", currentThread->getName(), myLineNumber);
     // Waiting for CIS to give them boarding pass
-    execLineCV[checkin_counter_number]->Wait(execLineLock[checkin_counter_number]);
+    // execLineCV[checkin_counter_number]->Wait(execLineLock[checkin_counter_number]);
     execLineLengths[checkin_counter_number]--;
   
     execCISLock[myLineNumber]->Acquire();
