@@ -113,7 +113,7 @@ void AirportManager(int myNumber) {
 Condition onBreakCH("ch_cv");
 Lock conveyorBelt_Lock('cb_lock');
 
-Lock *airlineLock[numberOfAirlines];
+Lock *chairlineLock[numberOfAirlines];
 
 struct conveyorBelt {
   int number_of_bags;
