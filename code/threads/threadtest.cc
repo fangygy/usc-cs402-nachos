@@ -75,7 +75,8 @@ int flightCount[numberOfAirlines];
 int cisFlightCount[numberOfAirlines];
 bool alreadyCalled[numberOfAirlines];
 Condition goToSleep("goToSleep");
-int totalweight = 0;
+
+int totalweight = 0; // for debugging
 void AirportManager(int myNumber) {
     
   while(true) {
@@ -109,10 +110,27 @@ void AirportManager(int myNumber) {
   }
 }
 
+Condition onBreakCH("ch_cv");
+Lock conveyorBelt('cb_lock');
+
+Lock *airlineLock[numberOfAirlines];
+
+struct conveyorBelt {
+  int number_of_bags;
+  int airline_code;
+} conveyorBelt[numberOfPassengers];
+
 int cargoHandlerBaggageCount[numberOfAirlines];
 
 void CargoHandler(int myNumber) {
+  while(true) {
+    conveyorBelt.Acquire();
+    /*
 
+     */
+    conveyorBelt.Release();
+
+  }
 }
 
 Condition *waitingForSI_C[numberOfSO];
