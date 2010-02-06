@@ -103,7 +103,7 @@ void AirportManager(int myNumber) {
       if(conveyorBelt[i].number_of_bags == 0) {
 	// check next bag
       } else {
-	onBreakCH->Signal(&conveyorBeltLock);
+	onBreakCH.Signal(&conveyorBeltLock);
 	break;
       }
     }
@@ -156,7 +156,7 @@ void CargoHandler(int myNumber) {
 
      */
     if(onBreak_CH) {
-      onBreakCH->Wait(&conveyorBelt_Lock);
+      onBreakCH.Wait(&conveyorBelt_Lock);
     }
     for(int i = 0; i < numberOfPassengers; i++) {
       if(conveyorBelt[i].number_of_bags == 0) {
