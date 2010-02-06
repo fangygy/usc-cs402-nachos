@@ -100,12 +100,14 @@ void AirportManager(int myNumber) {
     // if all passengers are accounted for
     // issue broadcast
     conveyorBelt_Lock.Acquire();
-    for(int i = 0; i < numberOfPassengers; i++) {
-      if(conveyorBelt[i].number_of_bags == 0) {
-	// check next bag
-      } else {
-	onBreakCH.Signal(&conveyorBelt_Lock);
-	break;
+    if(onBreak_CH) {
+      for(int i = 0; i < numberOfPassengers; i++) {
+	if(conveyorBelt[i].number_of_bags == 0) {
+	  // check next bag
+	} else {
+	  onBreakCH.Signal(&conveyorBelt_Lock);
+	  break;
+	}
       }
     }
     conveyorBelt_Lock.Release();
@@ -137,8 +139,6 @@ void AirportManager(int myNumber) {
   }
 }
 
-
-
 void CargoHandler(int myNumber) {
   while(true) {
     conveyorBelt_Lock.Acquire();
@@ -162,16 +162,20 @@ void CargoHandler(int myNumber) {
     for(int i = 0; i < numberOfPassengers; i++) {
       if(conveyorBelt[i].number_of_bags == 0) {
 	// check next bag
-      } else {
-	// Cargo Handler Found a bag
-	cargoHandlerBaggageCount[conveyorBelt[i].airline_code]+=conveyorBelt[i].number_of_bags;
-	conveyorBelt[i].number_of_bags = 0;
-	conveyorBelt[i].airline_code = -1;
-	conveyorBelt_Lock.Release();
+      }
+      if(i == (numberOfPassengers-1)) {
+	onBreak_CH = true;
 	break;
       }
+      // Cargo Handler Found a bag
+      cargoHandlerBaggageCount[conveyorBelt[i].airline_code]+=conveyorBelt[i].number_of_bags;
+      conveyorBelt[i].number_of_bags = 0;
+      conveyorBelt[i].airline_code = -1;
+      conveyorBelt_Lock.Release();
+      break;
+      
     }
-    onBreak_CH = true;
+    // onBreak_CH = true;
     conveyorBelt_Lock.Release();
 
   }
