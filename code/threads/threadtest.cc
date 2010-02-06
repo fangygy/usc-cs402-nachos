@@ -339,16 +339,19 @@ void CheckInStaff(int myNumber) {
       //cisLineLock[myAirline]->Acquire();
       waitingForCIS_C[myNumber]->Signal(cisLineLock[myAirline]);
       printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
-    }
+    
 
       cisLock[myNumber]->Acquire();
       cisLineLock[myAirline]->Release();
       waitingForTicket_CIS_C[myNumber]->Wait(cisLock[myNumber]);
       waitingForTicket_CIS_C[myNumber]->Signal(cisLock[myNumber]);
-      
+      int flight_number = pass_ticket_buffer[cisPassenger[myNumber]].flight_number;   
+      // Add these bags to the total count fort a given airline, specified by Flight Number
+      cis_baggage_buffer[flight_number] += baggage_buffer[cisPassenger[myNumber]].numberOfBags;
       printf("%s giving Passenger %d ticket number and directing them to gate\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
       cisFlightCount[myAirline]++;
       cisPassengerCount++;
+    }
       cisLock[myNumber]->Release();
   
   }
