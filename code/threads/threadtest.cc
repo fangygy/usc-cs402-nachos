@@ -60,6 +60,11 @@ struct baggage {
   int passenger_number;
 } baggage_buffer[numberOfPassengers];
 
+int passenger_baggage_buffer[numberOfPassengers];
+int al_baggage_buffer[numberOfPassengers];
+int cis_baggage_buffer[numberOfPassengers];
+int al_flight_baggage_buffer[numberOfAirlines];
+int cis_flight_baggage_buffer[numberOfAirlines];
 int al_current_passenger_serving[7]; // must be equal to the number of airport liaisons
 int cis_current_passenger_serving[numberOfCIS];
 
@@ -732,6 +737,10 @@ void AirportSimulation() {
       pass_ticket_buffer[i].executive = false;
     }
     pass_ticket_buffer[i].checkin_counter = -1;
+    if(i%2==0)
+      passenger_baggage_buffer[i] = 2;
+    else
+      passenger_baggage_buffer[i] = 3;
     boarding_pass_buffer[i].passenger_number = i;
     boarding_pass_buffer[i].flight_number = (i%3);
     boarding_pass_buffer[i].seat_number = -1;
