@@ -65,7 +65,7 @@ struct baggage {
 // int cis_baggage_buffer[numberOfPassengers];
 
 int al_baggage_buffer[numberOfAirlines];
-int cis_flight_baggage_buffer[numberOfAirlines];
+int cis_baggage_buffer[numberOfAirlines];
 int al_current_passenger_serving[7]; // must be equal to the number of airport liaisons
 int cis_current_passenger_serving[numberOfCIS];
 
