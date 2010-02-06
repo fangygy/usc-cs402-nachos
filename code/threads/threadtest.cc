@@ -337,7 +337,7 @@ bool waitingForExec[numberOfCIS];
 // Use this to keep track of passenger
 int cisPassenger[numberOfCIS];
 
-int seatNumbers[numberOfAirlines];
+int seatNumber[numberOfAirlines];
 
 int cisPassengerCount = 0;
 int cisBaggageWeight[numberOfAirlines]; // keep track of the weight for each airline
@@ -431,7 +431,7 @@ void CheckInStaff(int myNumber) {
 
       // Give the Passenger a seat number
       boarding_pass_buffer[cisPassenger[myNumber]].seat_number = seatNumber[flight_number]++;
-
+      printf("Passenger %d has seat number %d\n",cisPassenger[myNumber],seatNumber[flight_number]-1);
       // Add these bags to the total count fort a given airline, specified by Flight Number
       cis_baggage_buffer[flight_number] += baggage_buffer[cisPassenger[myNumber]].weight;
       
