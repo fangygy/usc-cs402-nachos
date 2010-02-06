@@ -111,7 +111,7 @@ void AirportManager(int myNumber) {
 }
 
 Condition onBreakCH("ch_cv");
-Lock conveyorBelt('cb_lock');
+Lock conveyorBelt_Lock('cb_lock');
 
 Lock *airlineLock[numberOfAirlines];
 
@@ -124,11 +124,11 @@ int cargoHandlerBaggageCount[numberOfAirlines];
 
 void CargoHandler(int myNumber) {
   while(true) {
-    conveyorBelt.Acquire();
+    conveyorBelt_Lock.Acquire();
     /*
 
      */
-    conveyorBelt.Release();
+    conveyorBelt_Lock.Release();
 
   }
 }
