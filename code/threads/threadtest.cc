@@ -217,6 +217,10 @@ void AirportLiaison(int myNumber) {
     // Ready Queue 
     waitingForTicket_AL_C[myNumber]->Wait(alLock[myNumber]);
     
+    // Count the passenger's baggage
+    al_baggage_buffer[alPassenger[myNumber]] = passenger_baggage_buffer[alPassenger[myNumber]];
+    printf("%s takes note that Passenger %d has %d pieces of luggage\n",currentThread->getName(),alPassenger[myNumber],passenger_baggage_buffer[alPassenger[myNumber]]);
+
     // The Airport Liaison signals a Passenger, who is asleep waiting for the Airport
     // Liaison to tell them where to go
     waitingForTicket_AL_C[myNumber]->Signal(alLock[myNumber]);
