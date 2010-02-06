@@ -64,7 +64,7 @@ struct baggage {
 // int passenger_baggage_buffer[numberOfPassengers];
 // int al_baggage_buffer[numberOfPassengers];
 // int cis_baggage_buffer[numberOfPassengers];
-int al_flight_baggage_buffer[numberOfAirlines];
+int al_baggage_buffer[numberOfAirlines];
 int cis_flight_baggage_buffer[numberOfAirlines];
 int al_current_passenger_serving[7]; // must be equal to the number of airport liaisons
 int cis_current_passenger_serving[numberOfCIS];
@@ -224,9 +224,12 @@ void AirportLiaison(int myNumber) {
     waitingForTicket_AL_C[myNumber]->Wait(alLock[myNumber]);
     
     // Count the passenger's baggage
+    /*
     al_baggage_buffer[alPassenger[myNumber]] = passenger_baggage_buffer[alPassenger[myNumber]];
     printf("%s takes note that Passenger %d has %d pieces of luggage\n",currentThread->getName(),alPassenger[myNumber],passenger_baggage_buffer[alPassenger[myNumber]]);
-
+    */
+    al_baggage_buffer[pass_ticket_buffer[alPassenger[myNumber]].flight_number] += baggage_buffer[alPassenger[myNumber]].numberOfBags;
+    printf("Flight %d has %d bags ", alPassenger[myNumber].flightNumber,al_baggage_buffer[pass_ticket_buffer[alPassenger[myNumber]].flightNumber]);
     // The Airport Liaison signals a Passenger, who is asleep waiting for the Airport
     // Liaison to tell them where to go
     waitingForTicket_AL_C[myNumber]->Signal(alLock[myNumber]);
@@ -738,6 +741,10 @@ void AirportSimulation() {
 
   for(i = 0; i < numberOfAirlines; i++) {
     alreadyCalled[i] = false; 
+  }
+
+  for(i = 0; i < numberOfAirlines; i++) {
+    al_baggage_buffer[i] = 0;
   }
 
   // Create the 20 passenger for our airport simulation
