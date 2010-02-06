@@ -167,12 +167,14 @@ void CargoHandler(int myNumber) {
 	onBreak_CH = true;
 	break;
       }
+      if(conveyorBelt[i].number_of_bags > 0) {
       // Cargo Handler Found a bag
-      cargoHandlerBaggageCount[conveyorBelt[i].airline_code]+=conveyorBelt[i].number_of_bags;
-      conveyorBelt[i].number_of_bags = 0;
-      conveyorBelt[i].airline_code = -1;
-      conveyorBelt_Lock.Release();
-      break;
+	cargoHandlerBaggageCount[conveyorBelt[i].airline_code]+=conveyorBelt[i].number_of_bags;
+	conveyorBelt[i].number_of_bags = 0;
+	conveyorBelt[i].airline_code = -1;
+	conveyorBelt_Lock.Release();
+	break;
+      }
       
     }
     // onBreak_CH = true;
