@@ -83,7 +83,7 @@ int totalweight = 0; // for debugging
 Condition onBreakCH("ch_cv");
 Lock conveyorBelt_Lock("cb_lock");
 Lock *airline_CH_Lock[numberOfAirlines];
-bool onBreak_CH = false;
+bool onBreak_CH = true;
 
 struct conveyorBelt {
   int number_of_bags;
