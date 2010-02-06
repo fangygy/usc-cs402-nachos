@@ -71,7 +71,7 @@ struct baggage {
 
 int al_baggage_buffer[numberOfAirlines];
 int cis_baggage_buffer[numberOfAirlines];
-int al_current_passenger_serving[7]; // must be equal to the number of airport liaisons
+int al_current_passenger_serving[numberOfAL]; // must be equal to the number of airport liaisons
 int cis_current_passenger_serving[numberOfCIS];
 
 Condition *waitingForCallAM_C[numberOfAirlines];
@@ -95,6 +95,9 @@ struct conveyorBelt {
 
 int cargoHandlerBaggageCount[numberOfAirlines];
 
+bool passengersFailedSI[numberOfPassengers];
+
+int passengerGoToSI[numberOfPassengers];
 
 
 void AirportManager(int myNumber) {
@@ -190,17 +193,24 @@ void CargoHandler(int myNumber) {
 
 Condition *waitingForSI_C[numberOfSO];
 Condition *waitingForTicket_SI_C[numberOfSO];
+//Condition *waitingForSIAfterQuestioning_C[numberOfSO];
+//int siBackFromQuestioningLineLengths[numberOfSO];
 Lock siLineLock("si_LL");
 Lock *siLock[numberOfSO];
 int siLineLengths[numberOfSO];
 bool si_busy[numberOfSO];
 bool so_passOrFail[numberOfSO];
+int siPassenger[numberOfSO];
 
 void SecurityInspector(int myNumber) {
   while(true) {
     
-    siLineLock.Acquire();
+    si_busy[myNumber] = false;
     
+    bool passengerQuestioned = false;
+    
+    siLineLock.Acquire();
+
     if(siLineLengths[myNumber]>0) {
       printf("%s: Telling passenger to come through Security\n", currentThread->getName());
       waitingForSI_C[myNumber]->Signal(&siLineLock);
@@ -209,38 +219,58 @@ void SecurityInspector(int myNumber) {
       printf("%s: Telling passenger to come through Security\n", currentThread->getName());
       waitingForSI_C[myNumber]->Signal(&siLineLock);
     }
+
+    si_busy[myNumber] = true;
     
     siLock[myNumber]->Acquire();
     siLineLock.Release();
+
+    if(passengersFailedSI[ siPassenger[myNumber] ]) {
+      // passenger returning from further questioning
+      passengerQuestioned = true;
+      printf("%s: DEBUG: this passenger already questioned\n",currentThread->getName());
+    }
     
     waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
     waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
 
-    bool passedSI;
-    int randomNum = rand() % 100;
-    if(randomNum < probabilityPassingSI) {
-      //passenger passed SI
-      passedSI = true;
-      printf("%s: Passenger passed Security Inspector inspection\n", currentThread->getName());
-    } else {
-      //passenger failed SI
-      passedSI = false;
-      printf("%s: Passenger failed Security Inspector inspection\n", currentThread->getName());
-    }
+    printf("%s: DEBUG: passenger already questioned?=%d\n",currentThread->getName(),passengerQuestioned);
 
-    if(!passedSI | !so_passOrFail[myNumber]) {
-      //passenger failed one or more inspections, raise suspicion
-      printf("%s: Passenger is undergoing further questioning\n", currentThread->getName());
-      for(int i = 0; i < 10; i++) {
-	currentThread->Yield();
+    if( !(passengerQuestioned) ) {
+      bool passedSI;
+      int randomNum = rand() % 100;
+      if(randomNum < probabilityPassingSI) {
+	//passenger passed SI
+	passedSI = true;
+	printf("%s: Passenger passed Security Inspector inspection\n", currentThread->getName());
+      } else {
+	//passenger failed SI
+	passedSI = false;
+	printf("%s: Passenger failed Security Inspector inspection\n", currentThread->getName());
       }
 
+      if(!passedSI | !so_passOrFail[myNumber]) {
+	//passenger failed one or more inspections, raise suspicion
+	printf("%s: Passenger is undergoing further questioning\n", currentThread->getName());
+	passengersFailedSI[ siPassenger[myNumber] ] = true;
+
+      }
+
+      // Clear passenger and direct to Boarding
+      sicount++;
+      printf("%s: moving Passenger to Boarding: passengers moved: %d \n", currentThread->getName(), sicount);
+
+    } else {
+      // Passenger returned from further questioning
+      printf("%s: Clearing passenger who returned from further questioning\n", currentThread->getName());
+      // Clear passenger and direct to boarding
+      sicount++;
+      printf("%s: moving Passenger to Boarding: passengers moved: %d \n", currentThread->getName(), sicount);
     }
 
-    // Clear passenger and direct to Boarding
-    sicount++;
-    printf("%s: moving Passenger to Boarding: passengers moved: %d \n", currentThread->getName(), sicount);
+    
     siLock[myNumber]->Release();
+
   }
 }
 
@@ -250,6 +280,7 @@ Lock soLineLock("sl_LL");
 Lock *soLock[numberOfSO];
 int soLineLengths[numberOfSO];
 bool so_busy[numberOfSO];
+int soPassenger[numberOfSO];
 
 void SecurityOfficer(int myNumber) {
   while(true) {
@@ -283,9 +314,25 @@ void SecurityOfficer(int myNumber) {
       printf("%s: Passenger failed Security Officer inspection\n", currentThread->getName());
     }
     
+    siLineLock.Acquire();
+    // Search for an available SI
+    bool foundAvailableSO = false;
+    while( !foundAvailableSO )
+      {
+	for(int i = 0; i < numberOfSO; i++)
+	  {
+	    if( !(si_busy[i]) ) {
+	      passengerGoToSI[ soPassenger[myNumber] ] = i;
+	      foundAvailableSO = true;
+	      break;
+	    }
+	  }
+      }
+    siLineLock.Release();
+
     // Clear passenger and direct to Security Inspector
     socount++;
-    printf("%s: moving Passenger to Security Inspector: number of Passengers moved: %d\n", currentThread->getName(),socount);
+    printf("%s: moving Passenger to Security Inspector %d: number of Passengers moved: %d\n", currentThread->getName(), passengerGoToSI[ soPassenger[myNumber] ],socount);
    
     soLock[myNumber]->Release();
   }
@@ -632,6 +679,8 @@ void Passenger(int myNumber) {
 
   soLock[myLineNumber]->Acquire();
 
+  soPassenger[myLineNumber] = myNumber;
+
  // The Passenger now has the line number, so they should go to sleep and
   // release the line lock, letting another Passenger search for a line
   printf("%s giving airline ticket to Security Officer %d\n", currentThread->getName(), myLineNumber);
@@ -647,7 +696,10 @@ void Passenger(int myNumber) {
   
   siLineLock.Acquire();
   
-  myLineNumber = findShortestLine(siLineLengths, 7);
+  //myLineNumber = findShortestLine(siLineLengths, 7);
+
+  myLineNumber = passengerGoToSI[myNumber];
+  //printf("%s: DEBUG: passengerGoToSI[%d] = %d\n",myNumber,passengerGoToSI[myNumber]);
 
   siLineLengths[myLineNumber]++;
   printf("%s: chose SInspect %d with length %d\n", currentThread->getName(), myLineNumber, siLineLengths[myLineNumber]);
@@ -659,13 +711,42 @@ void Passenger(int myNumber) {
   siLineLock.Release();
   
   siLock[myLineNumber]->Acquire();
+  siPassenger[myLineNumber] = myNumber;
 
  // The Passenger now has the line number, so they should go to sleep and
   // release the line lock, letting another Passenger search for a line
   printf("%s giving airline ticket to Security Inspector %d\n", currentThread->getName(), myLineNumber);
   waitingForTicket_SI_C[myLineNumber]->Signal(siLock[myLineNumber]);
   waitingForTicket_SI_C[myLineNumber]->Wait(siLock[myLineNumber]);
+
   siLock[myLineNumber]->Release();
+
+  if(passengersFailedSI[myNumber]) {
+    //going to further questioning
+    printf("%s: DEBUG: begin yield\n",currentThread->getName());
+    for(int i = 0; i < 10; i++)
+      currentThread->Yield();
+    printf("%s: DEBUG: end yield\n",currentThread->getName());
+    
+    siLineLock.Acquire();
+printf("%s: DEBUG: acquired siLineLock \n",currentThread->getName());
+    siLineLengths[myLineNumber]++;
+    //siBackFromQuestioningLineLengths[myLineNumber]++;
+    //waitingForSIAfterQuestioning_C[myLineNumber]->Signal(&siLineLock);
+    //waitingForSIAfterQuestioning_C[myLineNumber]->Wait(&siLineLock);
+    waitingForSI_C[myLineNumber]->Signal(&siLineLock);
+printf("%s: DEBUG: signaled\n",currentThread->getName());
+    waitingForSI_C[myLineNumber]->Wait(&siLineLock);
+printf("%s: DEBUG: done waiting\n",currentThread->getName());
+
+    //siBackFromQuestioningLineLengths[myLineNumber]--;
+    siLineLengths[myLineNumber]--;
+    siLineLock.Release();
+    
+    siLock[myLineNumber]->Acquire();
+    siPassenger[myLineNumber] = myNumber;
+  }
+
   printf("-----Number of Passengers chosen inspector: %d\n",pass_si_count);
   pass_si_count++;
 
