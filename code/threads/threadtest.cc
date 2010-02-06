@@ -116,7 +116,12 @@ void AirportManager(int myNumber) {
       if(alreadyCalled[0]&&alreadyCalled[1]&&alreadyCalled[2]) {
 	// TODO
 	// print out statistics
+	for(int g = 0; g < numberOfPassengers; g++) {
+	  printf("[%d, %d]",g,cargoHandlerBaggageCount[g]);
+	}
+	printf("\n");
 	for(int g = 0; g < numberOfAirlines; g++) {
+	  printf("----------------Statistics--------------\n");
 	  printf("Liaison tally of bags for Flight %d: %d\n",g, al_baggage_buffer[g]);
 	  printf("CIS weight of bags for Flight %d: %d\n",g, cis_baggage_buffer[g]);
 	  printf("Cargo handler tally of bags for Flight %d: %d\n",g, cargoHandlerBaggageCount[g]);
@@ -160,12 +165,9 @@ void CargoHandler(int myNumber) {
       onBreakCH.Wait(&conveyorBelt_Lock);
     }
     for(int i = 0; i < numberOfPassengers; i++) {
-      if(conveyorBelt[i].number_of_bags == 0) {
-	// check next bag
-      }
-
       if(conveyorBelt[i].number_of_bags > 0) {
-      // Cargo Handler Found a bag
+	// Cargo Handler Found a bag
+	printf("Loading passenger %d who has %d bags\n",i,conveyorBelt[i].number_of_bags);
 	cargoHandlerBaggageCount[conveyorBelt[i].airline_code]+=conveyorBelt[i].number_of_bags;
 	conveyorBelt[i].number_of_bags = 0;
 	conveyorBelt[i].airline_code = -1;
