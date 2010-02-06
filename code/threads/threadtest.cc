@@ -89,7 +89,7 @@ void AirportManager(int myNumber) {
 	// print out statistics
 	for(int g = 0; g < numberOfAirlines; g++) {
 	  printf("Liaison tally of bags for Flight %d: %d\n",g, al_baggage_buffer[g]);
-	  printf("CIS tally of bags for Flight %d: %d\n",g, cis_baggage_buffer[g]);
+	  printf("CIS weight of bags for Flight %d: %d\n",g, cis_baggage_buffer[g]);
 	}
 	goToSleep.Wait(airlineLock[i]);
       }
@@ -765,7 +765,7 @@ void AirportSimulation() {
     al_baggage_buffer[i] = 0;
     cis_baggage_buffer[i] = 0;
   }
-
+  int totalweight = 0;
   // Create the 20 passenger for our airport simulation
   printf("Creating Passengers\n");
   for( i=0; i < numberOfPassengers; i++) {
@@ -787,6 +787,7 @@ void AirportSimulation() {
       baggage_buffer[i].numberOfBags = 3;
       baggage_buffer[i].weight = 60;
     }
+    weight += 60;
     baggage_buffer[i].passenger_number = i;
     baggage_buffer[i].airline_code = (i%3);
     boarding_pass_buffer[i].passenger_number = i;
