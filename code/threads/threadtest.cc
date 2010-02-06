@@ -75,7 +75,7 @@ int flightCount[numberOfAirlines];
 int cisFlightCount[numberOfAirlines];
 bool alreadyCalled[numberOfAirlines];
 Condition goToSleep("goToSleep");
-
+int totalweight = 0;
 void AirportManager(int myNumber) {
     
   while(true) {
@@ -90,6 +90,7 @@ void AirportManager(int myNumber) {
 	for(int g = 0; g < numberOfAirlines; g++) {
 	  printf("Liaison tally of bags for Flight %d: %d\n",g, al_baggage_buffer[g]);
 	  printf("CIS weight of bags for Flight %d: %d\n",g, cis_baggage_buffer[g]);
+	  printf("Total weight: %d\n",totalweight);
 	}
 	goToSleep.Wait(airlineLock[i]);
       }
@@ -765,7 +766,7 @@ void AirportSimulation() {
     al_baggage_buffer[i] = 0;
     cis_baggage_buffer[i] = 0;
   }
-  int totalweight = 0;
+
   // Create the 20 passenger for our airport simulation
   printf("Creating Passengers\n");
   for( i=0; i < numberOfPassengers; i++) {
