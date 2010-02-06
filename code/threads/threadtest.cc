@@ -229,7 +229,7 @@ void AirportLiaison(int myNumber) {
     printf("%s takes note that Passenger %d has %d pieces of luggage\n",currentThread->getName(),alPassenger[myNumber],passenger_baggage_buffer[alPassenger[myNumber]]);
     */
     al_baggage_buffer[pass_ticket_buffer[alPassenger[myNumber]].flight_number] += baggage_buffer[alPassenger[myNumber]].numberOfBags;
-    printf("Flight %d has %d bags ", alPassenger[myNumber].flight_number,al_baggage_buffer[pass_ticket_buffer[alPassenger[myNumber]].flight_number);
+    printf("Flight %d has %d bags ", alPassenger[myNumber].flight_number,al_baggage_buffer[pass_ticket_buffer[alPassenger[myNumber]]].flight_number);
     // The Airport Liaison signals a Passenger, who is asleep waiting for the Airport
     // Liaison to tell them where to go
     waitingForTicket_AL_C[myNumber]->Signal(alLock[myNumber]);
