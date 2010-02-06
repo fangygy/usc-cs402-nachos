@@ -117,7 +117,7 @@ void AirportManager(int myNumber) {
 	// TODO
 	// print out statistics
 	for(int g = 0; g < numberOfPassengers; g++) {
-	  printf("[%d, %d]",g,cargoHandlerBaggageCount[g]);
+	  printf("[%d, %d]",g,conveyorBelt[g].number_of_bags);
 	}
 	printf("\n");
 	for(int g = 0; g < numberOfAirlines; g++) {
