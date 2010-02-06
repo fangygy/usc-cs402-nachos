@@ -58,11 +58,12 @@ struct baggage {
   int weight;
   int airline_code;
   int passenger_number;
+  int numberOfBags;
 } baggage_buffer[numberOfPassengers];
 
-int passenger_baggage_buffer[numberOfPassengers];
-int al_baggage_buffer[numberOfPassengers];
-int cis_baggage_buffer[numberOfPassengers];
+// int passenger_baggage_buffer[numberOfPassengers];
+// int al_baggage_buffer[numberOfPassengers];
+// int cis_baggage_buffer[numberOfPassengers];
 int al_flight_baggage_buffer[numberOfAirlines];
 int cis_flight_baggage_buffer[numberOfAirlines];
 int al_current_passenger_serving[7]; // must be equal to the number of airport liaisons
@@ -84,6 +85,8 @@ void AirportManager(int myNumber) {
     for(int i = 0; i < numberOfAirlines; i++) {
       airlineLock[i]->Acquire();
       if(alreadyCalled[0]&&alreadyCalled[1]&&alreadyCalled[2]) {
+	// TODO
+	// print out statistics
 	goToSleep.Wait(airlineLock[i]);
       }
       printf("flight %d count %d , cisflightcount %d\n",i,flightCount[i],cisFlightCount[i]); 
@@ -100,6 +103,8 @@ void AirportManager(int myNumber) {
       currentThread->Yield();
   }
 }
+
+int cargoHandlerBaggageCount[numberOfAirlines];
 
 void CargoHandler(int myNumber) {
 
@@ -180,6 +185,7 @@ Lock *alLock[numberOfAL];
 int alLineLengths[numberOfAL];
 bool al_busy[numberOfAL];
 int alPassenger[numberOfAL];
+int alPassengerCount = 0;
 
 void AirportLiaison(int myNumber) {
   while(true) {
@@ -226,6 +232,7 @@ void AirportLiaison(int myNumber) {
     waitingForTicket_AL_C[myNumber]->Signal(alLock[myNumber]);
     pass_ticket_buffer[alPassenger[myNumber]].checkin_counter = pass_ticket_buffer[alPassenger[myNumber]].flight_number;  
     printf("%s: Directing Passenger%d to Airline check in counter %d\n", currentThread->getName(), alPassenger[myNumber], pass_ticket_buffer[alPassenger[myNumber]].checkin_counter);
+    alPassengerCount++;
     alLock[myNumber]->Release();
   }
 }
@@ -247,6 +254,9 @@ int cisLineLengths[numberOfCIS];
 bool cis_busy[numberOfCIS];
 int execLineLengths[numberOfAirlines];
 bool waitingForExec[numberOfCIS];
+
+int cisPassengerCount = 0;
+int cisBaggageWeight[numberOfAirlines]; // keep track of the weight for each airline
 
 void CheckInStaff(int myNumber) {
   while(true) {
@@ -324,6 +334,7 @@ void CheckInStaff(int myNumber) {
       
       printf("%s giving Passenger %d ticket number and directing them to gate\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
       cisFlightCount[myAirline]++;
+      cisPassengerCount++;
       cisLock[myNumber]->Release();
   
   }
@@ -741,10 +752,17 @@ void AirportSimulation() {
       pass_ticket_buffer[i].executive = false;
     }
     pass_ticket_buffer[i].checkin_counter = -1;
-    if(i%2==0)
-      passenger_baggage_buffer[i] = 2;
-    else
-      passenger_baggage_buffer[i] = 3;
+    // TO DO 
+    // Randomize weights
+    if(i%2==0) {
+      baggage_buffer[i].numberOfBags = 2;
+      baggage_buffer[i].weight = 60;
+    } else {
+      baggage_buffer[i].numberOfBags = 3;
+      baggage_buffer[i].weight = 60;
+    }
+    baggage_buffer[i].passengerNumber = i;
+    baggage_buffer[i].airline_code = (i%3);
     boarding_pass_buffer[i].passenger_number = i;
     boarding_pass_buffer[i].flight_number = (i%3);
     boarding_pass_buffer[i].seat_number = -1;
