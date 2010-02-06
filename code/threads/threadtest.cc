@@ -83,7 +83,16 @@ void AirportManager(int myNumber) {
   while(true) {
     // if all passengers are accounted for
     // issue broadcast
-   
+    conveyorBeltLock.Acquire();
+    for(int i = 0; i < numberOfPassengers; i++) {
+      if(conveyorBelt[i].number_of_bags == 0) {
+	// check next bag
+      } else {
+	onBreakCH->Signal(&conveyorBeltLock);
+	break;
+      }
+    }
+    conveyorBeltLock.Release();
     for(int i = 0; i < numberOfAirlines; i++) {
       airlineLock[i]->Acquire();
       if(alreadyCalled[0]&&alreadyCalled[1]&&alreadyCalled[2]) {
@@ -92,6 +101,7 @@ void AirportManager(int myNumber) {
 	for(int g = 0; g < numberOfAirlines; g++) {
 	  printf("Liaison tally of bags for Flight %d: %d\n",g, al_baggage_buffer[g]);
 	  printf("CIS weight of bags for Flight %d: %d\n",g, cis_baggage_buffer[g]);
+	  printf("Cargo handler tally of bags for Flight %d: %d\n",g, cargoHandlerBaggageCount[g]);
 	  printf("Total weight: %d\n",totalweight);
 	}
 	goToSleep.Wait(airlineLock[i]);
@@ -112,9 +122,9 @@ void AirportManager(int myNumber) {
 }
 
 Condition onBreakCH("ch_cv");
-Lock conveyorBelt_Lock('cb_lock');
-
-Lock *chairlineLock[numberOfAirlines];
+Lock conveyorBelt_Lock("cb_lock");
+Lock *airline_CH_Lock[numberOfAirlines];
+bool onBreak_CH = false;
 
 struct conveyorBelt {
   int number_of_bags;
@@ -127,9 +137,35 @@ void CargoHandler(int myNumber) {
   while(true) {
     conveyorBelt_Lock.Acquire();
     /*
-      if(conve
+      if(on break is true)
+      onbreakch->wait(conveyorbelt_lock)
+      if(conveyor belt = empty)
+      set onbreak to true
+      
+      take the baggage off of the conveyor belt
+      airline_CH_Lock->Acquire()
+      conveyorBelt_Lock->Release()
+      cargoHandlerBaggageCount[baggage.flight_number]+=baggage.numberofbags
+
+      airline_CH_Lock->Release()
 
      */
+    if(onBreak_CH) {
+      onBreakCH->Wait(&conveyorBelt_Lock);
+    }
+    for(int i = 0; i < numberOfPassengers; i++) {
+      if(conveyorBelt[i].number_of_bags == 0) {
+	// check next bag
+      } else {
+	// Cargo Handler Found a bag
+	cargoHandlerBaggageCount[conveyorBelt[i].airline_code]+=conveyorBelt[i].number_of_bags;
+	conveyorBelt[i].number_of_bags = 0;
+	conveyorBelt[i].airline_code = -1;
+	conveyorBelt_Lock.Release();
+	break;
+      }
+    }
+    onBreak_CH = true;
     conveyorBelt_Lock.Release();
 
   }
@@ -343,10 +379,17 @@ void CheckInStaff(int myNumber) {
       cisFlightCount[myAirline]++;
 
       int flight_number = pass_ticket_buffer[cisPassenger[myNumber]].flight_number;   
+      
       // Add these bags to the total count fort a given airline, specified by Flight Number
       cis_baggage_buffer[flight_number] += baggage_buffer[cisPassenger[myNumber]].weight;
-
+      
+      // Now add these bags to the conveyor belt
+      conveyorBelt[cisPassenger[myNumber]].flight_number = flight_number;
+      conveyorBelt[cisPassenger[myNumber]].number_of_bags = baggage_buffer[cisPassenger[myNumber]].numberOfBags;
+      
       printf("Flight %d has %d bags ", flight_number,al_baggage_buffer[flight_number]);
+      
+      // CIS not waiting for executive passenger anymore
       waitingForExec[myNumber]=false;
       execCISLock[myNumber]->Release();
     }
@@ -364,11 +407,19 @@ void CheckInStaff(int myNumber) {
 
       cisLock[myNumber]->Acquire();
       cisLineLock[myAirline]->Release();
+
       waitingForTicket_CIS_C[myNumber]->Wait(cisLock[myNumber]);
       waitingForTicket_CIS_C[myNumber]->Signal(cisLock[myNumber]);
+
       int flight_number = pass_ticket_buffer[cisPassenger[myNumber]].flight_number;   
+
       // Add these bags to the total count fort a given airline, specified by Flight Number
       cis_baggage_buffer[flight_number] += baggage_buffer[cisPassenger[myNumber]].weight;
+      
+      // Now add these bags to the conveyor belt
+      conveyorBelt[cisPassenger[myNumber]].flight_number = flight_number;
+      conveyorBelt[cisPassenger[myNumber]].number_of_bags = baggage_buffer[cisPassenger[myNumber]].numberOfBags;
+
       printf("%s giving Passenger %d ticket number and directing them to gate\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
       cisFlightCount[myAirline]++;
       cisPassengerCount++;
@@ -783,10 +834,13 @@ void AirportSimulation() {
 
   // Initialize the baggage buffer
   for(i = 0; i < numberOfAirlines; i++) {
-    al_baggage_buffer[i] = 0;
-    cis_baggage_buffer[i] = 0;
+    al_baggage_buffer[i]        = 0;
+    cis_baggage_buffer[i]       = 0;
+    cargoHandlerBaggageCount[i] = 0;
   }
 
+  
+  
   // Create the 20 passenger for our airport simulation
   printf("Creating Passengers\n");
   for( i=0; i < numberOfPassengers; i++) {
