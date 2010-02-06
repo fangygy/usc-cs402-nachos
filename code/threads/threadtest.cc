@@ -62,8 +62,8 @@ struct baggage {
 } baggage_buffer[numberOfPassengers];
 
 // int passenger_baggage_buffer[numberOfPassengers];
-// int al_baggage_buffer[numberOfPassengers];
 // int cis_baggage_buffer[numberOfPassengers];
+
 int al_baggage_buffer[numberOfAirlines];
 int cis_flight_baggage_buffer[numberOfAirlines];
 int al_current_passenger_serving[7]; // must be equal to the number of airport liaisons
@@ -87,6 +87,10 @@ void AirportManager(int myNumber) {
       if(alreadyCalled[0]&&alreadyCalled[1]&&alreadyCalled[2]) {
 	// TODO
 	// print out statistics
+	for(int g = 0; g < numberOfAirlines; g++) {
+	  printf("Liaison tally of bags for Flight %d: %d\n",g, al_baggage_buffer[g]);
+	  printf("CIS tally of bags for Flight %d: %d\n",g, cis_baggage_buffer[g]);
+	}
 	goToSleep.Wait(airlineLock[i]);
       }
       printf("flight %d count %d , cisflightcount %d\n",i,flightCount[i],cisFlightCount[i]); 
@@ -259,6 +263,9 @@ bool cis_busy[numberOfCIS];
 int execLineLengths[numberOfAirlines];
 bool waitingForExec[numberOfCIS];
 
+// Use this to keep track of passenger
+int cisPassenger[numberOfCIS];
+
 int cisPassengerCount = 0;
 int cisBaggageWeight[numberOfAirlines]; // keep track of the weight for each airline
 
@@ -313,6 +320,12 @@ void CheckInStaff(int myNumber) {
       waitingForExec_CIS_C[myNumber]->Signal(execCISLock[myNumber]);
       printf("%s giving exec passenger boarding pass\n",currentThread->getName());
       cisFlightCount[myAirline]++;
+
+      int flight_number = pass_ticket_buffer[cisPassenger[myNumber]].flight_number;   
+      // Add these bags to the total count fort a given airline, specified by Flight Number
+      cis_baggage_buffer[flight_number] += baggage_buffer[cisPassenger[myNumber]].numberOfBags;
+
+      printf("Flight %d has %d bags ", flight_number,al_baggage_buffer[flight_number]);
       waitingForExec[myNumber]=false;
       execCISLock[myNumber]->Release();
     }
@@ -320,9 +333,6 @@ void CheckInStaff(int myNumber) {
     // execCISLock[myNumber]->Release();
 
     // cisLineLock[myAirline]->Acquire();
-    if(myNumber == 11) {
-      printf("!!!!!!!!!!AIRLINE CHECK IN STAFF 11 HAS %d passengers\n",cisLineLengths[myNumber]); 
-    }
 
     if(cisLineLengths[myNumber] > 0) {
       //printf("line %d has more than one passenger\n", myNumber);
@@ -414,13 +424,14 @@ void Passenger(int myNumber) {
     execLineLengths[checkin_counter_number]++;
     execLineCV[checkin_counter_number]->Wait(execLineLock[checkin_counter_number]);
 
+    // Find the line of the Check in staff
     for(int i = start; i <= stop; i++) {
       if(waitingForExec[i] == true) {
 	myLineNumber = i;
 	break;
       }
     }
-
+    
     // Tell CIS that passenger is ready
     // execLineCV[checkin_counter_number]->Signal(execLineLock[checkin_counter_number]);
     printf("Executive %s chose counter %d \n", currentThread->getName(), myLineNumber);
@@ -429,6 +440,7 @@ void Passenger(int myNumber) {
     execLineLengths[checkin_counter_number]--;
   
     execCISLock[myLineNumber]->Acquire();
+    cisPassenger[myLineNumber] = myNumber;
     execLineLock[checkin_counter_number]->Release();
     
     waitingForExec_CIS_C[myLineNumber]->Signal(execCISLock[myLineNumber]);
@@ -447,14 +459,14 @@ void Passenger(int myNumber) {
     cis_current_passenger_serving[myLineNumber] = myNumber;
     printf("%s chose Airline Check In %d with length %d\n", currentThread->getName(), myLineNumber, cisLineLengths[myLineNumber]);
 
-   if(myNumber == 14) {
-      printf("passenger 14: check in counter %d my line number %d\n",checkin_counter_number,myLineNumber);
-    }
     waitingForCIS_C[myLineNumber]->Wait(cisLineLock[checkin_counter_number]);
     // cisLineLengths[myLineNumber]--;
     
     printf("%s going to see Airline Check In Staff %d\n",currentThread->getName(), myLineNumber); 
     cisLock[myLineNumber]->Acquire();
+
+    cisPassenger[myLineNumber]=myNumber;
+
     cisLineLengths[myLineNumber]--;
     cisLineLock[checkin_counter_number]->Release();
     //cisLock[myLineNumber]->Acquire();
@@ -745,8 +757,10 @@ void AirportSimulation() {
     alreadyCalled[i] = false; 
   }
 
+  // Initialize the baggage buffer
   for(i = 0; i < numberOfAirlines; i++) {
     al_baggage_buffer[i] = 0;
+    cis_baggage_buffer[i] = 0;
   }
 
   // Create the 20 passenger for our airport simulation
