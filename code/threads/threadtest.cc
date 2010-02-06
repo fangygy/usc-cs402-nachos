@@ -78,6 +78,21 @@ bool alreadyCalled[numberOfAirlines];
 Condition goToSleep("goToSleep");
 
 int totalweight = 0; // for debugging
+
+Condition onBreakCH("ch_cv");
+Lock conveyorBelt_Lock("cb_lock");
+Lock *airline_CH_Lock[numberOfAirlines];
+bool onBreak_CH = false;
+
+struct conveyorBelt {
+  int number_of_bags;
+  int airline_code;
+} conveyorBelt[numberOfPassengers];
+
+int cargoHandlerBaggageCount[numberOfAirlines];
+
+
+
 void AirportManager(int myNumber) {
     
   while(true) {
@@ -121,17 +136,7 @@ void AirportManager(int myNumber) {
   }
 }
 
-Condition onBreakCH("ch_cv");
-Lock conveyorBelt_Lock("cb_lock");
-Lock *airline_CH_Lock[numberOfAirlines];
-bool onBreak_CH = false;
 
-struct conveyorBelt {
-  int number_of_bags;
-  int airline_code;
-} conveyorBelt[numberOfPassengers];
-
-int cargoHandlerBaggageCount[numberOfAirlines];
 
 void CargoHandler(int myNumber) {
   while(true) {
