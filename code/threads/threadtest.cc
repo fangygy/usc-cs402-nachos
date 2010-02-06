@@ -37,6 +37,7 @@ using namespace std;
 #define numberOfCIS 15
 #define numberOfSO 7
 #define numberOfAirlines 3
+#define numberOfCH 6
 
 int sicount = 1;
 int socount = 1;
@@ -915,6 +916,13 @@ void AirportSimulation() {
     sprintf(name, "SecurityInspector%d",i);
     t = new Thread(name);
     t->Fork((VoidFunctionPtr)SecurityInspector,i);
+  }
+
+  for(i=0; i < numberOfCH; i++) {
+    name = new char[20];
+    sprintf(name, "CargoHandler%d",i);
+    t = new Thread(name);
+    t->Fork((VoidFunctionPtr)CargoHandler,i);
   }
   
   name = new char[20];
