@@ -787,7 +787,7 @@ void AirportSimulation() {
       baggage_buffer[i].numberOfBags = 3;
       baggage_buffer[i].weight = 60;
     }
-    weight += 60;
+    totalweight += 60;
     baggage_buffer[i].passenger_number = i;
     baggage_buffer[i].airline_code = (i%3);
     boarding_pass_buffer[i].passenger_number = i;
