@@ -130,7 +130,7 @@ void AirportManager(int myNumber) {
 	goToSleep.Wait(airlineLock[i]);
       }
       printf("flight %d count %d , cisflightcount %d\n",i,flightCount[i],cisFlightCount[i]); 
-      if(!alreadyCalled[i]&&(flightCount[i] == cisFlightCount[i])&&(flightCount[i]!=0)&&(cisFlightCount[i]!=0)) {
+      if(!alreadyCalled[i]&&(flightCount[i] == cisFlightCount[i])&&(flightCount[i]!=0)&&(cisFlightCount[i]!=0)&&(cargoHandlerBaggageCount[i]==al_baggage_buffer[i])) {
 	printf("issuing boarding call for flight %d \n",i);
 	waitingForCallAM_C[i]->Broadcast(airlineLock[i]);
 	alreadyCalled[i] = true;
