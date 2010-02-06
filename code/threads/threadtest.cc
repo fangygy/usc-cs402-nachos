@@ -39,6 +39,9 @@ using namespace std;
 #define numberOfAirlines 3
 #define numberOfCH 6
 
+#define probabilityPassingSO 90
+#define probabilityPassingSI 90
+
 int sicount = 1;
 int socount = 1;
 int pass_si_count = 1;
@@ -191,6 +194,7 @@ Lock siLineLock("si_LL");
 Lock *siLock[numberOfSO];
 int siLineLengths[numberOfSO];
 bool si_busy[numberOfSO];
+bool so_passOrFail[numberOfSO];
 
 void SecurityInspector(int myNumber) {
   while(true) {
@@ -211,7 +215,29 @@ void SecurityInspector(int myNumber) {
     
     waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
     waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
-    // Clear passenger and direct to Security Inspector
+
+    bool passedSI;
+    int randomNum = rand() % 100;
+    if(randomNum < probabilityPassingSI) {
+      //passenger passed SI
+      passedSI = true;
+      printf("%s: Passenger passed Security Inspector inspection\n", currentThread->getName());
+    } else {
+      //passenger failed SI
+      passedSI = false;
+      printf("%s: Passenger failed Security Inspector inspection\n", currentThread->getName());
+    }
+
+    if(!passedSI | !so_passOrFail[myNumber]) {
+      //passenger failed one or more inspections, raise suspicion
+      printf("%s: Passenger is undergoing further questioning\n", currentThread->getName());
+      for(int i = 0; i < 10; i++) {
+	currentThread->Yield();
+      }
+
+    }
+
+    // Clear passenger and direct to Boarding
     sicount++;
     printf("%s: moving Passenger to Boarding: passengers moved: %d \n", currentThread->getName(), sicount);
     siLock[myNumber]->Release();
@@ -244,6 +270,19 @@ void SecurityOfficer(int myNumber) {
     
     waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
     waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]);
+
+    // Determine if the passenger passes or fails
+    int randomNum = rand() % 100;
+    if(randomNum < probabilityPassingSO) {
+      //passenger passed
+      so_passOrFail[myNumber] = true;
+      printf("%s: Passenger passed Security Officer inspection\n", currentThread->getName());
+    } else {
+      //passenger failed
+      so_passOrFail[myNumber] = false;
+      printf("%s: Passenger failed Security Officer inspection\n", currentThread->getName());
+    }
+    
     // Clear passenger and direct to Security Inspector
     socount++;
     printf("%s: moving Passenger to Security Inspector: number of Passengers moved: %d\n", currentThread->getName(),socount);
