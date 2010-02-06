@@ -337,6 +337,8 @@ bool waitingForExec[numberOfCIS];
 // Use this to keep track of passenger
 int cisPassenger[numberOfCIS];
 
+int seatNumbers[numberOfAirlines];
+
 int cisPassengerCount = 0;
 int cisBaggageWeight[numberOfAirlines]; // keep track of the weight for each airline
 
@@ -426,6 +428,9 @@ void CheckInStaff(int myNumber) {
       waitingForTicket_CIS_C[myNumber]->Signal(cisLock[myNumber]);
 
       int flight_number = pass_ticket_buffer[cisPassenger[myNumber]].flight_number;   
+
+      // Give the Passenger a seat number
+      boarding_pass_buffer[cisPassenger[myNumber]].seat_number = seatNumber[flight_number]++;
 
       // Add these bags to the total count fort a given airline, specified by Flight Number
       cis_baggage_buffer[flight_number] += baggage_buffer[cisPassenger[myNumber]].weight;
@@ -851,6 +856,7 @@ void AirportSimulation() {
     al_baggage_buffer[i]        = 0;
     cis_baggage_buffer[i]       = 0;
     cargoHandlerBaggageCount[i] = 0;
+    seatNumber[i]               = 0;
   }
 
   
