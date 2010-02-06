@@ -91,11 +91,8 @@ void AirportManager(int myNumber) {
       }
       airlineLock[i]->Release();
     }
-    
     currentThread->Yield();
   }
-  
-  
 }
 
 void CargoHandler(int myNumber) {
@@ -318,7 +315,6 @@ void CheckInStaff(int myNumber) {
       printf("%s giving Passenger %d ticket number and directing them to gate\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
       cisFlightCount[myAirline]++;
       cisLock[myNumber]->Release();
-    
   
   }
 }
