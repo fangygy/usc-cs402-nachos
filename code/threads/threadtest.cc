@@ -557,6 +557,7 @@ void AirportSimulation() {
 
   printf("Starting Airport Simulation\n");
 
+
   // -------------------------------------------------
   // Initialize Condition Variables
   
