@@ -91,7 +91,8 @@ void AirportManager(int myNumber) {
       }
       airlineLock[i]->Release();
     }
-    currentThread->Yield();
+    for(int i = 0; i < 10; i++)
+      currentThread->Yield();
   }
 }
 
