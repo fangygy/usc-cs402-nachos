@@ -389,7 +389,7 @@ void CheckInStaff(int myNumber) {
       cis_baggage_buffer[flight_number] += baggage_buffer[cisPassenger[myNumber]].weight;
       
       // Now add these bags to the conveyor belt
-      conveyorBelt[cisPassenger[myNumber]].flight_number = flight_number;
+      conveyorBelt[cisPassenger[myNumber]].airline_code = flight_number;
       conveyorBelt[cisPassenger[myNumber]].number_of_bags = baggage_buffer[cisPassenger[myNumber]].numberOfBags;
       
       printf("Flight %d has %d bags ", flight_number,al_baggage_buffer[flight_number]);
@@ -422,7 +422,7 @@ void CheckInStaff(int myNumber) {
       cis_baggage_buffer[flight_number] += baggage_buffer[cisPassenger[myNumber]].weight;
       
       // Now add these bags to the conveyor belt
-      conveyorBelt[cisPassenger[myNumber]].flight_number = flight_number;
+      conveyorBelt[cisPassenger[myNumber]].airline_code = flight_number;
       conveyorBelt[cisPassenger[myNumber]].number_of_bags = baggage_buffer[cisPassenger[myNumber]].numberOfBags;
 
       printf("%s giving Passenger %d ticket number and directing them to gate\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
