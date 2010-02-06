@@ -228,13 +228,10 @@ void SecurityInspector(int myNumber) {
     if(passengersFailedSI[ siPassenger[myNumber] ]) {
       // passenger returning from further questioning
       passengerQuestioned = true;
-      printf("%s: DEBUG: this passenger already questioned\n",currentThread->getName());
     }
     
     waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
     waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
-
-    printf("%s: DEBUG: passenger already questioned?=%d\n",currentThread->getName(),passengerQuestioned);
 
     if( !(passengerQuestioned) ) {
       bool passedSI;
@@ -242,11 +239,11 @@ void SecurityInspector(int myNumber) {
       if(randomNum < probabilityPassingSI) {
 	//passenger passed SI
 	passedSI = true;
-	printf("%s: Passenger passed Security Inspector inspection\n", currentThread->getName());
+	
       } else {
 	//passenger failed SI
 	passedSI = false;
-	printf("%s: Passenger failed Security Inspector inspection\n", currentThread->getName());
+	
       }
 
       if(!passedSI | !so_passOrFail[myNumber]) {
@@ -723,21 +720,21 @@ void Passenger(int myNumber) {
 
   if(passengersFailedSI[myNumber]) {
     //going to further questioning
-    printf("%s: DEBUG: begin yield\n",currentThread->getName());
+    
     for(int i = 0; i < 10; i++)
       currentThread->Yield();
-    printf("%s: DEBUG: end yield\n",currentThread->getName());
+    
     
     siLineLock.Acquire();
-printf("%s: DEBUG: acquired siLineLock \n",currentThread->getName());
+
     siLineLengths[myLineNumber]++;
     //siBackFromQuestioningLineLengths[myLineNumber]++;
     //waitingForSIAfterQuestioning_C[myLineNumber]->Signal(&siLineLock);
     //waitingForSIAfterQuestioning_C[myLineNumber]->Wait(&siLineLock);
     waitingForSI_C[myLineNumber]->Signal(&siLineLock);
-printf("%s: DEBUG: signaled\n",currentThread->getName());
+
     waitingForSI_C[myLineNumber]->Wait(&siLineLock);
-printf("%s: DEBUG: done waiting\n",currentThread->getName());
+
 
     //siBackFromQuestioningLineLengths[myLineNumber]--;
     siLineLengths[myLineNumber]--;
