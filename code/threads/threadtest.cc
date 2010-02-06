@@ -98,7 +98,7 @@ void AirportManager(int myNumber) {
   while(true) {
     // if all passengers are accounted for
     // issue broadcast
-    conveyorBeltLock.Acquire();
+    conveyorBelt_Lock.Acquire();
     for(int i = 0; i < numberOfPassengers; i++) {
       if(conveyorBelt[i].number_of_bags == 0) {
 	// check next bag
@@ -107,7 +107,7 @@ void AirportManager(int myNumber) {
 	break;
       }
     }
-    conveyorBeltLock.Release();
+    conveyorBelt_Lock.Release();
     for(int i = 0; i < numberOfAirlines; i++) {
       airlineLock[i]->Acquire();
       if(alreadyCalled[0]&&alreadyCalled[1]&&alreadyCalled[2]) {
