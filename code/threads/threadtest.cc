@@ -105,7 +105,7 @@ void AirportManager(int myNumber) {
 	if(conveyorBelt[i].number_of_bags == 0) {
 	  // check next bag
 	} else {
-	  onBreakCH.Signal(&conveyorBelt_Lock);
+	  onBreakCH.Broadcast(&conveyorBelt_Lock);
 	  break;
 	}
       }
