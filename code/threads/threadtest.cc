@@ -620,10 +620,12 @@ void Passenger(int myNumber) {
   
   if(amExecutive) {
     execLineLock[checkin_counter_number]->Acquire();
-    printf("------Executive %s standing in line %d\n",currentThread->getName(),checkin_counter_number);
+    printf("------Executive %s standing in executive line %d\n",currentThread->getName(),checkin_counter_number);
     execLineLengths[checkin_counter_number]++;
     execLineCV[checkin_counter_number]->Wait(execLineLock[checkin_counter_number]);
-
+    if(current_test == 3) {
+      currentThread->Finish();
+    }
     // Find the line of the Check in staff
     for(int i = start; i <= stop; i++) {
       if(waitingForExec[i] == true) {
@@ -660,6 +662,9 @@ void Passenger(int myNumber) {
     printf("%s chose Airline Check In %d with length %d\n", currentThread->getName(), myLineNumber, cisLineLengths[myLineNumber]);
 
     waitingForCIS_C[myLineNumber]->Wait(cisLineLock[checkin_counter_number]);
+    if(current_test == 3) {
+      currentThread->Finish();
+    }
     // cisLineLengths[myLineNumber]--;
     
     printf("%s going to see Airline Check In Staff %d\n",currentThread->getName(), myLineNumber); 
@@ -1097,49 +1102,49 @@ void Test2() {
 }
 
 void Test3() {
-  printf("Starting Test One\n");
+  printf("Starting Test Three\n");
   current_test = 3;
   AirportSimulation();
 }
 
 void Test4() {
-  printf("Starting Test One\n");
+  printf("Starting Test Four\n");
   current_test = 4;
   AirportSimulation();
 }
 
 void Test5() {
-  printf("Starting Test One\n");
+  printf("Starting Test Five\n");
   current_test = 5;
   AirportSimulation();
 }
 
 void Test6() {
-  printf("Starting Test One\n");
+  printf("Starting Test Six\n");
   current_test = 6;
   AirportSimulation();
 }
 
 void Test7() {
-  printf("Starting Test One\n");
+  printf("Starting Test Seven\n");
   current_test = 7;
   AirportSimulation();
 }
 
 void Test8() {
-  printf("Starting Test One\n");
+  printf("Starting Test Eight\n");
   current_test = 8;
   AirportSimulation();
 }
 
 void Test9() {
-  printf("Starting Test One\n");
+  printf("Starting Test Nine\n");
   current_test = 9;
   AirportSimulation();
 }
 
 void Test10() {
-  printf("Starting Test One\n");
+  printf("Starting Test Ten\n");
   current_test = 10;
   AirportSimulation();
 }
