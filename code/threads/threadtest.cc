@@ -177,6 +177,7 @@ void CargoHandler(int myNumber) {
       airline_CH_Lock->Release()
 
      */
+    /*
     if(onBreak_CH) {
       printf("Cargo Handler %d is going for a break\n",myNumber);
       if(current_test == 6) {
@@ -184,10 +185,11 @@ void CargoHandler(int myNumber) {
       }
       onBreakCH.Wait(&conveyorBelt_Lock);
     }
+    */
     for(int i = 0; i < numberOfPassengers; i++) {
       if(conveyorBelt[i].number_of_bags > 0) {
 	// Cargo Handler Found a bag
-	// printf("Cargo Handler %d picked bag of airline %d with weighing %d lbs\n",myNumber,conveyorBelt[i].airline_code,conveyorBelt[i].weight);
+	printf("Cargo Handler %d picked bag of airline %d with weighing %d lbs\n",myNumber,conveyorBelt[i].airline_code,conveyorBelt[i].weight);
 	cargoHandlerBaggageCount[conveyorBelt[i].airline_code]+=conveyorBelt[i].number_of_bags;
 	conveyorBelt[i].number_of_bags = 0;
 	conveyorBelt[i].airline_code = -1;
