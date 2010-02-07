@@ -284,7 +284,7 @@ void SecurityInspector(int myNumber) {
       // sicount++;
       printf("%s: moving Passenger to Boarding: passengers moved: %d \n", currentThread->getName(), sicount);
     }
-    
+    sicount++;
     siLock[myNumber]->Release();
 
   }
@@ -798,7 +798,7 @@ void Passenger(int myNumber) {
     siLineLock.Release();
     waitingForTicket_SI_C[myLineNumber]->Signal(siLock[myLineNumber]);
     waitingForTicket_SI_C[myLineNumber]->Wait(siLock[myLineNumber]);
-    siLock[myLineLock]->Release();
+    siLock[myLineNumber]->Release();
     
     // end new
 
