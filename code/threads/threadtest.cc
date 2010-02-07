@@ -521,10 +521,11 @@ void CheckInStaff(int myNumber) {
       //cisLineLock[myAirline]->Acquire();
       waitingForCIS_C[myNumber]->Signal(cisLineLock[myAirline]);
       printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
-    
-
-      cisLock[myNumber]->Acquire();
+      if(current_test != 3) {
+	cisLock[myNumber]->Acquire();
+      }
       cisLineLock[myAirline]->Release();
+      
 
       waitingForTicket_CIS_C[myNumber]->Wait(cisLock[myNumber]);
       waitingForTicket_CIS_C[myNumber]->Signal(cisLock[myNumber]);
