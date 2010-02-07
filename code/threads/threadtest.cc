@@ -42,6 +42,8 @@ using namespace std;
 #define probabilityPassingSO 90
 #define probabilityPassingSI 90
 
+int current_test = 0;
+
 int sicount = 1;
 int socount = 1;
 int pass_si_count = 1;
@@ -566,6 +568,9 @@ void Passenger(int myNumber) {
   }
 
   alLineLock.Release();
+  if(current_test == 1) {
+    currentThread->Sleep();
+  }
   alLock[myLineNumber]->Acquire();
 
   printf("%s: Going to see Liaison %d\n",currentThread->getName(),myLineNumber);
@@ -1062,7 +1067,8 @@ void AirportSimulation() {
 }
 
 void Test1() {
-  printf("Starting Test One");
+  printf("Starting Test One\n");
+  current_test = 1;
   AirportSimulation();
 }
 
