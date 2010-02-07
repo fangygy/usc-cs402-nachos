@@ -792,6 +792,11 @@ void Passenger(int myNumber) {
     //waitingForSIAfterQuestioning_C[myLineNumber]->Signal(&siLineLock);
     //waitingForSIAfterQuestioning_C[myLineNumber]->Wait(&siLineLock);
 
+    // The passenger will return to their original airport inspector
+    if(current_test == 8) {
+      printf("Passenger %d returning to Airport Inspector %d\n",myNumber,myLineNumber);
+    }
+
     waitingForSI_C[myLineNumber]->Signal(&siLineLock);
     waitingForSI_C[myLineNumber]->Wait(&siLineLock);
 
