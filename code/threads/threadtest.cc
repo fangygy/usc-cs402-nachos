@@ -1184,7 +1184,7 @@ void Test5() {
 void Test6() {
   printf("Starting Test Six\n");
   current_test = 6;
-  int g = 0;
+  int i;
   for(i=0; i <numberOfPassengers; i++) {
     conveyorBelt[i].numberOfBags = (i%2)+2;
     conveyorBelt[i].airline_code = (i%3);
