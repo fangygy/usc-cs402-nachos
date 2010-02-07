@@ -274,14 +274,14 @@ void SecurityInspector(int myNumber) {
       }
 
       // Clear passenger and direct to Boarding
-      sicount++;
+      // sicount++;
       printf("%s: moving Passenger to Boarding: passengers moved: %d \n", currentThread->getName(), sicount);
 
     } else {
       // Passenger returned from further questioning
       printf("%s: Clearing passenger who returned from further questioning\n", currentThread->getName());
       // Clear passenger and direct to boarding
-      sicount++;
+      // sicount++;
       printf("%s: moving Passenger to Boarding: passengers moved: %d \n", currentThread->getName(), sicount);
     }
     
@@ -807,7 +807,7 @@ void Passenger(int myNumber) {
     //siLock[myLineNumber]->Acquire();
     //siPassenger[myLineNumber] = myNumber;
   }
-
+  si_count++;
   printf("-----Number of Passengers chosen inspector: %d\n",pass_si_count);
   pass_si_count++;
 
