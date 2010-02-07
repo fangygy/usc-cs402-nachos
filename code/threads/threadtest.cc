@@ -251,6 +251,7 @@ void SecurityInspector(int myNumber) {
     if(passengersFailedSI[ siPassenger[myNumber] ]) {
       // passenger returning from further questioning
       passengerQuestioned = true;
+      //si_busy[myNumber] = false; // passenger fails so i am not busy
     }
     
     waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
@@ -276,14 +277,14 @@ void SecurityInspector(int myNumber) {
 
       } else {
 	// Clear passenger and direct to Boarding
-	// sicount++;
+	sicount++;
 	printf("%s: moving Passenger %d to Boarding:\n", currentThread->getName(),siPassenger[myNumber], sicount);
       }
     } else {
       // Passenger returned from further questioning
       printf("%s: Clearing passenger who returned from further questioning\n", currentThread->getName());
       // Clear passenger and direct to boarding
-      // sicount++;
+      sicount++;
       printf("%s: moving Passenger %d to Boarding: \n", currentThread->getName(),siPassenger[myNumber], sicount);
     }
     
@@ -352,7 +353,6 @@ void SecurityOfficer(int myNumber) {
 	    if( !(si_busy[i]) ) {
 	      passengerGoToSI[ soPassenger[myNumber] ] = i;
 	      foundAvailableSO = true;
-	      si_busy[i] = true;
 	      break;
 	    }
 	  }
@@ -805,22 +805,11 @@ void Passenger(int myNumber) {
 
     //siBackFromQuestioningLineLengths[myLineNumber]--;
     siLineLengths[myLineNumber]--;
-    
-    // new code
+
+    siLineLock.Release();
     
     siLock[myLineNumber]->Acquire();
     siPassenger[myLineNumber] = myNumber;
-    siLineLock.Release();
-    waitingForTicket_SI_C[myLineNumber]->Signal(siLock[myLineNumber]);
-    waitingForTicket_SI_C[myLineNumber]->Wait(siLock[myLineNumber]);
-    siLock[myLineNumber]->Release();
-    
-    // end new
-
-    //siLineLock.Release();
-    
-    //siLock[myLineNumber]->Acquire();
-    //siPassenger[myLineNumber] = myNumber;
   }
   
   printf("-----Number of Passengers chosen inspector: %d\n",pass_si_count);
