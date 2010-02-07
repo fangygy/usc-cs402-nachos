@@ -200,7 +200,7 @@ void CargoHandler(int myNumber) {
       // Goes through entire array and can not find a single bag
       if(i == (numberOfPassengers-1)) {
 	onBreak_CH = true;
-	onBreakCH.Wait->(&conveyorBelt_Lock);
+	onBreakCH.Wait(&conveyorBelt_Lock);
 	// conveyorBelt_Lock.Release();
       }      
     }
