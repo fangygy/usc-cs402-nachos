@@ -795,8 +795,8 @@ void Passenger(int myNumber) {
     siLock[myLineNumber]->Acquire();
     siPassenger[myLineNumber] = myNumber;
     siLineLock.Release();
-    waitingForTicket_SI_C[myLineNumber]->Wait(siLock[myLineNumber]);
     waitingForTicket_SI_C[myLineNumber]->Signal(siLock[myLineNumber]);
+    waitingForTicket_SI_C[myLineNumber]->Wait(siLock[myLineNumber]);
     siLock[myLineLock]->Release();
     // end new
 
