@@ -182,8 +182,9 @@ void CargoHandler(int myNumber) {
       printf("Cargo Handler %d is going for a break\n",myNumber);
       if(current_test == 6) {
 	currentThread->Finish();
+      } else {
+	onBreakCH.Wait(&conveyorBelt_Lock);
       }
-      onBreakCH.Wait(&conveyorBelt_Lock);
     }
     
     for(int i = 0; i < numberOfPassengers; i++) {
