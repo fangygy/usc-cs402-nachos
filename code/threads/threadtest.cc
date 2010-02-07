@@ -199,6 +199,9 @@ void CargoHandler(int myNumber) {
       if(i == (numberOfPassengers-1)) {
 	printf("Cargo Handler %d is going for a break\n",myNumber);
 	onBreak_CH = true;
+	if(current_test == 6) {
+	  currentThread->Finish();
+	}
 	break;
       }      
     }
@@ -1181,7 +1184,19 @@ void Test5() {
 void Test6() {
   printf("Starting Test Six\n");
   current_test = 6;
-  AirportSimulation();
+  int g = 0;
+  for(i=0; i <numberOfPassengers; i++) {
+    conveyorBelt[i].numberOfBags = (i%2)+2;
+    conveyorBelt[i].airline_code = (i%3);
+    conveyorBelt[i].weight = 60;
+  }
+  Thread *t;
+  for(i=0; i < numberOfCH; i++) {
+    name = new char[20];
+    sprintf(name, "CargoHandler%d",i);
+    t = new Thread(name);
+    t->Fork((VoidFunctionPtr)CargoHandler,i);
+  }
 }
 
 void Test7() {
