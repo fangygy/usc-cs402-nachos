@@ -103,7 +103,9 @@ int passengerGoToSI[numberOfPassengers];
 
 
 void AirportManager(int myNumber) {
-    
+  if(current_test == 1) {
+    currentThread->Finish();
+  }
   while(true) {
     // if all passengers are accounted for
     // issue broadcast
@@ -153,6 +155,9 @@ void AirportManager(int myNumber) {
 }
 
 void CargoHandler(int myNumber) {
+  if(current_test == 1) {
+    currentThread->Finish();
+  }
   while(true) {
     conveyorBelt_Lock.Acquire();
     /*
@@ -205,6 +210,9 @@ bool so_passOrFail[numberOfSO];
 int siPassenger[numberOfSO];
 
 void SecurityInspector(int myNumber) {
+  if(current_test == 1) {
+    currentThread->Finish();
+  }
   while(true) {
     
     si_busy[myNumber] = false;
@@ -282,6 +290,9 @@ bool so_busy[numberOfSO];
 int soPassenger[numberOfSO];
 
 void SecurityOfficer(int myNumber) {
+  if(current_test == 1) {
+    currentThread->Finish();
+  }
   while(true) {
     
     soLineLock.Acquire();
@@ -432,6 +443,9 @@ int cisPassengerCount = 0;
 int cisBaggageWeight[numberOfAirlines]; // keep track of the weight for each airline
 
 void CheckInStaff(int myNumber) {
+  if(current_test == 1) {
+    current_thread->Finish();
+  } 
   while(true) {
     int myAirline;
     if(myNumber > 9) {
