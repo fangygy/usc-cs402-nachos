@@ -210,7 +210,7 @@ bool so_passOrFail[numberOfSO];
 int siPassenger[numberOfSO];
 
 void SecurityInspector(int myNumber) {
-  if((current_test == 1)||(current_test==2)) {
+  if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)) {
     currentThread->Finish();
   }
   while(true) {
@@ -289,7 +289,7 @@ bool so_busy[numberOfSO];
 int soPassenger[numberOfSO];
 
 void SecurityOfficer(int myNumber) {
-  if((current_test == 1)||(current_test==2)) {
+  if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)) {
     currentThread->Finish();
   }
   while(true) {
@@ -687,6 +687,9 @@ void Passenger(int myNumber) {
     waitingForTicket_CIS_C[myLineNumber]->Signal(cisLock[myLineNumber]);
     waitingForTicket_CIS_C[myLineNumber]->Wait(cisLock[myLineNumber]);
     cisLock[myLineNumber]->Release();
+  }
+  if(current_test == 4) {
+    currentThread->Finish();
   }
   // --------------------------------------------------------
   // 3. Passenger goes to see Airport Security Officer
