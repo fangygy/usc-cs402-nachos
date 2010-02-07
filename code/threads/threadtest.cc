@@ -274,12 +274,11 @@ void SecurityInspector(int myNumber) {
 	printf("%s: Passenger is undergoing further questioning\n", currentThread->getName());
 	passengersFailedSI[ siPassenger[myNumber] ] = true;
 
+      } else {
+	// Clear passenger and direct to Boarding
+	// sicount++;
+	printf("%s: moving Passenger %d to Boarding:\n", currentThread->getName(),siPassenger[myNumber], sicount);
       }
-
-      // Clear passenger and direct to Boarding
-      // sicount++;
-      printf("%s: moving Passenger %d to Boarding:\n", currentThread->getName(),siPassenger[myNumber], sicount);
-
     } else {
       // Passenger returned from further questioning
       printf("%s: Clearing passenger who returned from further questioning\n", currentThread->getName());
