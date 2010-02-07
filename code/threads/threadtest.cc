@@ -197,8 +197,10 @@ void CargoHandler(int myNumber) {
 	conveyorBelt_Lock.Release();
 	break;
       }
+      // Goes through entire array and can not find a single bag
       if(i == (numberOfPassengers-1)) {
 	onBreak_CH = true;
+	conveyorBelt_Lock.Release();
 	break;
       }      
     }
