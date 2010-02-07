@@ -181,6 +181,7 @@ void CargoHandler(int myNumber) {
     if(onBreak_CH) {
       printf("Cargo Handler %d is going for a break\n",myNumber);
       if(current_test == 6) {
+	conveyorBelt_Lock.Release();
 	currentThread->Finish();
       } else {
 	onBreakCH.Wait(&conveyorBelt_Lock);
