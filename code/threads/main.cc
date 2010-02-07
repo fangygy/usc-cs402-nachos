@@ -63,6 +63,15 @@ extern void MailTest(int networkID);
 extern void TestSuite(void);
 extern void AirportSimulation(void);
 extern void Test1(void);
+extern void Test2(void);
+extern void Test3(void);
+extern void Test4(void);
+extern void Test5(void);
+extern void Test6(void);
+extern void Test7(void);
+extern void Test8(void);
+extern void Test9(void);
+extern void Test10(void);
 
 //----------------------------------------------------------------------
 // main
@@ -100,6 +109,24 @@ main(int argc, char **argv)
 	  AirportSimulation();
 	if(!strcmp(*argv, "-t1"))
 	  Test1();
+	if(!strcmp(*argv, "-t2"))
+	  Test2();
+	if(!strcmp(*argv, "-t3"))
+	  Test3();
+	if(!strcmp(*argv, "-t4"))
+	  Test4();
+	if(!strcmp(*argv, "-t5"))
+	  Test5();
+	if(!strcmp(*argv, "-t6"))
+	  Test6();
+	if(!strcmp(*argv, "-t7"))
+	  Test7();
+	if(!strcmp(*argv, "-t8"))
+	  Test8();
+	if(!strcmp(*argv, "-t9"))
+	  Test9();
+	if(!strcmp(*argv, "-t10"))
+	  Test10();
 
 #endif
 #ifdef USER_PROGRAM

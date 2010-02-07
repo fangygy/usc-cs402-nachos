@@ -103,7 +103,7 @@ int passengerGoToSI[numberOfPassengers];
 
 
 void AirportManager(int myNumber) {
-  if(current_test == 1) {
+  if(current_test > 0) {
     currentThread->Finish();
   }
   while(true) {
@@ -210,7 +210,7 @@ bool so_passOrFail[numberOfSO];
 int siPassenger[numberOfSO];
 
 void SecurityInspector(int myNumber) {
-  if(current_test == 1) {
+  if((current_test == 1)||(current_test==2)) {
     currentThread->Finish();
   }
   while(true) {
@@ -290,7 +290,7 @@ bool so_busy[numberOfSO];
 int soPassenger[numberOfSO];
 
 void SecurityOfficer(int myNumber) {
-  if(current_test == 1) {
+  if((current_test == 1)||(current_test==2)) {
     currentThread->Finish();
   }
   while(true) {
@@ -443,7 +443,7 @@ int cisPassengerCount = 0;
 int cisBaggageWeight[numberOfAirlines]; // keep track of the weight for each airline
 
 void CheckInStaff(int myNumber) {
-  if(current_test == 1) {
+  if((current_test == 1)||(current_test==2)) {
     currentThread->Finish();
   } 
   while(true) {
@@ -1090,7 +1090,59 @@ void Test1() {
   AirportSimulation();
 }
 
+void Test2() {
+  printf("Starting Test Two\n");
+  current_test = 2;
+  AirportSimulation();
+}
 
+void Test3() {
+  printf("Starting Test One\n");
+  current_test = 3;
+  AirportSimulation();
+}
+
+void Test4() {
+  printf("Starting Test One\n");
+  current_test = 4;
+  AirportSimulation();
+}
+
+void Test5() {
+  printf("Starting Test One\n");
+  current_test = 5;
+  AirportSimulation();
+}
+
+void Test6() {
+  printf("Starting Test One\n");
+  current_test = 6;
+  AirportSimulation();
+}
+
+void Test7() {
+  printf("Starting Test One\n");
+  current_test = 7;
+  AirportSimulation();
+}
+
+void Test8() {
+  printf("Starting Test One\n");
+  current_test = 8;
+  AirportSimulation();
+}
+
+void Test9() {
+  printf("Starting Test One\n");
+  current_test = 9;
+  AirportSimulation();
+}
+
+void Test10() {
+  printf("Starting Test One\n");
+  current_test = 10;
+  AirportSimulation();
+}
 
 
 //----------------------------------------------------------------------
