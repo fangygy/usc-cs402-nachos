@@ -1233,7 +1233,7 @@ void Test8() {
 
 void Test9() {
   printf("Starting Test Nine\n");
-  current_test = 9;
+  // current_test = 9;
   AirportSimulation();
 }
 
