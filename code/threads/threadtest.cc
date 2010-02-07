@@ -197,9 +197,7 @@ void CargoHandler(int myNumber) {
 	break;
       }
       if(i == (numberOfPassengers-1)) {
-	// printf("Cargo Handler %d is going for a break\n",myNumber);
 	onBreak_CH = true;
-
 	break;
       }      
     }
@@ -717,7 +715,7 @@ void Passenger(int myNumber) {
   myLineNumber = findShortestLine(soLineLengths, 7);
 
   soLineLengths[myLineNumber]++;
-  printf("%s: chose Security %d with length %d\n", currentThread->getName(), myLineNumber, soLineLengths[myLineNumber]);
+  // printf("%s: chose Security %d with length %d\n", currentThread->getName(), myLineNumber, soLineLengths[myLineNumber]);
   waitingForSO_C[myLineNumber]->Signal(&soLineLock);
   waitingForSO_C[myLineNumber]->Wait(&soLineLock);
   
@@ -731,9 +729,8 @@ void Passenger(int myNumber) {
   // The Passenger now has the line number, so they should go to sleep and
   // release the line lock, letting another Passenger search for a line
   waitingForTicket_SO_C[myLineNumber]->Signal(soLock[myLineNumber]);
-  printf("%s giving airline ticket to Security Officer %d\n", currentThread->getName(), myLineNumber);
+  printf("Passenger %d gives the hand-luggage to screening officer %d\n", myNumber, myLineNumber);
   waitingForTicket_SO_C[myLineNumber]->Wait(soLock[myLineNumber]);
-
 
   soLock[myLineNumber]->Release();
 
@@ -769,6 +766,11 @@ void Passenger(int myNumber) {
   waitingForTicket_SI_C[myLineNumber]->Wait(siLock[myLineNumber]);
 
   siLock[myLineNumber]->Release();
+
+  // Test 7 ends here
+  if(current_test ==7) {
+    currentThread->Finish();
+  }
 
   if(passengersFailedSI[myNumber]) {
     //going to further questioning
