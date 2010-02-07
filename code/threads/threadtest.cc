@@ -285,7 +285,7 @@ void SecurityInspector(int myNumber) {
       printf("%s: Clearing passenger who returned from further questioning\n", currentThread->getName());
       // Clear passenger and direct to boarding
       // sicount++;
-      printf("%s: moving Passenger %d to Boarding: \n", currentThread->getName(),siPassenger[myNumber] sicount);
+      printf("%s: moving Passenger %d to Boarding: \n", currentThread->getName(),siPassenger[myNumber], sicount);
     }
     
     sicount++;
