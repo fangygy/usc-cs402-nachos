@@ -976,8 +976,6 @@ void AirportSimulation() {
     seatNumber[i]               = 0;
   }
 
-  
-  
   // Create the 20 passenger for our airport simulation
   printf("Creating Passengers\n");
   for( i=0; i < numberOfPassengers; i++) {
@@ -1062,6 +1060,12 @@ void AirportSimulation() {
   t->Fork((VoidFunctionPtr)AirportManager,1);
   
 }
+
+void Test1() {
+  AirportSimulation();
+}
+
+
 
 
 //----------------------------------------------------------------------
