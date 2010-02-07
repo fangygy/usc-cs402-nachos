@@ -160,7 +160,7 @@ void AirportManager(int myNumber) {
 }
 
 void CargoHandler(int myNumber) {
-  if((current_test!=6)) {
+  if((current_test!=6)&&(current_test!=0)) {
     currentThread->Finish();
   }
   while(true) {
