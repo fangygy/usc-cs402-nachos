@@ -180,7 +180,7 @@ void CargoHandler(int myNumber) {
 
      */
     if(onBreak_CH) {
-      printf("Cargo Handler %d is going for a break\n",myNumber);
+      // printf("Cargo Handler %d is going for a break\n",myNumber);
       if(current_test == 6) {
 	currentThread->Finish();
       }
@@ -189,7 +189,7 @@ void CargoHandler(int myNumber) {
     for(int i = 0; i < numberOfPassengers; i++) {
       if(conveyorBelt[i].number_of_bags > 0) {
 	// Cargo Handler Found a bag
-	printf("Cargo Handler %d picked bag of airline %d with weighing %d lbs\n",myNumber,conveyorBelt[i].airline_code,conveyorBelt[i].weight);
+	// printf("Cargo Handler %d picked bag of airline %d with weighing %d lbs\n",myNumber,conveyorBelt[i].airline_code,conveyorBelt[i].weight);
 	cargoHandlerBaggageCount[conveyorBelt[i].airline_code]+=conveyorBelt[i].number_of_bags;
 	conveyorBelt[i].number_of_bags = 0;
 	conveyorBelt[i].airline_code = -1;
@@ -255,7 +255,7 @@ void SecurityInspector(int myNumber) {
     
     waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
     waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
-    /*
+    
     if( !(passengerQuestioned) ) {
       bool passedSI;
       int randomNum = rand() % 100;
@@ -287,7 +287,7 @@ void SecurityInspector(int myNumber) {
       // sicount++;
       printf("%s: moving Passenger to Boarding: passengers moved: %d \n", currentThread->getName(), sicount);
     }
-    */
+    
     sicount++;
     printf("si has moved %d passengers",sicount);
     // Keep track of how many passengers are cleared for each airline
@@ -317,11 +317,11 @@ void SecurityOfficer(int myNumber) {
     soLineLock.Acquire();
     
     if(soLineLengths[myNumber]>0) {
-      printf("%s: Telling passenger to come through Security\n", currentThread->getName());
+      //printf("%s: Telling passenger to come through Security\n", currentThread->getName());
       waitingForSO_C[myNumber]->Signal(&soLineLock);
     } else {
       waitingForSO_C[myNumber]->Wait(&soLineLock);
-      printf("%s: Telling passenger to come through Security\n", currentThread->getName());
+      //printf("%s: Telling passenger to come through Security\n", currentThread->getName());
       waitingForSO_C[myNumber]->Signal(&soLineLock);
     }
     
@@ -336,11 +336,11 @@ void SecurityOfficer(int myNumber) {
     if(randomNum < probabilityPassingSO) {
       //passenger passed
       so_passOrFail[myNumber] = true;
-      printf("%s: Passenger passed Security Officer inspection\n", currentThread->getName());
+      //printf("%s: Passenger passed Security Officer inspection\n", currentThread->getName());
     } else {
       //passenger failed
       so_passOrFail[myNumber] = false;
-      printf("%s: Passenger failed Security Officer inspection\n", currentThread->getName());
+      //printf("%s: Passenger failed Security Officer inspection\n", currentThread->getName());
     }
     
     siLineLock.Acquire();
@@ -430,7 +430,7 @@ void AirportLiaison(int myNumber) {
     waitingForTicket_AL_C[myNumber]->Signal(alLock[myNumber]);
     pass_ticket_buffer[alPassenger[myNumber]].checkin_counter = pass_ticket_buffer[alPassenger[myNumber]].flight_number;  
     //pass_ticket_buffer[alPassengerpmyNumber]].checkin_counter = 
-    printf("%s: Directing Passenger%d to Airline check in counter %d\n", currentThread->getName(), alPassenger[myNumber], pass_ticket_buffer[alPassenger[myNumber]].checkin_counter);
+    //printf("%s: Directing Passenger%d to Airline check in counter %d\n", currentThread->getName(), alPassenger[myNumber], pass_ticket_buffer[alPassenger[myNumber]].checkin_counter);
     alPassengerCount++;
     alLock[myNumber]->Release();
   }
@@ -519,7 +519,7 @@ void CheckInStaff(int myNumber) {
 
       int flight_number = pass_ticket_buffer[cisPassenger[myNumber]].flight_number;   
 
-      printf("Passenger %d of Airline %d was informed to board at gate %d\n",cisPassenger[myNumber], myAirline, flight_number);
+      //printf("Passenger %d of Airline %d was informed to board at gate %d\n",cisPassenger[myNumber], myAirline, flight_number);
       
       // Add these bags to the total count fort a given airline, specified by Flight Number
       cis_baggage_buffer[flight_number] += baggage_buffer[cisPassenger[myNumber]].weight;
@@ -543,7 +543,7 @@ void CheckInStaff(int myNumber) {
       //printf("line %d has more than one passenger\n", myNumber);
       //cisLineLock[myAirline]->Acquire();
       waitingForCIS_C[myNumber]->Signal(cisLineLock[myAirline]);
-      printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
+      //printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
       cisLock[myNumber]->Acquire();
       
       cisLineLock[myAirline]->Release();
@@ -556,7 +556,7 @@ void CheckInStaff(int myNumber) {
 
       // Give the Passenger a seat number
       boarding_pass_buffer[cisPassenger[myNumber]].seat_number = seatNumber[flight_number]++;
-      printf("Passenger %d has seat number %d\n",cisPassenger[myNumber],seatNumber[flight_number]-1);
+      //printf("Passenger %d has seat number %d\n",cisPassenger[myNumber],seatNumber[flight_number]-1);
       // Add these bags to the total count fort a given airline, specified by Flight Number
       cis_baggage_buffer[flight_number] += baggage_buffer[cisPassenger[myNumber]].weight;
       
@@ -564,7 +564,7 @@ void CheckInStaff(int myNumber) {
       conveyorBelt[cisPassenger[myNumber]].airline_code = flight_number;
       conveyorBelt[cisPassenger[myNumber]].number_of_bags = baggage_buffer[cisPassenger[myNumber]].numberOfBags;
 
-      printf("%s giving Passenger %d ticket number and directing them to gate\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
+      //printf("%s giving Passenger %d ticket number and directing them to gate\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
       cisFlightCount[myAirline]++;
       cisPassengerCount++;
     }
@@ -595,14 +595,14 @@ void Passenger(int myNumber) {
     printf("Passenger %d is an executive passenger\n",myNumber);
 
   // Set the Passenger's Line number
-  printf("%s: Searching for the shortest line\n", currentThread->getName());
+  //printf("%s: Searching for the shortest line\n", currentThread->getName());
   myLineNumber = findShortestLine(alLineLengths,7);
   
   // If there are people in the line, or the Airport Liaison is busy
   // then the Passenger must wait in line and NOT approach the Airport Liaison
   if((alLineLengths[myLineNumber] > 0)||(al_busy[myLineNumber])) {
     alLineLengths[myLineNumber]++;
-    printf("%s chose Liaison %d  with a line of length %d\n",currentThread->getName(),myLineNumber,alLineLengths[myLineNumber]);
+    //printf("%s chose Liaison %d  with a line of length %d\n",currentThread->getName(),myLineNumber,alLineLengths[myLineNumber]);
     waitingForAL_C[myLineNumber]->Wait(&alLineLock);
     al_busy[myLineNumber] == true;
   }
@@ -613,7 +613,7 @@ void Passenger(int myNumber) {
   }
   alLock[myLineNumber]->Acquire();
 
-  printf("%s: Going to see Liaison %d\n",currentThread->getName(),myLineNumber);
+  //printf("%s: Going to see Liaison %d\n",currentThread->getName(),myLineNumber);
   alLineLengths[myLineNumber]--;
 
   // Passenger is told to go to counter, and hands their ticket to Liaison
@@ -647,7 +647,7 @@ void Passenger(int myNumber) {
   
   if(amExecutive) {
     execLineLock[checkin_counter_number]->Acquire();
-    printf("------Executive %s standing in executive line %d\n",currentThread->getName(),checkin_counter_number);
+    //printf("------Executive %s standing in executive line %d\n",currentThread->getName(),checkin_counter_number);
     execLineLengths[checkin_counter_number]++;
     execLineCV[checkin_counter_number]->Wait(execLineLock[checkin_counter_number]);
     if(current_test == 3) {
@@ -663,7 +663,7 @@ void Passenger(int myNumber) {
     
     // Tell CIS that passenger is ready
     // execLineCV[checkin_counter_number]->Signal(execLineLock[checkin_counter_number]);
-    printf("Passenger %d of Airline %d is waiting in the executive class line\n", currentThread->getName(), pass_ticket_buffer[myNumber].flight_number);
+    //printf("Passenger %d of Airline %d is waiting in the executive class line\n", currentThread->getName(), pass_ticket_buffer[myNumber].flight_number);
     // Waiting for CIS to give them boarding pass
     // execLineCV[checkin_counter_number]->Wait(execLineLock[checkin_counter_number]);
     execLineLengths[checkin_counter_number]--;
@@ -686,7 +686,7 @@ void Passenger(int myNumber) {
     cisLineLengths[myLineNumber]++;
     onBreakCIS_C[myLineNumber]->Signal(cisLineLock[checkin_counter_number]);
     cis_current_passenger_serving[myLineNumber] = myNumber;
-    printf("%s of Airline %d chose Airline Check-In staff %d with a line length %d\n", currentThread->getName(), pass_ticket_buffer[myNumber].flight_number, myLineNumber, cisLineLengths[myLineNumber]);
+    //printf("%s of Airline %d chose Airline Check-In staff %d with a line length %d\n", currentThread->getName(), pass_ticket_buffer[myNumber].flight_number, myLineNumber, cisLineLengths[myLineNumber]);
 
     waitingForCIS_C[myLineNumber]->Wait(cisLineLock[checkin_counter_number]);
     if(current_test == 3) {
@@ -739,7 +739,7 @@ void Passenger(int myNumber) {
   // The Passenger now has the line number, so they should go to sleep and
   // release the line lock, letting another Passenger search for a line
   waitingForTicket_SO_C[myLineNumber]->Signal(soLock[myLineNumber]);
-  printf("Passenger %d gives the hand-luggage to screening officer %d\n", myNumber, myLineNumber);
+  //printf("Passenger %d gives the hand-luggage to screening officer %d\n", myNumber, myLineNumber);
   waitingForTicket_SO_C[myLineNumber]->Wait(soLock[myLineNumber]);
 
   soLock[myLineNumber]->Release();
@@ -778,7 +778,7 @@ void Passenger(int myNumber) {
   waitingForTicket_SI_C[myLineNumber]->Wait(siLock[myLineNumber]);
 
   siLock[myLineNumber]->Release();
-  /*
+  
   if(passengersFailedSI[myNumber]) {
     //going to further questioning
     
@@ -822,7 +822,7 @@ void Passenger(int myNumber) {
     //siLock[myLineNumber]->Acquire();
     //siPassenger[myLineNumber] = myNumber;
   }
-  */
+  
   printf("-----Number of Passengers chosen inspector: %d\n",pass_si_count);
   pass_si_count++;
 
