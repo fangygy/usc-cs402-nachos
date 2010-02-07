@@ -92,6 +92,7 @@ bool onBreak_CH = true;
 
 struct conveyorBelt {
   int number_of_bags;
+  int weight;
   int airline_code;
 } conveyorBelt[numberOfPassengers];
 
@@ -116,6 +117,7 @@ void AirportManager(int myNumber) {
 	if(conveyorBelt[i].number_of_bags == 0) {
 	  // check next bag
 	} else {
+	  printf("Airport Manager calls back all the cargo handlers from break\n");
 	  onBreakCH.Broadcast(&conveyorBelt_Lock);
 	  break;
 	}
@@ -143,7 +145,7 @@ void AirportManager(int myNumber) {
       }
       printf("flight %d count %d , cisflightcount %d\n",i,flightCount[i],cisFlightCount[i]); 
       if(!alreadyCalled[i]&&(flightCount[i] == cisFlightCount[i])&&(flightCount[i]!=0)&&(cisFlightCount[i]!=0)&&(cargoHandlerBaggageCount[i]==al_baggage_buffer[i])) {
-	printf("issuing boarding call for flight %d \n",i);
+	printf("Airport Manager gives a boarding call to airline %d \n",i);
 	waitingForCallAM_C[i]->Broadcast(airlineLock[i]);
 	alreadyCalled[i] = true;
       } else {
@@ -183,7 +185,7 @@ void CargoHandler(int myNumber) {
     for(int i = 0; i < numberOfPassengers; i++) {
       if(conveyorBelt[i].number_of_bags > 0) {
 	// Cargo Handler Found a bag
-	printf("Loading passenger %d who has %d bags\n",i,conveyorBelt[i].number_of_bags);
+	printf("Cargo Handler %d picked bag of airline %d with weighing %d lbs\n",myNumber,conveyorBelt[i].airline_code,conveyorBelt[i].weight);
 	cargoHandlerBaggageCount[conveyorBelt[i].airline_code]+=conveyorBelt[i].number_of_bags;
 	conveyorBelt[i].number_of_bags = 0;
 	conveyorBelt[i].airline_code = -1;
@@ -191,6 +193,7 @@ void CargoHandler(int myNumber) {
 	break;
       }
       if(i == (numberOfPassengers-1)) {
+	printf("Cargo Handler %d is going for a break\n",myNumber);
 	onBreak_CH = true;
 	break;
       }      
@@ -511,7 +514,7 @@ void CheckInStaff(int myNumber) {
       // Now add these bags to the conveyor belt
       conveyorBelt[cisPassenger[myNumber]].airline_code = flight_number;
       conveyorBelt[cisPassenger[myNumber]].number_of_bags = baggage_buffer[cisPassenger[myNumber]].numberOfBags;
-      
+      conveyorBelt[cisPassenger[myNumber]].weight = baggage_buffer[cisPassenger[myNumber]].weight;
       //printf("Flight %d has %d bags\n", flight_number,al_baggage_buffer[flight_number]);
       
       // CIS not waiting for executive passenger anymore
