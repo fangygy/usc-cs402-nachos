@@ -807,7 +807,6 @@ void Passenger(int myNumber) {
     //siLock[myLineNumber]->Acquire();
     //siPassenger[myLineNumber] = myNumber;
   }
-  si_count++;
   printf("-----Number of Passengers chosen inspector: %d\n",pass_si_count);
   pass_si_count++;
 
