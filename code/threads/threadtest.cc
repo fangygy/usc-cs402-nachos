@@ -506,7 +506,7 @@ void CheckInStaff(int myNumber) {
       conveyorBelt[cisPassenger[myNumber]].airline_code = flight_number;
       conveyorBelt[cisPassenger[myNumber]].number_of_bags = baggage_buffer[cisPassenger[myNumber]].numberOfBags;
       
-      printf("Flight %d has %d bags ", flight_number,al_baggage_buffer[flight_number]);
+      //printf("Flight %d has %d bags\n", flight_number,al_baggage_buffer[flight_number]);
       
       // CIS not waiting for executive passenger anymore
       waitingForExec[myNumber]=false;
