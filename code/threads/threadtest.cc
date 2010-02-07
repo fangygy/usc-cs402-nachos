@@ -366,6 +366,7 @@ void AirportLiaison(int myNumber) {
     } else {
       // Airport Liaison is not busy if there is no one in line
       al_busy[myNumber] = false;
+
     }
     
     // Acquire the lock to the Airport Liaison
@@ -377,6 +378,9 @@ void AirportLiaison(int myNumber) {
     // Line Lock can then search for the shortest line and then get into the appropriate line 
     alLineLock.Release();
     
+    if(current_test == 1) {
+      currentThread->Finish();
+    }
     // The Airport Liaison must now wait for the Passenger to go up to their counter 
     // and give them their ticket 
     // Sleeping the Airport Liaison frees up the alLock, wakes up one Passenger and puts them on the 
@@ -569,7 +573,7 @@ void Passenger(int myNumber) {
 
   alLineLock.Release();
   if(current_test == 1) {
-    currentThread->Sleep();
+    currentThread->Finish();
   }
   alLock[myLineNumber]->Acquire();
 
