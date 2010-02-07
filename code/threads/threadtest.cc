@@ -213,10 +213,13 @@ Condition *waitingForTicket_SI_C[numberOfSO];
 //int siBackFromQuestioningLineLengths[numberOfSO];
 Lock siLineLock("si_LL");
 Lock *siLock[numberOfSO];
+Lock siAirplaneCountLock("si_ALL");
+
 int siLineLengths[numberOfSO];
 bool si_busy[numberOfSO];
 bool so_passOrFail[numberOfSO];
 int siPassenger[numberOfSO];
+int siAirlineCount[numberOfAirlines];
 
 void SecurityInspector(int myNumber) {
   if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)||(current_test==6)) {
@@ -285,6 +288,11 @@ void SecurityInspector(int myNumber) {
       printf("%s: moving Passenger to Boarding: passengers moved: %d \n", currentThread->getName(), sicount);
     }
     sicount++;
+    // Keep track of how many passengers are cleared for each airline
+    siAirplaneCountLock.Acquire();
+    siAirlineCount[siPassenger[myNumber]]++;
+    siAirplaneCountLock.Release();
+
     siLock[myNumber]->Release();
 
   }
@@ -1027,6 +1035,7 @@ void AirportSimulation() {
   for(i=0; i < numberOfAirlines; i++) {
     flightCount[i]=0;
     cisFlightCount[i]=0;
+    siAirlineCount[i]=0;
   }
 
   for(i = 0; i < numberOfAirlines; i++) {
@@ -1057,12 +1066,13 @@ void AirportSimulation() {
     // Randomize weights
     if(i%2==0) {
       baggage_buffer[i].numberOfBags = 2;
-      baggage_buffer[i].weight = 60;
+      baggage_buffer[i].weight = 120;
+      totalweight += 120;
     } else {
       baggage_buffer[i].numberOfBags = 3;
-      baggage_buffer[i].weight = 60;
+      baggage_buffer[i].weight = 180;
+      totalweight += 180;
     }
-    totalweight += 60;
     baggage_buffer[i].passenger_number = i;
     baggage_buffer[i].airline_code = (i%numberOfAirlines);
     boarding_pass_buffer[i].passenger_number = i;
@@ -1160,7 +1170,7 @@ void AirportSimulation() {
 }
 
 void Test1() {
-  //printf("Starting Test One\n");
+  printf("Starting Test One\n");
   current_test = 1;
   AirportSimulation();
 }
