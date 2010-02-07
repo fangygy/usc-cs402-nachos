@@ -220,7 +220,6 @@ int siPassenger[numberOfSO];
 
 void SecurityInspector(int myNumber) {
   if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)||(current_test==6)) {
-    printf("si thread finishing \n");
     currentThread->Finish();
   }
   while(true) {
@@ -231,6 +230,7 @@ void SecurityInspector(int myNumber) {
     
     siLineLock.Acquire();
 
+    // Security Inspectors checks to make sure if some one is returning back from questioning
     if(siLineLengths[myNumber]>0) {
       printf("%s: Telling passenger to come through Security\n", currentThread->getName());
       waitingForSI_C[myNumber]->Signal(&siLineLock);
@@ -761,7 +761,7 @@ void Passenger(int myNumber) {
   siLock[myLineNumber]->Acquire();
   siPassenger[myLineNumber] = myNumber;
 
- // The Passenger now has the line number, so they should go to sleep and
+  // The Passenger now has the line number, so they should go to sleep and
   // release the line lock, letting another Passenger search for a line
   printf("%s giving airline ticket to Security Inspector %d\n", currentThread->getName(), myLineNumber);
   waitingForTicket_SI_C[myLineNumber]->Signal(siLock[myLineNumber]);
@@ -775,24 +775,35 @@ void Passenger(int myNumber) {
     for(int i = 0; i < 10; i++)
       currentThread->Yield();
     
-    
+    // Passenger now comes back 
     siLineLock.Acquire();
 
+    // This works like the executive line
     siLineLengths[myLineNumber]++;
     //siBackFromQuestioningLineLengths[myLineNumber]++;
     //waitingForSIAfterQuestioning_C[myLineNumber]->Signal(&siLineLock);
     //waitingForSIAfterQuestioning_C[myLineNumber]->Wait(&siLineLock);
-    waitingForSI_C[myLineNumber]->Signal(&siLineLock);
 
+    waitingForSI_C[myLineNumber]->Signal(&siLineLock);
     waitingForSI_C[myLineNumber]->Wait(&siLineLock);
 
 
     //siBackFromQuestioningLineLengths[myLineNumber]--;
     siLineLengths[myLineNumber]--;
-    siLineLock.Release();
     
+    // new code
     siLock[myLineNumber]->Acquire();
     siPassenger[myLineNumber] = myNumber;
+    siLineLock.Release();
+    waitingForTicket_SI_C[myLineNumber]->Wait(siLock[myLineNumber]);
+    waitingForTicket_SI_C[myLineNumber]->Signal(siLock[myLineNumber]);
+    siLock[myLineLock]->Release();
+    // end new
+
+    // siLineLock.Release();
+    
+    // siLock[myLineNumber]->Acquire();
+    // siPassenger[myLineNumber] = myNumber;
   }
 
   printf("-----Number of Passengers chosen inspector: %d\n",pass_si_count);
