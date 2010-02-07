@@ -601,6 +601,7 @@ void Passenger(int myNumber) {
   alLock[myLineNumber]->Release();
   
   if(current_test == 2) {
+    printf("test 2 passenger thread finishing");
     currentThread->Finish();
   }
 
