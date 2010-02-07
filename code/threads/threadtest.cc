@@ -1179,7 +1179,7 @@ void Test5() {
 
 void Test6() {
   char* name;
-  onBreakCH = false;
+  onBreak_CH = false;
   printf("Starting Test Six\n");
   current_test = 6;
   int i;
