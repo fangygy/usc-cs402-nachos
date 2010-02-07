@@ -290,7 +290,7 @@ void SecurityInspector(int myNumber) {
     sicount++;
     // Keep track of how many passengers are cleared for each airline
     siAirplaneCountLock.Acquire();
-    siAirlineCount[siPassenger[myNumber]]++;
+    siAirlineCount[boarding_pass_buffer[siPassenger[myNumber]].flight_number]++;
     siAirplaneCountLock.Release();
 
     siLock[myNumber]->Release();
