@@ -117,7 +117,7 @@ void AirportManager(int myNumber) {
 	if(conveyorBelt[i].number_of_bags == 0) {
 	  // check next bag
 	} else {
-	  printf("Airport Manager calls back all the cargo handlers from break\n");
+	  //printf("Airport Manager calls back all the cargo handlers from break\n");
 	  onBreakCH.Broadcast(&conveyorBelt_Lock);
 	  break;
 	}
@@ -353,6 +353,7 @@ void SecurityOfficer(int myNumber) {
 	    if( !(si_busy[i]) ) {
 	      passengerGoToSI[ soPassenger[myNumber] ] = i;
 	      foundAvailableSO = true;
+	      si_busy[i] = true;
 	      break;
 	    }
 	  }
@@ -361,7 +362,7 @@ void SecurityOfficer(int myNumber) {
 
     // Clear passenger and direct to Security Inspector
     socount++;
-    printf("%s: moving Passenger to Security Inspector %d: number of Passengers moved: %d\n", currentThread->getName(), passengerGoToSI[ soPassenger[myNumber] ],socount);
+    //printf("%s: moving Passenger to Security Inspector %d: number of Passengers moved: %d\n", currentThread->getName(), passengerGoToSI[ soPassenger[myNumber] ],socount);
    
     soLock[myNumber]->Release();
   }
