@@ -62,6 +62,7 @@ extern void StartProcess(char *file), ConsoleTest(char *in, char *out);
 extern void MailTest(int networkID);
 extern void TestSuite(void);
 extern void AirportSimulation(void);
+extern void Test1(void);
 
 //----------------------------------------------------------------------
 // main
@@ -97,6 +98,8 @@ main(int argc, char **argv)
 	  ThreadTest();
 	if(!strcmp(*argv, "-2"))
 	  AirportSimulation();
+	if(!strcmp(*argv, "-t1"))
+	  Test1();
 
 #endif
 #ifdef USER_PROGRAM

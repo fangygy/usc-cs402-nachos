@@ -1062,6 +1062,7 @@ void AirportSimulation() {
 }
 
 void Test1() {
+  printf("Starting Test One");
   AirportSimulation();
 }
 
