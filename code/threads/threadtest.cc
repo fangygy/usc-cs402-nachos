@@ -769,8 +769,6 @@ void Passenger(int myNumber) {
 
   siLock[myLineNumber]->Release();
 
-
-
   if(passengersFailedSI[myNumber]) {
     //going to further questioning
     
