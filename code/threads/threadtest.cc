@@ -179,8 +179,12 @@ void CargoHandler(int myNumber) {
       airline_CH_Lock->Release()
 
      */
-    if(onBreak_CH) {
-      onBreakCH.Wait(&conveyorBelt_Lock);
+    if(current_test == 6) {
+
+    } else {
+      if(onBreak_CH) {
+	onBreakCH.Wait(&conveyorBelt_Lock);
+      }
     }
     for(int i = 0; i < numberOfPassengers; i++) {
       if(conveyorBelt[i].number_of_bags > 0) {
