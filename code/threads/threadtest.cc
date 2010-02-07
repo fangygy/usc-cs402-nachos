@@ -179,12 +179,8 @@ void CargoHandler(int myNumber) {
       airline_CH_Lock->Release()
 
      */
-    if(current_test == 6) {
-
-    } else {
-      if(onBreak_CH) {
-	onBreakCH.Wait(&conveyorBelt_Lock);
-      }
+    if(onBreak_CH) {
+      onBreakCH.Wait(&conveyorBelt_Lock);
     }
     for(int i = 0; i < numberOfPassengers; i++) {
       if(conveyorBelt[i].number_of_bags > 0) {
@@ -1183,6 +1179,7 @@ void Test5() {
 
 void Test6() {
   char* name;
+  onBreakCH = false;
   printf("Starting Test Six\n");
   current_test = 6;
   int i;
