@@ -160,7 +160,7 @@ void AirportManager(int myNumber) {
 }
 
 void CargoHandler(int myNumber) {
-  if((current_test == 1)||(current_test == 2)||(current_test==3)||(current_test==4)||(current_test==5)) {
+  if((current_test!=6)) {
     currentThread->Finish();
   }
   while(true) {
@@ -299,7 +299,7 @@ bool so_busy[numberOfSO];
 int soPassenger[numberOfSO];
 
 void SecurityOfficer(int myNumber) {
-  if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)||(current_test==6)||(current_test==7)) {
+  if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)||(current_test==6)) {
     currentThread->Finish();
   }
   while(true) {
@@ -734,6 +734,8 @@ void Passenger(int myNumber) {
 
   soLock[myLineNumber]->Release();
 
+  if(current_test == 7)
+    currentThread->Finish();
   // --------------------------------------------------------
   // 4. Passenger goes to see Airport Security Inspector
   //
