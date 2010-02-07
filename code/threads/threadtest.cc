@@ -274,7 +274,6 @@ void SecurityInspector(int myNumber) {
       sicount++;
       printf("%s: moving Passenger to Boarding: passengers moved: %d \n", currentThread->getName(), sicount);
     }
-
     
     siLock[myNumber]->Release();
 
@@ -405,7 +404,7 @@ void AirportLiaison(int myNumber) {
     */
     int flight_number = pass_ticket_buffer[alPassenger[myNumber]].flight_number;   
     al_baggage_buffer[flight_number] += baggage_buffer[alPassenger[myNumber]].numberOfBags;
-    printf("Flight %d has %d bags ", flight_number,al_baggage_buffer[flight_number]);
+    // printf("Flight %d has %d bags\n", flight_number,al_baggage_buffer[flight_number]);
     // The Airport Liaison signals a Passenger, who is asleep waiting for the Airport
     // Liaison to tell them where to go
     waitingForTicket_AL_C[myNumber]->Signal(alLock[myNumber]);
