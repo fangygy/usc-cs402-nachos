@@ -798,7 +798,6 @@ void Passenger(int myNumber) {
   printf("-----Number of Passengers chosen inspector: %d\n",pass_si_count);
   pass_si_count++;
 
-
   // --------------------------------------------------------
   // 5. Passenger goes to boarding lounge
   //
