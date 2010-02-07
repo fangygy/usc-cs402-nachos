@@ -103,7 +103,7 @@ int passengerGoToSI[numberOfPassengers];
 
 
 void AirportManager(int myNumber) {
-  if(current_test > 0) {
+  if(current_test > 0 && (current_test!=6)) {
     currentThread->Finish();
   }
   while(true) {
@@ -210,7 +210,7 @@ bool so_passOrFail[numberOfSO];
 int siPassenger[numberOfSO];
 
 void SecurityInspector(int myNumber) {
-  if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)) {
+  if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)||(current_test==6)) {
     currentThread->Finish();
   }
   while(true) {
@@ -289,7 +289,7 @@ bool so_busy[numberOfSO];
 int soPassenger[numberOfSO];
 
 void SecurityOfficer(int myNumber) {
-  if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)) {
+  if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)||(current_test==6)) {
     currentThread->Finish();
   }
   while(true) {
@@ -791,6 +791,9 @@ void Passenger(int myNumber) {
   //
   //
   // --------------------------------------------------------
+  int(current_test>0) {
+    currentThread->Finish();
+  }
   
   myFlightNumber = boarding_pass_buffer[myNumber].flight_number;
   
