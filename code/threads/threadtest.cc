@@ -160,7 +160,10 @@ void AirportManager(int myNumber) {
 }
 
 void CargoHandler(int myNumber) {
-
+  if((current_test!=6)) {
+    currentThread->Finish();
+  }
+  
   while(true) {
     conveyorBelt_Lock.Acquire();
     /*
