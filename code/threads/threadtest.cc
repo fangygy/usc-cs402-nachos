@@ -442,7 +442,7 @@ int cisPassengerCount = 0;
 int cisBaggageWeight[numberOfAirlines]; // keep track of the weight for each airline
 
 void CheckInStaff(int myNumber) {
-  if((current_test == 1)||(current_test==2)) {
+  if((current_test == 1)||(current_test==2)||(current_test == 3) {
     currentThread->Finish();
   } 
   while(true) {
@@ -521,9 +521,8 @@ void CheckInStaff(int myNumber) {
       //cisLineLock[myAirline]->Acquire();
       waitingForCIS_C[myNumber]->Signal(cisLineLock[myAirline]);
       printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
-      if(current_test != 3) {
-	cisLock[myNumber]->Acquire();
-      }
+      cisLock[myNumber]->Acquire();
+      
       cisLineLock[myAirline]->Release();
       
 
