@@ -696,7 +696,7 @@ void Passenger(int myNumber) {
     waitingForTicket_CIS_C[myLineNumber]->Wait(cisLock[myLineNumber]);
     cisLock[myLineNumber]->Release();
   }
-  if(current_test == 4) {
+  if((current_test == 4)||(current_test == 6)) {
     currentThread->Finish();
   }
   // --------------------------------------------------------
@@ -721,11 +721,13 @@ void Passenger(int myNumber) {
 
   soPassenger[myLineNumber] = myNumber;
 
- // The Passenger now has the line number, so they should go to sleep and
+  // The Passenger now has the line number, so they should go to sleep and
   // release the line lock, letting another Passenger search for a line
-  printf("%s giving airline ticket to Security Officer %d\n", currentThread->getName(), myLineNumber);
   waitingForTicket_SO_C[myLineNumber]->Signal(soLock[myLineNumber]);
+  printf("%s giving airline ticket to Security Officer %d\n", currentThread->getName(), myLineNumber);
   waitingForTicket_SO_C[myLineNumber]->Wait(soLock[myLineNumber]);
+
+
   soLock[myLineNumber]->Release();
 
   // --------------------------------------------------------
