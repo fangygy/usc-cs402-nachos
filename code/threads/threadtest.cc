@@ -371,7 +371,7 @@ void AirportLiaison(int myNumber) {
     // He does this by Signaling the Condition Variable which puts the first Passenger
     // on to the Ready Queue
     if(alLineLengths[myNumber]>0) {
-      printf("%s telling Passenger to step up to counter\n",currentThread->getName());
+      // printf("%s telling Passenger to step up to counter\n",currentThread->getName());
       // The first passenger waiting for the LineLock gets put on to the Ready Queue
       waitingForAL_C[myNumber]->Signal(&alLineLock);
     } else {
