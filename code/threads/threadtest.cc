@@ -103,7 +103,7 @@ int passengerGoToSI[numberOfPassengers];
 
 
 void AirportManager(int myNumber) {
-  if(current_test > 0 && (current_test!=6)) {
+  if((current_test > 0) && (current_test!=6)) {
     currentThread->Finish();
   }
   while(true) {
@@ -211,6 +211,7 @@ int siPassenger[numberOfSO];
 
 void SecurityInspector(int myNumber) {
   if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)||(current_test==6)) {
+    printf("si thread finishing \n");
     currentThread->Finish();
   }
   while(true) {
@@ -1139,8 +1140,6 @@ void Test1() {
   //printf("Starting Test One\n");
   current_test = 1;
   AirportSimulation();
-  
-
 }
 
 void Test2() {
