@@ -442,7 +442,7 @@ int cisPassengerCount = 0;
 int cisBaggageWeight[numberOfAirlines]; // keep track of the weight for each airline
 
 void CheckInStaff(int myNumber) {
-  if((current_test == 1)||(current_test==2)||(current_test == 3) {
+  if((current_test == 1)||(current_test==2)||(current_test == 3)) {
     currentThread->Finish();
   } 
   while(true) {
