@@ -792,7 +792,7 @@ void Passenger(int myNumber) {
   //
   //
   // --------------------------------------------------------
-  int(current_test>0) {
+  if(current_test>0) {
     currentThread->Finish();
   }
   
