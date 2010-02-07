@@ -278,18 +278,18 @@ void SecurityInspector(int myNumber) {
 
       // Clear passenger and direct to Boarding
       // sicount++;
-      printf("%s: moving Passenger to Boarding: passengers moved: %d \n", currentThread->getName(), sicount);
+      printf("%s: moving Passenger %d to Boarding:\n", currentThread->getName(),siPassenger[myNumber], sicount);
 
     } else {
       // Passenger returned from further questioning
       printf("%s: Clearing passenger who returned from further questioning\n", currentThread->getName());
       // Clear passenger and direct to boarding
       // sicount++;
-      printf("%s: moving Passenger to Boarding: passengers moved: %d \n", currentThread->getName(), sicount);
+      printf("%s: moving Passenger %d to Boarding: \n", currentThread->getName(),siPassenger[myNumber] sicount);
     }
     
     sicount++;
-    printf("si has moved %d passengers",sicount);
+    printf("si has moved %d passengers\n",sicount);
     // Keep track of how many passengers are cleared for each airline
     siAirplaneCountLock.Acquire();
     siAirlineCount[boarding_pass_buffer[siPassenger[myNumber]].flight_number]++;
