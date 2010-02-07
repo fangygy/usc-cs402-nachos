@@ -1182,11 +1182,12 @@ void Test5() {
 }
 
 void Test6() {
+  char* name;
   printf("Starting Test Six\n");
   current_test = 6;
   int i;
   for(i=0; i <numberOfPassengers; i++) {
-    conveyorBelt[i].numberOfBags = (i%2)+2;
+    conveyorBelt[i].number_of_bags = (i%2)+2;
     conveyorBelt[i].airline_code = (i%3);
     conveyorBelt[i].weight = 60;
   }
