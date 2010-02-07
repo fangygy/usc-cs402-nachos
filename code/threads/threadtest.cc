@@ -178,7 +178,7 @@ void CargoHandler(int myNumber) {
 
      */
     if(onBreak_CH) {
-      // printf("Cargo Handler %d is going for a break\n",myNumber);
+      printf("Cargo Handler %d is going for a break\n",myNumber);
       if(current_test == 6) {
 	currentThread->Finish();
       }
