@@ -155,7 +155,7 @@ void AirportManager(int myNumber) {
 }
 
 void CargoHandler(int myNumber) {
-  if(current_test == 1) {
+  if((current_test == 1)||(current_test == 2)||(current_test==3)||(current_test==4)||(current_test==5)) {
     currentThread->Finish();
   }
   while(true) {
