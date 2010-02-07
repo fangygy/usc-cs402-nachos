@@ -122,9 +122,7 @@ void AirportManager(int myNumber) {
       }
     }
     conveyorBelt_Lock.Release();
-    if((current_test == 6)&&onBreak_CH) {
-      currentThread->Finish();
-    }
+
     for(int i = 0; i < numberOfAirlines; i++) {
       airlineLock[i]->Acquire();
       if(alreadyCalled[0]&&alreadyCalled[1]&&alreadyCalled[2]) {
@@ -153,8 +151,9 @@ void AirportManager(int myNumber) {
       }
       airlineLock[i]->Release();
     }
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < 10; i++) {
       currentThread->Yield();
+    }
   }
 }
 
