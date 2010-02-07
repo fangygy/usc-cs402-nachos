@@ -734,12 +734,6 @@ void Passenger(int myNumber) {
 
   soLock[myLineNumber]->Release();
 
-  // Test 7 ends here
-  if(current_test ==7) {
-    currentThread->Finish();
-  }
-
-
   // --------------------------------------------------------
   // 4. Passenger goes to see Airport Security Inspector
   //
