@@ -180,6 +180,7 @@ void CargoHandler(int myNumber) {
 
      */
     if(onBreak_CH) {
+      printf("Cargo Handler %d is going for a break\n",myNumber);
       onBreakCH.Wait(&conveyorBelt_Lock);
     }
     for(int i = 0; i < numberOfPassengers; i++) {
@@ -193,7 +194,7 @@ void CargoHandler(int myNumber) {
 	break;
       }
       if(i == (numberOfPassengers-1)) {
-	printf("Cargo Handler %d is going for a break\n",myNumber);
+	// printf("Cargo Handler %d is going for a break\n",myNumber);
 	onBreak_CH = true;
 	if(current_test == 6) {
 	  currentThread->Finish();
