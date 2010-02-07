@@ -599,6 +599,10 @@ void Passenger(int myNumber) {
   waitingForTicket_AL_C[myLineNumber]->Wait(alLock[myLineNumber]);
 
   alLock[myLineNumber]->Release();
+  
+  if(current_test == 2) {
+    currentThread->Finish();
+  }
 
   // --------------------------------------------------------
   // 2. Passenger goes to see Airport check in staff
