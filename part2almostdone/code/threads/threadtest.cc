@@ -268,7 +268,7 @@ void SecurityInspector(int myNumber) {
     if(siLineLengths[myNumber] > 0) {
       //printf("line %d has more than one passenger\n", myNumber);
       //cisLineLock[myAirline]->Acquire();
-      waitingForSI_C[myNumber]->Signal(siLineLock[myAirline]);
+      waitingForSI_C[myNumber]->Signal(&siLineLock);
       //printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
       siLock[myNumber]->Acquire();
       
@@ -390,16 +390,16 @@ void SecurityOfficer(int myNumber) {
      * 
      */
 
-    soLineLock[myAirline]->Acquire();
+    soLineLock.Acquire();
     if(soLineLengths[myNumber]==0) {
       // go on break
-      onBreakSO_C[myNumber]->Wait(soLineLock);
+      onBreakSO_C[myNumber]->Wait(&soLineLock);
     }
     
     if(soLineLengths[myNumber] > 0) {
       //printf("line %d has more than one passenger\n", myNumber);
       //cisLineLock[myAirline]->Acquire();
-      waitingForSO_C[myNumber]->Signal(soLineLock[myAirline]);
+      waitingForSO_C[myNumber]->Signal(&soLineLock);
       //printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
       soLock[myNumber]->Acquire();
       
