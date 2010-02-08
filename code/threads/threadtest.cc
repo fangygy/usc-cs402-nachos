@@ -578,7 +578,7 @@ void CheckInStaff(int myNumber) {
 
       int flight_number = pass_ticket_buffer[cisPassenger[myNumber]].flight_number;   
 
-      printf("Airline check-in staff %d of airline %d serves an economy class passenger and executive class line length = %d",myNumber,myAirline,execLineLengths[myNumber]);
+      printf("Airline check-in staff %d of airline %d serves an economy class passenger and executive class line length = %d\n",myNumber,myAirline,execLineLengths[myNumber]);
 
       // Give the Passenger a seat number
       boarding_pass_buffer[cisPassenger[myNumber]].seat_number = seatNumber[flight_number]++;
