@@ -422,7 +422,7 @@ Lock *soLock[numberOfSO];
 int soLineLengths[numberOfSO];
 bool so_busy[numberOfSO];
 int soPassenger[numberOfSO];
-
+int numbersopassed = 0;
 void SecurityOfficer(int myNumber) {
   if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)||(current_test==6)) {
     currentThread->Finish();
@@ -489,6 +489,8 @@ void SecurityOfficer(int myNumber) {
       waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
       waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]);
       printf("Screening officer %d directs passenger %d to security inspector %d\n", myNumber, soPassenger[myNumber], passengerGoToSI[ soPassenger[myNumber] ]);
+      numbersopassed++;
+      printf("socount: %d\n",numbersopassed);
     }
     soLock[myNumber]->Release();
   
