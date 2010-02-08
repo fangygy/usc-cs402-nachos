@@ -162,7 +162,8 @@ void AirportManager(int myNumber) {
 	  printf("From airline check-in staff: Baggage weight of airline %d = %d\n",g, cis_baggage_buffer[g]);
 	  printf("From cargo handlers: Baggage weight of airline %d = %d\n",g,chBagWeights[g]);
 	}
-	currentThread->Finish();
+	// currentThread->Finish();
+	goToSleep.Wait(airlineLock[i]);
       }
       //printf("flight %d count %d , cisflightcount %d\n",i,flightCount[i],cisFlightCount[i]); 
       if(!alreadyCalled[i]&&(flightCount[i] == cisFlightCount[i])&&(flightCount[i]!=0)&&(cisFlightCount[i]!=0)&&(cargoHandlerBaggageCount[i]==al_baggage_buffer[i])) {
