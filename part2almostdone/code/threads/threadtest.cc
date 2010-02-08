@@ -266,23 +266,15 @@ void SecurityInspector(int myNumber) {
 
     siLineLock.Acquire();
     if(siLineLengths[myNumber]==0) { // && returning line
-      // go on break
       waitingSI_C[myNumber]->Wait(&siLineLock);
     }
 
     if(siLineLengths[myNumber] > 0) {
-      //printf("line %d has more than one passenger\n", myNumber);
-      //cisLineLock[myAirline]->Acquire();
       waitingForSI_C[myNumber]->Signal(&siLineLock);
-      //printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
       siLock[myNumber]->Acquire();
-      
       siLineLock.Release();
-
       waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
       waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
-
-      // int flight_number = pass_ticket_buffer[cisPassenger[myNumber]].flight_number;   
     
     }
     siLock[myNumber]->Release();
@@ -420,6 +412,10 @@ void SecurityOfficer(int myNumber) {
 	so_passOrFail[myNumber] = false;
 	printf("Screening officer %d is suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
       }
+
+      // Screening Officer looks for an available line
+      // If he cannot find one, he sends the passenger to the Security Officer
+      // with the shortest line
       int passenger_line = findShortestLine(siLineLengths,7);
       passengerGoToSI[ soPassenger[myNumber] ] = passenger_line;
 
