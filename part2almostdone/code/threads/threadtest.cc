@@ -964,11 +964,11 @@ void Passenger(int myNumber) {
     //going to further questioning
 
     printf("Passenger %d goes for further questioning\n",myNumber);
-    /*
+    
     for(int i = 0; i < 10; i++) {
       currentThread->Yield();
     }
-    */
+    
     siLineReturns[myLineNumber]--;
     siRLock[myLineNumber]->Acquire();
     siPassenger[myLineNumber] = myNumber;
