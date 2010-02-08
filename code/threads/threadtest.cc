@@ -275,14 +275,15 @@ void SecurityInspector(int myNumber) {
     siLock[myNumber]->Acquire();
     siLineLock.Release();
 
+    /*
     if(passengersFailedSI[ siPassenger[myNumber] ]) {
       // passenger returning from further questioning
       passengerQuestioned = true;
     }
-    
+    */
     waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
     waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
-    
+    /*
     if( !(passengerQuestioned) ) {
       bool passedSI;
       int randomNum = rand() % 100;
@@ -299,9 +300,6 @@ void SecurityInspector(int myNumber) {
         //passenger failed one or more inspections, raise suspicion
         printf("Security inspector %d asks passenger %d to go for further examination\n", myNumber, siPassenger[myNumber]);
         passengersFailedSI[ siPassenger[myNumber] ] = true;
-	siLineLock.Acquire();
-	si_busy[myNumber] = false;
-	siLineLock.Release();
 
       } else {
         // Clear passenger and direct to Boarding
@@ -315,7 +313,9 @@ void SecurityInspector(int myNumber) {
       sicount++;
       //printf("%s: moving Passenger %d to Boarding: \n", currentThread->getName(),siPassenger[myNumber], sicount);
     }
-    
+    */
+    sicount++;
+printf("%s: moving Passenger %d to Boarding: \n", currentThread->getName(),siPassenger[myNumber], sicount);
     printf("si has moved %d passengers\n",sicount);
     // Keep track of how many passengers are cleared for each airline
     siAirplaneCountLock.Acquire();
