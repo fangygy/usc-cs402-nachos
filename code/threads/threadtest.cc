@@ -177,7 +177,7 @@ void AirportManager(int myNumber) {
 
 void CargoHandler(int myNumber) {
   
-  if((current_test != 6)) {
+  if((current_test != 6)&&(current_test!=0)) {
     currentThread->Finish();
   }
   
@@ -205,8 +205,7 @@ void CargoHandler(int myNumber) {
         currentThread->Finish();
       } else {
         onBreakCH.Wait(&conveyorBelt_Lock);
-      printf("Cargo Handler %d is returning from a break\n",myNumber);
-	
+	printf("Cargo Handler %d is returned from break\n",myNumber);
       }
     }
     
@@ -223,6 +222,7 @@ void CargoHandler(int myNumber) {
       }
       // Goes through entire array and can not find a single bag
       if(i == (numberOfPassengers-1)) {
+	// Goes on break
         onBreak_CH = true;
         onBreakCH.Wait(&conveyorBelt_Lock);
         // conveyorBelt_Lock.Release();
