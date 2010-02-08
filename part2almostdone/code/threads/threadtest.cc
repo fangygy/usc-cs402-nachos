@@ -231,12 +231,16 @@ void CargoHandler(int myNumber) {
 Condition *waitingSI_C[numberOfSO];
 Condition *waitingForSI_C[numberOfSO];
 Condition *waitingForTicket_SI_C[numberOfSO];
-//Condition *waitingForSIAfterQuestioning_C[numberOfSO];
-//int siBackFromQuestioningLineLengths[numberOfSO];
+Condition *returnLineCV[numberOfSO];
+Condition *waitingForReturn_SI_C[numberOfSO];
+
 Lock siLineLock("si_LL");
 Lock *siLock[numberOfSO];
 Lock siAirplaneCountLock("si_ALL");
+Lock *siReturnLock[numberOfSO];
+Lock *siRLock[numberOfSO];
 
+int siLineReturns[numberOfSO];
 int siLineLengths[numberOfSO];
 bool si_busy[numberOfSO];
 bool so_passOrFail[numberOfSO];
@@ -265,11 +269,56 @@ void SecurityInspector(int myNumber) {
      */
 
     siLineLock.Acquire();
-    if(siLineLengths[myNumber]==0) { // && returning line
+    if((siLineLengths[myNumber]==0) && (siLineReturns[myNumber]==0)) { // && returning line
       waitingSI_C[myNumber]->Wait(&siLineLock);
     }
 
+
+    // If people returning line > 0
+    // Help them first
+    
+    // execLineLock[myAirline]->Acquire();
+    while(siLineReturns[myNumber] > 0) {
+
+      siReturnLock[myNumber].Acquire();
+
+      // Tell an executive that I am ready 
+      returnLineCV[myAirline]->Signal(siReturnLock[myNumber]);
+      // Now waiting for the executive to signal 
+      // execLineCV[myAirline]->Wait(execLineLock[myAirline]);
+    
+      siRLock[myNumber]->Acquire();
+
+      siReturnLock[myNumber]->Release();
+
+      waitingForReturn_SI_C[myNumber]->Wait(siRLock[myNumber]);
+      waitingForReturn_SI_C[myNumber]->Signal(siRLock[myNumber]);
+ 
+      // increment si count of passengers?
+
+      // siLineReturns[myNumber]--;
+      siRLock[myNumber]->Release();
+    }
+
     if(siLineLengths[myNumber] > 0) {
+
+      bool passedSI;
+      int randomNum = rand() % 100;
+      if(randomNum < probabilityPassingSI) {
+	//passenger passed SI
+	passedSI = true;
+	
+      } else {
+	//passenger failed SI
+	passedSI = false;
+	
+      }
+      if(!passedSI | !so_passOrFail[myNumber]) {
+	//passenger failed one or more inspections, raise suspicion
+	printf("Security inspector %d asks passenger %d to go for further examination\n", myNumber, siPassenger[myNumber])
+	passengersFailedSI[ siPassenger[myNumber] ] = true;
+      }
+      
       waitingForSI_C[myNumber]->Signal(&siLineLock);
       siLock[myNumber]->Acquire();
       siLineLock.Release();
@@ -899,14 +948,33 @@ void Passenger(int myNumber) {
   waitingForTicket_SI_C[myLineNumber]->Wait(siLock[myLineNumber]);
 
   siLock[myLineNumber]->Release();
-
-  /*
+  
   if(passengersFailedSI[myNumber]) {
-    //going to further questioning
-    printf("Passenger %d goes for further questioning\n",myNumber);
-    for(int i = 0; i < 10; i++)
-      currentThread->Yield();
     
+    siReturnLock[myLineNumber]->Acquire();
+    siLineReturns[myLineNumber]++;
+    
+    returnLineCV[myLineNumber]->Wait(siReturnLock[myLineNumber]);
+    //going to further questioning
+
+    printf("Passenger %d goes for further questioning\n",myNumber);
+    /*
+    for(int i = 0; i < 10; i++) {
+      currentThread->Yield();
+    }
+    */
+    siLineReturns[myLineNumber]--;
+    siRLock[myLineNumber]->Acquire();
+    siPassenger[myLineNumber] = myNumber;
+    siReturnLock[myLineNumber]->Release();
+    
+    waitingForReturn_SI_C[myLineNumber]->Signal(siRLock[myLineNumber]);
+    waitingForReturn_SI_C[myLineNumber]->Wait(siRLock[myLineNumber]);
+    siRLock[myLineNumber]->Release();
+    
+    
+  }
+/*
     // Passenger now comes back 
     siLineLock.Acquire();
 
@@ -1103,12 +1171,34 @@ void AirportSimulation() {
     name = new char[20];
     sprintf(name,"soLock%d",i);
     soLock[i] = new Lock(name);
+    
     name = new char[20];
     sprintf(name,"waitingsoc%d",i);
     waitingSO_C[i] = new Condition(name);
+    
     name = new char[20];
-    sprintf(name,"onbreaksic%d",i);
+    sprintf(name,"waitingsic%d",i);
     waitingSI_C[i] = new Condition(name);
+    
+    name = new char[20];
+    sprintf(name,"returnlinecv%d",i);
+    returnLineCV[i] = new Condition(name);
+    
+    name = new char[20];
+    sprintf(name,"waitreturnlinecv%d",i);
+    waitingForReturn_SI_C[i] = new Condition(name);
+
+    name = new char[20];
+    sprintf(name,"sireturnlock%d",i);
+    siReturnLock[i] = new Lock(name);
+
+    name = new char[20];
+    sprintf(name,"sirlock%d",i);
+    siRLock[i] = new Lock(name);
+
+    siLineReturns[i]=0;
+
+
   }
 
   for(i = 0; i < numberOfSO; i++) {
