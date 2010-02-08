@@ -828,6 +828,7 @@ void Passenger(int myNumber) {
   
  
   //if(passengersFailedSI[myNumber]) {
+  /*
   if(false) {  
   //going to further questioning
     printf("Passenger %d goes for further questioning\n",myNumber);
@@ -860,7 +861,7 @@ void Passenger(int myNumber) {
     siLock[myLineNumber]->Acquire();
     siPassenger[myLineNumber] = myNumber;
   }
-  
+  */
   //printf("-----Number of Passengers chosen inspector: %d\n",pass_si_count);
   pass_si_count++;
 
@@ -875,10 +876,10 @@ void Passenger(int myNumber) {
   
   myFlightNumber = boarding_pass_buffer[myNumber].flight_number;
   
-  flightCount[myFlightNumber]++;
+  //flightCount[myFlightNumber]++;
   airlineLock[myFlightNumber]->Acquire();
   printf("passenger %d is at the boarding lounge\n", myNumber);
-  //flightCount[myFlightNumber]++;
+  flightCount[myFlightNumber]++;
   waitingForCallAM_C[myFlightNumber]->Wait(airlineLock[myFlightNumber]);
   airlineLock[myFlightNumber]->Release();
   printf("Passenger %d of Airline %d boarded airline %d\n", myNumber,myFlightNumber,myFlightNumber);
