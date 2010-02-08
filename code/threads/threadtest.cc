@@ -630,6 +630,7 @@ void Passenger(int myNumber) {
 
   alLineLock.Release();
   if(current_test == 1) {
+    printf("Passenger %d chose Liaison %d with a line of length %d\n",myNumber,myLineNumber,alLineLengths[myLineNumber]);
     currentThread->Finish();
   }
   alLock[myLineNumber]->Acquire();
