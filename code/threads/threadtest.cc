@@ -278,7 +278,8 @@ void SecurityInspector(int myNumber) {
     if(passengersFailedSI[ siPassenger[myNumber] ]) {
       // passenger returning from further questioning
       passengerQuestioned = true;
-      //si_busy[myNumber] = false; // passenger fails so i am not busy
+      si_busy[myNumber] = false; // passenger fails so i am not busy
+      siLock[myNumber]->Release();
     }
     
     waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
@@ -319,7 +320,6 @@ void SecurityInspector(int myNumber) {
     siAirplaneCountLock.Acquire();
     siAirlineCount[boarding_pass_buffer[siPassenger[myNumber]].flight_number]++;
     siAirplaneCountLock.Release();
-
     siLock[myNumber]->Release();
 
   }
