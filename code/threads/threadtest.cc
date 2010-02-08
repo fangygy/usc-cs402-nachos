@@ -106,7 +106,7 @@ int cargoHandlerBaggageCount[numberOfAirlines];
 bool passengersFailedSI[numberOfPassengers];
 
 int passengerGoToSI[numberOfPassengers];
-
+int g = 0;
 
 void AirportManager(int myNumber) {
   if(current_test > 0) {
@@ -117,6 +117,10 @@ void AirportManager(int myNumber) {
     // issue broadcast
 
     conveyorBelt_Lock.Acquire();
+    g++;
+    if(g > 200) {
+      currentThread->Finish();
+    }
     if(onBreak_CH) {
       for(int i = 0; i < numberOfPassengers; i++) {
 	if(conveyorBelt[i].number_of_bags == 0) {
@@ -133,6 +137,7 @@ void AirportManager(int myNumber) {
     for(int i = 0; i < numberOfAirlines; i++) {
       airlineLock[i]->Acquire();
       if(alreadyCalled[0]&&alreadyCalled[1]&&alreadyCalled[2]) {
+	// If the Airport Manager has issued boarding calls for all the flights
 	// TODO
 	// print out statistics
 
@@ -153,7 +158,7 @@ void AirportManager(int myNumber) {
 	  printf("From airline check-in staff: Baggage weight of airline %d = %d\n",g, cis_baggage_buffer[g]);
 	  printf("From cargo handlers: Baggage weight of airline %d = %d\n",g,chBagWeights[g]);
 	}
-	goToSleep.Wait(airlineLock[i]);
+	currentThread->Finish();
       }
       printf("flight %d count %d , cisflightcount %d\n",i,flightCount[i],cisFlightCount[i]); 
       if(!alreadyCalled[i]&&(flightCount[i] == cisFlightCount[i])&&(flightCount[i]!=0)&&(cisFlightCount[i]!=0)&&(cargoHandlerBaggageCount[i]==al_baggage_buffer[i])) {
