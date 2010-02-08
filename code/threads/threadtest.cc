@@ -313,7 +313,7 @@ void SecurityInspector(int myNumber) {
       sicount++;
       //printf("%s: moving Passenger %d to Boarding: \n", currentThread->getName(),siPassenger[myNumber], sicount);
     }
-    si_busy[myNumber] = false;
+    // si_busy[myNumber] = false;
     printf("si has moved %d passengers\n",sicount);
     
     // Keep track of how many passengers are cleared for each airline
