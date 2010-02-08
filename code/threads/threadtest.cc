@@ -801,7 +801,7 @@ void Passenger(int myNumber) {
   //
   //
   // --------------------------------------------------------
-  
+  /*
   siLineLock.Acquire();
   
   myLineNumber = findShortestLine(siLineLengths, 7);
