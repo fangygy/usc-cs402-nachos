@@ -223,7 +223,7 @@ void CargoHandler(int myNumber) {
 
   }
 }
-Condition *onBreakSI_C[numberOfSO];
+Condition *waitingSI_C[numberOfSO];
 Condition *waitingForSI_C[numberOfSO];
 Condition *waitingForTicket_SI_C[numberOfSO];
 //Condition *waitingForSIAfterQuestioning_C[numberOfSO];
@@ -262,7 +262,7 @@ void SecurityInspector(int myNumber) {
     siLineLock.Acquire();
     if(siLineLengths[myNumber]==0) { // && returning line
       // go on break
-      onBreakSI_C[myNumber]->Wait(&siLineLock);
+      waitingSI_C[myNumber]->Wait(&siLineLock);
     }
 
     if(siLineLengths[myNumber] > 0) {
@@ -360,7 +360,7 @@ void SecurityInspector(int myNumber) {
   */
 }
 
-Condition *onBreakSO_C[numberOfSO];
+Condition *waitingSO_C[numberOfSO];
 Condition *waitingForSO_C[numberOfSO];
 Condition *waitingForTicket_SO_C[numberOfSO];
 Lock soLineLock("sl_LL");
@@ -393,7 +393,7 @@ void SecurityOfficer(int myNumber) {
     soLineLock.Acquire();
     if(soLineLengths[myNumber]==0) {
       // go on break
-      onBreakSO_C[myNumber]->Wait(&soLineLock);
+      waitingSO_C[myNumber]->Wait(&soLineLock);
     }
     
     if(soLineLengths[myNumber] > 0) {
@@ -839,7 +839,7 @@ void Passenger(int myNumber) {
 
   soLineLengths[myLineNumber]++;
 
-  onBreakSO_C[myLineNumber]->Signal(&soLineLock);
+  waitingSO_C[myLineNumber]->Signal(&soLineLock);
   // soPassenger[myLineNumber] = myNumber;
 
   printf("Passenger %d gives the hand-luggage to screening officer %d\n", myNumber, myLineNumber);
@@ -875,7 +875,7 @@ void Passenger(int myNumber) {
 
   siLineLengths[myLineNumber]++;
 
-  onBreakSI_C[myLineNumber]->Signal(&siLineLock);
+  waitingSI_C[myLineNumber]->Signal(&siLineLock);
   // soPassenger[myLineNumber] = myNumber;
 
   printf("Passenger %d gives the hand-luggage to screening officer %d\n", myNumber, myLineNumber);
@@ -1101,11 +1101,11 @@ void AirportSimulation() {
     sprintf(name,"soLock%d",i);
     soLock[i] = new Lock(name);
     name = new char[20];
-    sprintf(name,"onbreaksoc%d",i);
-    onBreakSO_C[i] = new Condition(name);
+    sprintf(name,"waitingsoc%d",i);
+    waitingSO_C[i] = new Condition(name);
     name = new char[20];
     sprintf(name,"onbreaksic%d",i);
-    onBreakSI_C[i] = new Condition(name);
+    waitingSI_C[i] = new Condition(name);
   }
 
   for(i = 0; i < numberOfSO; i++) {
