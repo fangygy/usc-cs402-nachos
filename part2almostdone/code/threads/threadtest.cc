@@ -484,6 +484,7 @@ void SecurityOfficer(int myNumber) {
       // If he cannot find one, he sends the passenger to the Security Officer
       // with the shortest line
       int passenger_line = findShortestLine(siLineLengths,7);
+      siLineLengths[passenger_line]++;
       passengerGoToSI[ soPassenger[myNumber] ] = passenger_line;
 
       waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
@@ -944,8 +945,6 @@ void Passenger(int myNumber) {
   siLineLock.Acquire();
   
   myLineNumber = passengerGoToSI[myNumber];
-
-  siLineLengths[myLineNumber]++;
 
   waitingSI_C[myLineNumber]->Signal(&siLineLock);
   // soPassenger[myLineNumber] = myNumber;
