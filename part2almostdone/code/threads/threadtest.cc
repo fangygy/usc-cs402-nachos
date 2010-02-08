@@ -272,7 +272,7 @@ void SecurityInspector(int myNumber) {
       //printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
       siLock[myNumber]->Acquire();
       
-      siLineLock[myAirline]->Release();
+      siLineLock.Release();
 
       waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
       waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
