@@ -302,6 +302,14 @@ void SecurityInspector(int myNumber) {
 
     if(siLineLengths[myNumber] > 0) {
 
+
+      
+      waitingForSI_C[myNumber]->Signal(&siLineLock);
+      siLock[myNumber]->Acquire();
+      siLineLock.Release();
+      waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
+      waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
+
       bool passedSI;
       int randomNum = rand() % 100;
       if(randomNum < probabilityPassingSI) {
@@ -318,12 +326,8 @@ void SecurityInspector(int myNumber) {
 	printf("Security inspector %d asks passenger %d to go for further examination\n", myNumber, siPassenger[myNumber]);
 	passengersFailedSI[ siPassenger[myNumber] ] = true;
       }
-      
-      waitingForSI_C[myNumber]->Signal(&siLineLock);
-      siLock[myNumber]->Acquire();
-      siLineLock.Release();
-      waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
-      waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
+
+
       if(passedSI && so_passOrFail[siPassenger[myNumber]]) {
 	printf("Security inspector %d allows passenger %d to board\n", myNumber,siPassenger[myNumber]);
 	sicount++;
@@ -969,8 +973,13 @@ void Passenger(int myNumber) {
       currentThread->Yield();
     }
     
-    siLineReturns[myLineNumber]--;
+    // siLineReturns[myLineNumber]--;
     siRLock[myLineNumber]->Acquire();
+    siLineReturns[myNumber]--;
+    // The passenger will return to their original airport inspector
+    if(current_test == 8) {
+      printf("Passenger %d comes back to security inspector %d after further examination\n",myNumber,myLineNumber);
+    }
     siPassenger[myLineNumber] = myNumber;
     siReturnLock[myLineNumber]->Release();
     
@@ -979,34 +988,7 @@ void Passenger(int myNumber) {
     siRLock[myLineNumber]->Release();
     
   }
-/*
-    // Passenger now comes back 
-    siLineLock.Acquire();
 
-    // This works like the executive line
-    siLineLengths[myLineNumber]++;
-    //siBackFromQuestioningLineLengths[myLineNumber]++;
-    //waitingForSIAfterQuestioning_C[myLineNumber]->Signal(&siLineLock);
-    //waitingForSIAfterQuestioning_C[myLineNumber]->Wait(&siLineLock);
-
-    // The passenger will return to their original airport inspector
-    if(current_test == 8) {
-      printf("Passenger %d comes back to security inspector %d after further examination\n",myNumber,myLineNumber);
-    }
-
-    waitingForSI_C[myLineNumber]->Signal(&siLineLock);
-    waitingForSI_C[myLineNumber]->Wait(&siLineLock);
-
-
-    //siBackFromQuestioningLineLengths[myLineNumber]--;
-    siLineLengths[myLineNumber]--;
-
-    siLineLock.Release();
-    
-    siLock[myLineNumber]->Acquire();
-    siPassenger[myLineNumber] = myNumber;
-  }
-  */
   //printf("-----Number of Passengers chosen inspector: %d\n",pass_si_count);
   pass_si_count++;
 
