@@ -324,7 +324,7 @@ void SecurityInspector(int myNumber) {
       siLineLock.Release();
       waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
       waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
-      if(passedSI && so_passOrFail[myNumber]) {
+      if(passedSI && so_passOrFail[siPassenger[myNumber]]) {
 	printf("Security inspector %d allows passenger %d to board\n", myNumber,siPassenger[myNumber]);
       }
     }
