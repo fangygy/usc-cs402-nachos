@@ -272,13 +272,13 @@ void SecurityInspector(int myNumber) {
     
     siLock[myNumber]->Acquire();
     siLineLock.Release();
-    /*
+    
     if(passengersFailedSI[ siPassenger[myNumber] ]) {
       // passenger returning from further questioning
       passengerQuestioned = true;
       //si_busy[myNumber] = false; // passenger fails so i am not busy
     }
-    */
+    
     
     waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
     waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
