@@ -118,7 +118,7 @@ void AirportManager(int myNumber) {
 
     conveyorBelt_Lock.Acquire();
     g++;
-    if(g > 200) {
+    if(g > 20) {
       currentThread->Finish();
     }
     if(onBreak_CH) {
