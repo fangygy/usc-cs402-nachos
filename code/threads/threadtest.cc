@@ -539,14 +539,17 @@ void CheckInStaff(int myNumber) {
       waitingForExec_CIS_C[myNumber]->Wait(execCISLock[myNumber]);
       waitingForExec_CIS_C[myNumber]->Signal(execCISLock[myNumber]);
  
+      // Increment the count of passengers for an airline
       cisFlightCount[myAirline]++;
 
       int flight_number = pass_ticket_buffer[cisPassenger[myNumber]].flight_number;   
+      // Give the Passenger a seat number
+      boarding_pass_buffer[cisPassenger[myNumber]].seat_number = seatNumber[flight_number]++;
 
       printf("Airline check-in staff %d of airline %d serves an executive class passenger and economy class line length = %d\n",myNumber,myAirline,cisLineLengths[myNumber]);
       printf("Airline check-in staff %d of airline %d informs executive passenger %d to board at gate %d\n",myNumber,myAirline, cisPassenger[myNumber],flight_number);
       
-      // Add these bags to the total count fort a given airline, specified by Flight Number
+      // Add these bags to the total count for a given airline, specified by Flight Number
       cis_baggage_buffer[flight_number] += baggage_buffer[cisPassenger[myNumber]].weight;
       
       // Now add these bags to the conveyor belt
@@ -841,6 +844,11 @@ void Passenger(int myNumber) {
     siLineLock.Release();
     
     siLock[myLineNumber]->Acquire();
+
+    waitingForTicket_SI_C[myLineNumber]->Signal(siLock[myLineNumber]);
+    waitingForTicket_SI_C[myLineNumber]->Wait(siLock[myLineNumber]);
+    
+    siLock[myLineNumber]->Release();
     siPassenger[myLineNumber] = myNumber;
   }
   
