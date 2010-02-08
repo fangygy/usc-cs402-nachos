@@ -307,8 +307,9 @@ void SecurityInspector(int myNumber) {
       waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
       waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
 
-      bool passedSI;
+      bool passedSI = true;
       int randomNum = rand() % 100;
+      /*
       if(randomNum < probabilityPassingSI) {
 	//passenger passed SI
 	passedSI = true;
@@ -317,6 +318,10 @@ void SecurityInspector(int myNumber) {
 	//passenger failed SI
 	passedSI = false;
 	
+      }
+      */
+      if(){
+      } else {
       }
       if(!passedSI | !so_passOrFail[myNumber]) {
 	//passenger failed one or more inspections, raise suspicion
@@ -456,6 +461,7 @@ void SecurityOfficer(int myNumber) {
       soLineLock.Release();
       
       // Determine if the passenger passes or fails
+      /*
       int randomNum = rand() % 100;
       if(randomNum < probabilityPassingSO) {
       //passenger passed
@@ -466,6 +472,15 @@ void SecurityOfficer(int myNumber) {
 	so_passOrFail[myNumber] = false;
 	printf("Screening officer %d is suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
       }
+      */
+      if((soPassenger[myNumber]==3)||(soPassenger[myNumber]==13)||(soPassenger[myNumber]==17)) {
+	so_passOrFail = false;
+	printf("Screening officer %d is suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
+      } else {
+	so_passOrFail = true;
+	printf("Screening officer %d is not suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
+      }
+
 
       // Screening Officer looks for an available line
       // If he cannot find one, he sends the passenger to the Security Officer
@@ -683,7 +698,7 @@ void CheckInStaff(int myNumber) {
 
       int flight_number = pass_ticket_buffer[cisPassenger[myNumber]].flight_number;   
       printf("Airline check-in staff %d of airline %d serves an executive class passenger and economy class line length = %d\n",myNumber,myAirline,cisLineLengths[myNumber]);
-      printf("Airline check-in staff %d of airline %d informs executive passenger %d to board at gate %d\n",myNumber,cisPassenger[myNumber], flight_number);
+      printf("Airline check-in staff %d of airline %d informs executive passenger %d to board at gate %d\n",myNumber,myAirline,cisPassenger[myNumber], flight_number);
       
       // Add these bags to the total count fort a given airline, specified by Flight Number
       cis_baggage_buffer[flight_number] += baggage_buffer[cisPassenger[myNumber]].weight;
