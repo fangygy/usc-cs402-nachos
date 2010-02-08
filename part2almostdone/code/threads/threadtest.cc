@@ -280,7 +280,7 @@ void SecurityInspector(int myNumber) {
     // execLineLock[myAirline]->Acquire();
     while(siLineReturns[myNumber] > 0) {
 
-      siReturnLock[myNumber].Acquire();
+      siReturnLock[myNumber]->Acquire();
 
       // Tell an executive that I am ready 
       returnLineCV[myNumber]->Signal(siReturnLock[myNumber]);
