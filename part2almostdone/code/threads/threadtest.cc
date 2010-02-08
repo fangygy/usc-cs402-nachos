@@ -44,7 +44,7 @@ using namespace std;
 
 int current_test = 0;
 
-int sicount = 1;
+int sicount = 0;
 int socount = 1;
 int pass_si_count = 1;
 int numBagsDuringSetup[numberOfAirlines];
