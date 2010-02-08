@@ -106,7 +106,7 @@ int cargoHandlerBaggageCount[numberOfAirlines];
 bool passengersFailedSI[numberOfPassengers];
 
 int passengerGoToSI[numberOfPassengers];
-
+int g = 0;
 
 void AirportManager(int myNumber) {
   if(current_test > 0) {
@@ -115,6 +115,10 @@ void AirportManager(int myNumber) {
   while(true) {
     // if all passengers are accounted for
     // issue broadcast
+    
+    if(g > 30) {
+      currentThread->Finish();
+    }
 
     conveyorBelt_Lock.Acquire();
     if(onBreak_CH) {
