@@ -970,13 +970,13 @@ void Passenger(int myNumber) {
       currentThread->Yield();
     }
 
-    siLineReturns[myNumber]--;
-
     siRLock[myLineNumber]->Acquire();
     // The passenger will return to their original airport inspector
     if(current_test == 8) {
       printf("Passenger %d comes back to security inspector %d after further examination\n",myNumber,myLineNumber);
+
     }
+    siLineReturns[myLineNumber]--;
     siPassenger[myLineNumber] = myNumber;
     siReturnLock[myLineNumber]->Release();
     
