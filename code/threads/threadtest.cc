@@ -1165,39 +1165,39 @@ void AirportSimulation() {
   t = new Thread(name);
   t->Fork((VoidFunctionPtr)AirportManager,1);
   
-
-  printf("Number of airport liasons = %d\n",numberOfAL);
-  printf("Number of airlines = %d\n",numberOfAirlines);
-  printf("Number of check-in staff = %d\n",numberOfCIS);
-  printf("Number of cargo handlers = %d\n",numberOfCH);
-  printf("Number of screening officers = %d\n",numberOfSO);
-  printf("Total number of passengers = %d\n",numberOfPassengers);
-
-  for(int i=0; i < numberOfAirlines; i++) {
-    int numPassengersOnAirline = 0;
-    for(int j=0; j < numberOfPassengers; j++) {
-      if(pass_ticket_buffer[j].flight_number == i)
-        numPassengersOnAirline++;
+  if(current_test==0) {
+    printf("Number of airport liasons = %d\n",numberOfAL);
+    printf("Number of airlines = %d\n",numberOfAirlines);
+    printf("Number of check-in staff = %d\n",numberOfCIS);
+    printf("Number of cargo handlers = %d\n",numberOfCH);
+    printf("Number of screening officers = %d\n",numberOfSO);
+    printf("Total number of passengers = %d\n",numberOfPassengers);
+    
+    for(int i=0; i < numberOfAirlines; i++) {
+      int numPassengersOnAirline = 0;
+      for(int j=0; j < numberOfPassengers; j++) {
+	if(pass_ticket_buffer[j].flight_number == i)
+	  numPassengersOnAirline++;
+      }
+      printf("Number of passengers for airline %d = %d\n",0,numPassengersOnAirline);
     }
-    printf("Number of passengers for airline %d = %d\n",0,numPassengersOnAirline);
-  }
-
-  for(int i=0; i < numberOfPassengers; i++) {
-    printf("Passenger %d belongs to airline %d\n",i,pass_ticket_buffer[i].flight_number);
-    printf("Passenger %d: Number of bags = %d\n",i,baggage_buffer[i].numberOfBags);
-    printf("Passenger %d: Weight of bags = ",i);
-    for(int j = 0; j < baggage_buffer[i].numberOfBags; j++) {
-      if( j!=0 && j!= (baggage_buffer[i].numberOfBags))
+    
+    for(int i=0; i < numberOfPassengers; i++) {
+      printf("Passenger %d belongs to airline %d\n",i,pass_ticket_buffer[i].flight_number);
+      printf("Passenger %d: Number of bags = %d\n",i,baggage_buffer[i].numberOfBags);
+      printf("Passenger %d: Weight of bags = ",i);
+      for(int j = 0; j < baggage_buffer[i].numberOfBags; j++) {
+	if( j!=0 && j!= (baggage_buffer[i].numberOfBags))
         printf(",");
-      printf("%d",baggage_buffer[i].weight);
+	printf("%d",baggage_buffer[i].weight);
+      }
+      printf("\n");
     }
-    printf("\n");
+    
+    for(int i=0; i < numberOfCIS; i++) {
+      printf("Airline check-in staff %d belongs to airline %d\n",i,i);
+    }
   }
-
-  for(int i=0; i < numberOfCIS; i++) {
-    printf("Airline check-in staff %d belongs to airline %d\n",i,i);
-  }
-
 }
 
 void Test1() {
