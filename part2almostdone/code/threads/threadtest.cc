@@ -278,7 +278,6 @@ void SecurityInspector(int myNumber) {
     
     // execLineLock[myAirline]->Acquire();
     while(siLineReturns[myNumber] > 0) {
-      printf("si %d inside has some one in siLineReturns\n",myNumber);
       siReturnLock[myNumber]->Acquire();
 
       // Tell an executive that I am ready 
@@ -319,21 +318,21 @@ void SecurityInspector(int myNumber) {
 	
       }
       */
-      /*
+      
       if(!passedSI | !so_passOrFail[myNumber]) {
 	//passenger failed one or more inspections, raise suspicion
 	printf("Security inspector %d asks passenger %d to go for further examination\n", myNumber, siPassenger[myNumber]);
 	passengersFailedSI[ siPassenger[myNumber] ] = true;
       }
-      */
+      
 
 
-      //if(passedSI && so_passOrFail[siPassenger[myNumber]]) {
+      if(passedSI && so_passOrFail[siPassenger[myNumber]]) {
 	printf("Security inspector %d allows passenger %d to board\n", myNumber,siPassenger[myNumber]);
 	sicount++;
 	printf("si has moved %d passengers\n",sicount);
 	// Keep track of how many passengers are cleared for each airline
-	//}
+      }
     }
     siLock[myNumber]->Release();
   
