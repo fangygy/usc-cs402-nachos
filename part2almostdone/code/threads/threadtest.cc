@@ -373,10 +373,7 @@ void SecurityOfficer(int myNumber) {
     }
     
     if(soLineLengths[myNumber] > 0) {
-      //printf("line %d has more than one passenger\n", myNumber);
-      //cisLineLock[myAirline]->Acquire();
       waitingForSO_C[myNumber]->Signal(&soLineLock);
-      //printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
       soLock[myNumber]->Acquire();      
       soLineLock.Release();
       
@@ -405,14 +402,13 @@ void SecurityOfficer(int myNumber) {
       // If he cannot find one, he sends the passenger to the Security Officer
       // with the shortest line
       int passenger_line = findShortestLine(siLineLengths,7);
-      // siLineLengths[passenger_line]++;
       passengerGoToSI[ soPassenger[myNumber] ] = passenger_line;
 
       waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
       waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]);
       printf("Screening officer %d directs passenger %d to security inspector %d\n", myNumber, soPassenger[myNumber], passengerGoToSI[ soPassenger[myNumber] ]);
       numbersopassed++;
-      printf("socount: %d\n",numbersopassed);
+      //printf("socount: %d\n",numbersopassed);
     }
     soLock[myNumber]->Release();
   }
@@ -618,8 +614,9 @@ void CheckInStaff(int myNumber) {
       cis_baggage_buffer[flight_number] += baggage_buffer[cisPassenger[myNumber]].weight;
       
       // Now add these bags to the conveyor belt
-      conveyorBelt[cisPassenger[myNumber]].airline_code = flight_number;
+      conveyorBelt[cisPassenger[myNumber]].airline_code   = flight_number;
       conveyorBelt[cisPassenger[myNumber]].number_of_bags = baggage_buffer[cisPassenger[myNumber]].numberOfBags;
+      conveyorBelt[cisPassenger[myNumber]].weight         = baggag_buffer[cisPassenger[myNumber]].weight;
 
       printf("Airline check-in staff %d of airline %d dropped bags to the conveyor system\n",myNumber,myAirline);
 
