@@ -899,7 +899,7 @@ void Passenger(int myNumber) {
 
   siLock[myLineNumber]->Release();
   
-  if(passengersFailedSI[myNumber]) {
+  if(false) {
     
     siReturnLock[myLineNumber]->Acquire();
     siLineReturns[myLineNumber]++;
