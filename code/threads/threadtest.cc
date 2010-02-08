@@ -119,7 +119,7 @@ void AirportManager(int myNumber) {
     if(g > 30) {
       currentThread->Finish();
     }
-
+    g++;
     conveyorBelt_Lock.Acquire();
     if(onBreak_CH) {
       for(int i = 0; i < numberOfPassengers; i++) {
