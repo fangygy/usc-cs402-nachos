@@ -844,12 +844,12 @@ void Passenger(int myNumber) {
     siLineLock.Release();
     
     siLock[myLineNumber]->Acquire();
-
+    siPassenger[myLineNumber] = myNumber;
     waitingForTicket_SI_C[myLineNumber]->Signal(siLock[myLineNumber]);
     waitingForTicket_SI_C[myLineNumber]->Wait(siLock[myLineNumber]);
     
     siLock[myLineNumber]->Release();
-    siPassenger[myLineNumber] = myNumber;
+    // siPassenger[myLineNumber] = myNumber;
   }
   
   //printf("-----Number of Passengers chosen inspector: %d\n",pass_si_count);
