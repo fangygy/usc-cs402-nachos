@@ -9,7 +9,7 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
-// Authors Alex Lee
+// Authors Alex Lee, Kris Tai, Tim Zimmer
 
 #include "copyright.h"
 #include "system.h"
@@ -67,10 +67,11 @@ struct boarding_pass {
 } boarding_pass_buffer[numberOfPassengers];
 
 struct baggage {
-  int weight;
+  int weight; //total weight of combined bags
   int airline_code;
   int passenger_number;
   int numberOfBags;
+  int weights[3];
 } baggage_buffer[numberOfPassengers];
 
 // int passenger_baggage_buffer[numberOfPassengers];
@@ -88,7 +89,7 @@ int cisFlightCount[numberOfAirlines];
 bool alreadyCalled[numberOfAirlines];
 Condition goToSleep("goToSleep");
 
-int totalweight = 0; // for debugging
+//int totalweight = 0; // for debugging
 
 Condition onBreakCH("ch_cv");
 Lock conveyorBelt_Lock("cb_lock");
@@ -162,7 +163,7 @@ void AirportManager(int myNumber) {
 	}
 	currentThread->Finish();
       }
-      printf("flight %d count %d , cisflightcount %d\n",i,flightCount[i],cisFlightCount[i]); 
+      //printf("flight %d count %d , cisflightcount %d\n",i,flightCount[i],cisFlightCount[i]); 
       if(!alreadyCalled[i]&&(flightCount[i] == cisFlightCount[i])&&(flightCount[i]!=0)&&(cisFlightCount[i]!=0)&&(cargoHandlerBaggageCount[i]==al_baggage_buffer[i])) {
 	printf("Airport Manager gives a boarding call to airline %d\n",i);
 	waitingForCallAM_C[i]->Broadcast(airlineLock[i]);
@@ -332,7 +333,7 @@ int soLineLengths[numberOfSO];
 bool so_busy[numberOfSO];
 int soPassenger[numberOfSO];
 
-void SecurityOfficer(int myNumber) {
+void ScreeningOfficer(int myNumber) {
   if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)||(current_test==6)) {
     currentThread->Finish();
   }
@@ -1099,8 +1100,25 @@ void AirportSimulation() {
       pass_ticket_buffer[i].executive = false;
     }
     pass_ticket_buffer[i].checkin_counter = -1;
-    // TO DO 
+    
     // Randomize weights
+
+    int randomNumBags = rand() % 2 + 2; //random number between 2-3
+
+    for(int j=0; j < randomNumBags; j++) {
+      //randomize the bag's weight
+      int randomWeight = rand() % 30; //random number between 0-29
+      randomWeight += 30; //random number between 30-59
+      
+      baggage_buffer[i].weights[j] = randomWeight;
+      baggage_buffer[i].weight += randomWeight;
+      //totalWeight += randomWeight;
+      bagWeightsDuringSetup[ pass_ticket_buffer[i].flight_number ] += randomWeight;
+    }
+    baggage_buffer[i].numberOfBags = randomNumBags;
+
+    
+    /*
     if(i%2==0) {
       baggage_buffer[i].numberOfBags = 2;
       baggage_buffer[i].weight = 120;
@@ -1114,6 +1132,8 @@ void AirportSimulation() {
       numBagsDuringSetup[ pass_ticket_buffer[i].flight_number ] += 3;
       bagWeightsDuringSetup[ pass_ticket_buffer[i].flight_number ] += 180;
     }
+    */
+
     baggage_buffer[i].passenger_number = i;
     baggage_buffer[i].airline_code = (i%numberOfAirlines);
     boarding_pass_buffer[i].passenger_number = i;
@@ -1146,15 +1166,15 @@ void AirportSimulation() {
     t->Fork((VoidFunctionPtr)CheckInStaff,i);
   }
   
-  // Create the Security Officer Staff
+  // Create the Screening Officer Staff
   for(i=0; i < numberOfSO; i++) {
     name = new char[20];
-    sprintf(name, "SecurityOfficer%d",i);
+    sprintf(name, "ScreeningOfficer%d",i);
     t = new Thread(name);
-    t->Fork((VoidFunctionPtr)SecurityOfficer,i);
+    t->Fork((VoidFunctionPtr)ScreeningOfficer,i);
   }
   
-  // Create the Airline Check In Staff
+  // Create the Security Inspector Staff
   
   for(i=0; i < numberOfSO; i++) {
     name = new char[20];
@@ -1199,7 +1219,7 @@ void AirportSimulation() {
     for(int j = 0; j < baggage_buffer[i].numberOfBags; j++) {
       if( j!=0 && j!= (baggage_buffer[i].numberOfBags))
 	printf(",");
-      printf("%d",baggage_buffer[i].weight);
+      printf("%d",baggage_buffer[i].weights[j]);
     }
     printf("\n");
   }
