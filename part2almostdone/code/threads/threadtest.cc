@@ -420,6 +420,8 @@ void SecurityOfficer(int myNumber) {
 	so_passOrFail[myNumber] = false;
 	printf("Screening officer %d is suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
       }
+      int passenger_line = findShortestLine(siLineLengths,7);
+      passengerGoToSI[ soPassenger[myNumber] ] = passenger_line;
 
       waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
       waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]);
@@ -840,7 +842,7 @@ void Passenger(int myNumber) {
   
   soLineLock.Acquire();
   
-  myLineNumber = findShortestLine(soLineLengths, 7);
+  myLineNumber = findShortestLine(soLineLengths,7);
 
   soLineLengths[myLineNumber]++;
 
@@ -876,7 +878,7 @@ void Passenger(int myNumber) {
   
   siLineLock.Acquire();
   
-  myLineNumber = findShortestLine(siLineLengths, 7);
+  myLineNumber = passengerGoToSI[myNumber];
 
   siLineLengths[myLineNumber]++;
 
