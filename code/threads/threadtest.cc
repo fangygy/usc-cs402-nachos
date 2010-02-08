@@ -875,9 +875,10 @@ void Passenger(int myNumber) {
   
   myFlightNumber = boarding_pass_buffer[myNumber].flight_number;
   
+  flightCount[myFlightNumber]++;
   airlineLock[myFlightNumber]->Acquire();
   printf("passenger %d is at the boarding lounge\n", myNumber);
-  flightCount[myFlightNumber]++;
+  //flightCount[myFlightNumber]++;
   waitingForCallAM_C[myFlightNumber]->Wait(airlineLock[myFlightNumber]);
   airlineLock[myFlightNumber]->Release();
   printf("Passenger %d of Airline %d boarded airline %d\n", myNumber,myFlightNumber,myFlightNumber);
