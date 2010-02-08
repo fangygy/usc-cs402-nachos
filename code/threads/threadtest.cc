@@ -117,10 +117,12 @@ void AirportManager(int myNumber) {
     // issue broadcast
 
     conveyorBelt_Lock.Acquire();
+    // Used to terminate while loop
     g++;
     if(g > 20) {
       currentThread->Finish();
     }
+
     if(onBreak_CH) {
       for(int i = 0; i < numberOfPassengers; i++) {
 	if(conveyorBelt[i].number_of_bags == 0) {
@@ -831,7 +833,6 @@ void Passenger(int myNumber) {
 
     waitingForSI_C[myLineNumber]->Signal(&siLineLock);
     waitingForSI_C[myLineNumber]->Wait(&siLineLock);
-
 
     //siBackFromQuestioningLineLengths[myLineNumber]--;
     siLineLengths[myLineNumber]--;
