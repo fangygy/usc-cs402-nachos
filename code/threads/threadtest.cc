@@ -299,7 +299,9 @@ void SecurityInspector(int myNumber) {
         //passenger failed one or more inspections, raise suspicion
         printf("Security inspector %d asks passenger %d to go for further examination\n", myNumber, siPassenger[myNumber]);
         passengersFailedSI[ siPassenger[myNumber] ] = true;
+	siLineLock.Acquire();
 	si_busy[myNumber] = false;
+	siLineLock.Release();
 
       } else {
         // Clear passenger and direct to Boarding
@@ -366,9 +368,15 @@ void SecurityOfficer(int myNumber) {
       so_passOrFail[myNumber] = false;
       printf("Screening officer %d is suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
     }
-    
+    /*
+    siLineLock.Acquire();
+    int passengerLine = findShortestLine(alLineLengths,7);
+
+    siLineLock.Release();
+    */
     // siLineLock.Acquire();
     // Search for an available SI
+    /*
     bool foundAvailableSO = false;
     while( !foundAvailableSO )
       {
@@ -386,6 +394,7 @@ void SecurityOfficer(int myNumber) {
 	siLineLock.Release();
 	
       }
+    */
     // siLineLock.Release();
 
     // Clear passenger and direct to Security Inspector
@@ -792,9 +801,9 @@ void Passenger(int myNumber) {
   
   siLineLock.Acquire();
   
-  //myLineNumber = findShortestLine(siLineLengths, 7);
+  myLineNumber = findShortestLine(siLineLengths, 7);
 
-  myLineNumber = passengerGoToSI[myNumber];
+  // myLineNumber = passengerGoToSI[myNumber];
   printf("Passenger %d moves to security inspector %d\n",myNumber,myLineNumber);
 
   siLineLengths[myLineNumber]++;
