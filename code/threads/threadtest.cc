@@ -366,11 +366,12 @@ void SecurityOfficer(int myNumber) {
       printf("Screening officer %d is suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
     }
     
-    siLineLock.Acquire();
+    // siLineLock.Acquire();
     // Search for an available SI
     bool foundAvailableSO = false;
     while( !foundAvailableSO )
       {
+	siLineLock.Acquire();
 	printf("stuck inside while loop");
         for(int i = 0; i < numberOfSO; i++)
           {
@@ -381,9 +382,10 @@ void SecurityOfficer(int myNumber) {
               break;
             }
           }
+	siLineLock.Release();
 	
       }
-    siLineLock.Release();
+    // siLineLock.Release();
 
     // Clear passenger and direct to Security Inspector
     socount++;
