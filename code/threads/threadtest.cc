@@ -540,7 +540,7 @@ void CheckInStaff(int myNumber) {
       cisFlightCount[myAirline]++;
 
       int flight_number = pass_ticket_buffer[cisPassenger[myNumber]].flight_number;   
-      printf("Airline check-in staff %d of airline %d serves an executive class passenger and economy class line length = %d/n",myNumber,myAirline,cisLineLengths[myNumber]);
+      printf("Airline check-in staff %d of airline %d serves an executive class passenger and economy class line length = %d\n",myNumber,myAirline,cisLineLengths[myNumber]);
       printf("Airline check-in staff %d of airline %d informs executive passenger %d to board at gate %d\n",myNumber,cisPassenger[myNumber], flight_number);
       
       // Add these bags to the total count fort a given airline, specified by Flight Number
