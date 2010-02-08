@@ -474,10 +474,10 @@ void SecurityOfficer(int myNumber) {
       }
       */
       if((soPassenger[myNumber]==3)||(soPassenger[myNumber]==13)||(soPassenger[myNumber]==17)) {
-	so_passOrFail = false;
+	so_passOrFail[myNumber] = false;
 	printf("Screening officer %d is suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
       } else {
-	so_passOrFail = true;
+	so_passOrFail[myNumber] = true;
 	printf("Screening officer %d is not suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
       }
 
