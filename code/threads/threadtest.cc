@@ -279,7 +279,6 @@ void SecurityInspector(int myNumber) {
       //si_busy[myNumber] = false; // passenger fails so i am not busy
     }
     
-    
     waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
     waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
     
@@ -848,13 +847,6 @@ void Passenger(int myNumber) {
     
     siLock[myLineNumber]->Acquire();
     siPassenger[myLineNumber] = myNumber;
-    /*
-    waitingForTicket_SI_C[myLineNumber]->Signal(siLock[myLineNumber]);
-    waitingForTicket_SI_C[myLineNumber]->Wait(siLock[myLineNumber]);
-    
-    siLock[myLineNumber]->Release();
-    */
-    // siPassenger[myLineNumber] = myNumber;
   }
   
   //printf("-----Number of Passengers chosen inspector: %d\n",pass_si_count);
