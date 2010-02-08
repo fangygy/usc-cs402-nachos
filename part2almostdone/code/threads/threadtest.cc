@@ -262,56 +262,13 @@ void SecurityInspector(int myNumber) {
     siLineLock.Acquire();
     if(siLineLengths[myNumber]==0) { // && returning line
       // go on break
-      onBreakSI_C[myNumber]->Wait(siLineLock);
+      onBreakSI_C[myNumber]->Wait(&siLineLock);
     }
-    
-    // If executive line > 0
-    // Help the executives
-    
-    // execLineLock[myAirline]->Acquire();
-    /*
-    if(execLineLengths[myAirline] > 0) {
-      execLineLock[myAirline]->Acquire();
-      waitingForExec[myNumber] = true;
-      // Tell an executive that I am ready 
-      execLineCV[myAirline]->Signal(execLineLock[myAirline]);
-      // Now waiting for the executive to signal 
-      // execLineCV[myAirline]->Wait(execLineLock[myAirline]);
-    
-      execCISLock[myNumber]->Acquire();
-      execLineLock[myAirline]->Release();
 
-      waitingForExec_CIS_C[myNumber]->Wait(execCISLock[myNumber]);
-      waitingForExec_CIS_C[myNumber]->Signal(execCISLock[myNumber]);
- 
-      cisFlightCount[myAirline]++;
-
-      int flight_number = pass_ticket_buffer[cisPassenger[myNumber]].flight_number;   
-      printf("Airline check-in staff %d of airline %d serves an executive class passenger and economy class line length = %d/n",myNumber,myAirline,cisLineLengths[myNumber]);
-      printf("Airline check-in staff %d of airline %d informs executive passenger %d to board at gate %d\n",myNumber,cisPassenger[myNumber], flight_number);
-      
-      // Add these bags to the total count fort a given airline, specified by Flight Number
-      cis_baggage_buffer[flight_number] += baggage_buffer[cisPassenger[myNumber]].weight;
-      
-      // Now add these bags to the conveyor belt
-      conveyorBelt[cisPassenger[myNumber]].airline_code = flight_number;
-      conveyorBelt[cisPassenger[myNumber]].number_of_bags = baggage_buffer[cisPassenger[myNumber]].numberOfBags;
-      conveyorBelt[cisPassenger[myNumber]].weight = baggage_buffer[cisPassenger[myNumber]].weight;
-      printf("Airline check-in staff %d of airline %d dropped bags to the conveyor system\n", myNumber,myAirline);
-      
-      // CIS not waiting for executive passenger anymore
-      waitingForExec[myNumber]=false;
-      execCISLock[myNumber]->Release();
-    }
-    // execLineLock[myAirline]->Release();
-    // execCISLock[myNumber]->Release();
-
-    // cisLineLock[myAirline]->Acquire();
-    */
     if(siLineLengths[myNumber] > 0) {
       //printf("line %d has more than one passenger\n", myNumber);
       //cisLineLock[myAirline]->Acquire();
-      waitingForCIS_C[myNumber]->Signal(cisLineLock[myAirline]);
+      waitingForSI_C[myNumber]->Signal(siLineLock[myAirline]);
       //printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
       siLock[myNumber]->Acquire();
       
