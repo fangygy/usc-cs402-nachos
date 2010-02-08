@@ -403,7 +403,7 @@ void SecurityOfficer(int myNumber) {
       //printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
       soLock[myNumber]->Acquire();
       
-      soLineLock[myAirline]->Release();
+      soLineLock.Release();
       
 
       waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
