@@ -826,8 +826,10 @@ void Passenger(int myNumber) {
 
   siLock[myLineNumber]->Release();
   
-  if(passengersFailedSI[myNumber]) {
-    //going to further questioning
+ 
+  //if(passengersFailedSI[myNumber]) {
+  if(false) {  
+  //going to further questioning
     printf("Passenger %d goes for further questioning\n",myNumber);
     for(int i = 0; i < 10; i++)
       currentThread->Yield();
