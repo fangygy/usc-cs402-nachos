@@ -848,10 +848,12 @@ void Passenger(int myNumber) {
     
     siLock[myLineNumber]->Acquire();
     siPassenger[myLineNumber] = myNumber;
+    /*
     waitingForTicket_SI_C[myLineNumber]->Signal(siLock[myLineNumber]);
     waitingForTicket_SI_C[myLineNumber]->Wait(siLock[myLineNumber]);
     
     siLock[myLineNumber]->Release();
+    */
     // siPassenger[myLineNumber] = myNumber;
   }
   
