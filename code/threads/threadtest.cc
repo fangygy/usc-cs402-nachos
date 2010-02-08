@@ -205,6 +205,8 @@ void CargoHandler(int myNumber) {
         currentThread->Finish();
       } else {
         onBreakCH.Wait(&conveyorBelt_Lock);
+      printf("Cargo Handler %d is returning from a break\n",myNumber);
+	
       }
     }
     
