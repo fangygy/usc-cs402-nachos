@@ -813,6 +813,7 @@ void Passenger(int myNumber) {
   waitingForSI_C[myLineNumber]->Wait(&siLineLock);
   
   siLineLengths[myLineNumber]--;
+  
   siLock[myLineNumber]->Acquire();
   siLineLock.Release();
   
