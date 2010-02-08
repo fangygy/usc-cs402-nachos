@@ -677,6 +677,8 @@ void CheckInStaff(int myNumber) {
       waitingForExec_CIS_C[myNumber]->Signal(execCISLock[myNumber]);
  
       cisFlightCount[myAirline]++;
+      cisPassengerCount++;
+
 
       int flight_number = pass_ticket_buffer[cisPassenger[myNumber]].flight_number;   
       printf("Airline check-in staff %d of airline %d serves an executive class passenger and economy class line length = %d\n",myNumber,myAirline,cisLineLengths[myNumber]);
