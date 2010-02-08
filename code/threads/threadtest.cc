@@ -272,12 +272,13 @@ void SecurityInspector(int myNumber) {
     
     siLock[myNumber]->Acquire();
     siLineLock.Release();
-
+    /*
     if(passengersFailedSI[ siPassenger[myNumber] ]) {
       // passenger returning from further questioning
       passengerQuestioned = true;
       //si_busy[myNumber] = false; // passenger fails so i am not busy
     }
+    */
     
     waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
     waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
@@ -291,7 +292,7 @@ void SecurityInspector(int myNumber) {
 	
       } else {
 	//passenger failed SI
-	passedSI = true;
+	passedSI = false;
 	
       }
 
@@ -312,9 +313,9 @@ void SecurityInspector(int myNumber) {
       sicount++;
       //printf("%s: moving Passenger %d to Boarding: \n", currentThread->getName(),siPassenger[myNumber], sicount);
     }
-    
-    sicount++;
+    si_busy[myNumber] = false;
     printf("si has moved %d passengers\n",sicount);
+    
     // Keep track of how many passengers are cleared for each airline
     siAirplaneCountLock.Acquire();
     siAirlineCount[boarding_pass_buffer[siPassenger[myNumber]].flight_number]++;
@@ -364,7 +365,7 @@ void ScreeningOfficer(int myNumber) {
       printf("Screening officer %d is not suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
     } else {
       //passenger failed
-      so_passOrFail[myNumber] = true;
+      so_passOrFail[myNumber] = false;
       printf("Screening officer %d is suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
     }
     
@@ -559,6 +560,7 @@ void CheckInStaff(int myNumber) {
       conveyorBelt[cisPassenger[myNumber]].weight = baggage_buffer[cisPassenger[myNumber]].weight;
       printf("Airline check-in staff %d of airline %d dropped bags to the conveyor system\n", myNumber,myAirline);
       
+      cisFlightCount[myAirline]++;
       // CIS not waiting for executive passenger anymore
       waitingForExec[myNumber]=false;
       execCISLock[myNumber]->Release();
