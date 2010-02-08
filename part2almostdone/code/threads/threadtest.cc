@@ -283,7 +283,7 @@ void SecurityInspector(int myNumber) {
       siReturnLock[myNumber].Acquire();
 
       // Tell an executive that I am ready 
-      returnLineCV[myAirline]->Signal(siReturnLock[myNumber]);
+      returnLineCV[myNumber]->Signal(siReturnLock[myNumber]);
       // Now waiting for the executive to signal 
       // execLineCV[myAirline]->Wait(execLineLock[myAirline]);
     
@@ -315,7 +315,7 @@ void SecurityInspector(int myNumber) {
       }
       if(!passedSI | !so_passOrFail[myNumber]) {
 	//passenger failed one or more inspections, raise suspicion
-	printf("Security inspector %d asks passenger %d to go for further examination\n", myNumber, siPassenger[myNumber])
+	printf("Security inspector %d asks passenger %d to go for further examination\n", myNumber, siPassenger[myNumber]);
 	passengersFailedSI[ siPassenger[myNumber] ] = true;
       }
       
@@ -971,7 +971,6 @@ void Passenger(int myNumber) {
     waitingForReturn_SI_C[myLineNumber]->Signal(siRLock[myLineNumber]);
     waitingForReturn_SI_C[myLineNumber]->Wait(siRLock[myLineNumber]);
     siRLock[myLineNumber]->Release();
-    
     
   }
 /*
