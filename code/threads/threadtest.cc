@@ -205,7 +205,7 @@ void CargoHandler(int myNumber) {
         currentThread->Finish();
       } else {
         onBreakCH.Wait(&conveyorBelt_Lock);
-	printf("Cargo Handler %d is returned from break\n",myNumber);
+	printf("Cargo Handler %d returned from break\n",myNumber);
       }
     }
     
@@ -294,7 +294,6 @@ void SecurityInspector(int myNumber) {
       } else {
         //passenger failed SI
         passedSI = false;
-        
       }
 
       if(!passedSI | !so_passOrFail[myNumber]) {
