@@ -288,7 +288,6 @@ void SecurityInspector(int myNumber) {
       // execLineCV[myAirline]->Wait(execLineLock[myAirline]);
     
       siRLock[myNumber]->Acquire();
-
       siReturnLock[myNumber]->Release();
 
       waitingForReturn_SI_C[myNumber]->Wait(siRLock[myNumber]);
@@ -301,8 +300,6 @@ void SecurityInspector(int myNumber) {
     }
 
     if(siLineLengths[myNumber] > 0) {
-
-
       
       waitingForSI_C[myNumber]->Signal(&siLineLock);
       siLock[myNumber]->Acquire();
@@ -478,7 +475,7 @@ void SecurityOfficer(int myNumber) {
 
       waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
       waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]);
-
+      printf("Screening officer %d directs passenger %d to security inspector %d\n", myNumber, soPassenger[myNumber], passengerGoToSI[ soPassenger[myNumber] ]);
     }
     soLock[myNumber]->Release();
   
@@ -972,10 +969,10 @@ void Passenger(int myNumber) {
     for(int i = 0; i < 10; i++) {
       currentThread->Yield();
     }
-    
-    // siLineReturns[myLineNumber]--;
-    siRLock[myLineNumber]->Acquire();
+
     siLineReturns[myNumber]--;
+
+    siRLock[myLineNumber]->Acquire();
     // The passenger will return to their original airport inspector
     if(current_test == 8) {
       printf("Passenger %d comes back to security inspector %d after further examination\n",myNumber,myLineNumber);
