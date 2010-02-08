@@ -315,7 +315,7 @@ void SecurityInspector(int myNumber) {
     }
     */
     sicount++;
-printf("%s: moving Passenger %d to Boarding: \n", currentThread->getName(),siPassenger[myNumber], sicount);
+    printf("%s: moving Passenger %d to Boarding: \n", currentThread->getName(),siPassenger[myNumber], sicount);
     printf("si has moved %d passengers\n",sicount);
     // Keep track of how many passengers are cleared for each airline
     siAirplaneCountLock.Acquire();
@@ -813,9 +813,10 @@ void Passenger(int myNumber) {
   waitingForSI_C[myLineNumber]->Wait(&siLineLock);
   
   siLineLengths[myLineNumber]--;
+  siLock[myLineNumber]->Acquire();
   siLineLock.Release();
   
-  siLock[myLineNumber]->Acquire();
+  //siLock[myLineNumber]->Acquire();
   siPassenger[myLineNumber] = myNumber;
 
   // The Passenger now has the line number, so they should go to sleep and
