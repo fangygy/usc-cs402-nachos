@@ -380,6 +380,9 @@ void SecurityOfficer(int myNumber) {
               break;
             }
           }
+	for(int i = 0; i < 10; i++) {
+	  currentThread->Yield();
+	}
       }
     siLineLock.Release();
 
