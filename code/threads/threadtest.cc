@@ -375,7 +375,7 @@ void SecurityOfficer(int myNumber) {
           {
             if( !(si_busy[i]) ) {
               passengerGoToSI[ soPassenger[myNumber] ] = i;
-              si_busy = true;
+              si_busy[i] = true;
 	      foundAvailableSO = true;
               break;
             }
