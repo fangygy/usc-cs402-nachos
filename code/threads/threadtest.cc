@@ -299,6 +299,7 @@ void SecurityInspector(int myNumber) {
         //passenger failed one or more inspections, raise suspicion
         printf("Security inspector %d asks passenger %d to go for further examination\n", myNumber, siPassenger[myNumber]);
         passengersFailedSI[ siPassenger[myNumber] ] = true;
+	si_busy[myNumber] = false;
 
       } else {
         // Clear passenger and direct to Boarding
@@ -372,7 +373,7 @@ void SecurityOfficer(int myNumber) {
     while( !foundAvailableSO )
       {
 	siLineLock.Acquire();
-	printf("stuck inside while loop");
+	printf("stuck inside while loop\n");
         for(int i = 0; i < numberOfSO; i++)
           {
             if( !(si_busy[i]) ) {
