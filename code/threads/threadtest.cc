@@ -317,11 +317,14 @@ void SecurityInspector(int myNumber) {
     sicount++;
     printf("%s: moving Passenger %d to Boarding: \n", currentThread->getName(),siPassenger[myNumber], sicount);
     printf("si has moved %d passengers\n",sicount);
+    siLock[myNumber]->Release();
     // Keep track of how many passengers are cleared for each airline
+    /*
     siAirplaneCountLock.Acquire();
     siAirlineCount[boarding_pass_buffer[siPassenger[myNumber]].flight_number]++;
     siAirplaneCountLock.Release();
-    siLock[myNumber]->Release();
+    */
+    // siLock[myNumber]->Release();
 
   }
 }
