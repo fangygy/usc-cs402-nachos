@@ -484,9 +484,7 @@ void SecurityOfficer(int myNumber) {
       // If he cannot find one, he sends the passenger to the Security Officer
       // with the shortest line
       int passenger_line = findShortestLine(siLineLengths,7);
-      siLineLock.Acquire();
       siLineLengths[passenger_line]++;
-      siLineLock.Release();
       passengerGoToSI[ soPassenger[myNumber] ] = passenger_line;
 
       waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
