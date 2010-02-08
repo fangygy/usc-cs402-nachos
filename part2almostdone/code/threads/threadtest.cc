@@ -479,7 +479,6 @@ void SecurityOfficer(int myNumber) {
 	printf("Screening officer %d is not suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
       }
 
-
       // Screening Officer looks for an available line
       // If he cannot find one, he sends the passenger to the Security Officer
       // with the shortest line
@@ -977,11 +976,11 @@ void Passenger(int myNumber) {
     //going to further questioning
 
     printf("Passenger %d goes for further questioning\n",myNumber);
-    
+    /*
     for(int i = 0; i < 10; i++) {
       currentThread->Yield();
     }
-
+    */
     siRLock[myLineNumber]->Acquire();
     // The passenger will return to their original airport inspector
     if(current_test == 8) {
