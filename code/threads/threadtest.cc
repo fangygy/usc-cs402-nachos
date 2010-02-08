@@ -290,7 +290,7 @@ void SecurityInspector(int myNumber) {
 	
       } else {
 	//passenger failed SI
-	passedSI = false;
+	passedSI = true;
 	
       }
 
@@ -363,7 +363,7 @@ void SecurityOfficer(int myNumber) {
       printf("Screening officer %d is not suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
     } else {
       //passenger failed
-      so_passOrFail[myNumber] = false;
+      so_passOrFail[myNumber] = true;
       printf("Screening officer %d is suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
     }
     
