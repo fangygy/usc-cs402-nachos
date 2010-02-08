@@ -616,7 +616,7 @@ void CheckInStaff(int myNumber) {
       // Now add these bags to the conveyor belt
       conveyorBelt[cisPassenger[myNumber]].airline_code   = flight_number;
       conveyorBelt[cisPassenger[myNumber]].number_of_bags = baggage_buffer[cisPassenger[myNumber]].numberOfBags;
-      conveyorBelt[cisPassenger[myNumber]].weight         = baggag_buffer[cisPassenger[myNumber]].weight;
+      conveyorBelt[cisPassenger[myNumber]].weight         = baggage_buffer[cisPassenger[myNumber]].weight;
 
       printf("Airline check-in staff %d of airline %d dropped bags to the conveyor system\n",myNumber,myAirline);
 
