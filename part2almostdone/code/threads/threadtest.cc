@@ -243,7 +243,7 @@ Lock *siRLock[numberOfSO];
 int siLineReturns[numberOfSO];
 int siLineLengths[numberOfSO];
 bool si_busy[numberOfSO];
-bool so_passOrFail[numberOfSO];
+bool so_passOrFail[numberOfPassengers];
 int siPassenger[numberOfSO];
 int siAirlineCount[numberOfAirlines];
 
@@ -319,15 +319,11 @@ void SecurityInspector(int myNumber) {
       }
       */
       
-      if(!passedSI | !so_passOrFail[myNumber]) {
+      if(!passedSI | !so_passOrFail[siPassenger[myNumber]]) {
 	//passenger failed one or more inspections, raise suspicion
 	printf("Security inspector %d asks passenger %d to go for further examination\n", myNumber, siPassenger[myNumber]);
 	passengersFailedSI[ siPassenger[myNumber] ] = true;
-      }
-      
-
-
-      if(passedSI && so_passOrFail[siPassenger[myNumber]]) {
+      } else  {
 	printf("Security inspector %d allows passenger %d to board\n", myNumber,siPassenger[myNumber]);
 	sicount++;
 	printf("si has moved %d passengers\n",sicount);
@@ -348,6 +344,7 @@ int soLineLengths[numberOfSO];
 bool so_busy[numberOfSO];
 int soPassenger[numberOfSO];
 int numbersopassed = 0;
+
 void SecurityOfficer(int myNumber) {
   if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)||(current_test==6)) {
     currentThread->Finish();
@@ -397,10 +394,10 @@ void SecurityOfficer(int myNumber) {
       }
       */
       if((soPassenger[myNumber]==3)||(soPassenger[myNumber]==13)||(soPassenger[myNumber]==17)) {
-	so_passOrFail[myNumber] = false;
+	so_passOrFail[soPassenger[myNumber]] = false;
 	printf("Screening officer %d is suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
       } else {
-	so_passOrFail[myNumber] = true;
+	so_passOrFail[soPassenger[myNumber]] = true;
 	printf("Screening officer %d is not suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
       }
 
@@ -1173,6 +1170,9 @@ void AirportSimulation() {
     boarding_pass_buffer[i].passenger_number = i;
     boarding_pass_buffer[i].flight_number = (i%numberOfAirlines);
     boarding_pass_buffer[i].seat_number = -1;
+
+    // Initialize so pass or fail
+    so_passOrFail[i] = true;
 
     name = new char [20]; 
     sprintf(name,"Passenger%d",i);
