@@ -119,11 +119,12 @@ void AirportManager(int myNumber) {
 
     conveyorBelt_Lock.Acquire();
     // Used to terminate while loop
+    /*
     g++;
     if(g > 20) {
       currentThread->Finish();
     }
-
+    */
     if(onBreak_CH) {
       for(int i = 0; i < numberOfPassengers; i++) {
 	if(conveyorBelt[i].number_of_bags == 0) {
