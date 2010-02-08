@@ -320,9 +320,7 @@ void SecurityInspector(int myNumber) {
 	
       }
       */
-      if(){
-      } else {
-      }
+
       if(!passedSI | !so_passOrFail[myNumber]) {
 	//passenger failed one or more inspections, raise suspicion
 	printf("Security inspector %d asks passenger %d to go for further examination\n", myNumber, siPassenger[myNumber]);
