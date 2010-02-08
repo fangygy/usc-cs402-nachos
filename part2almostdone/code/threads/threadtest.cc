@@ -406,10 +406,20 @@ void SecurityOfficer(int myNumber) {
       //cisLineLock[myAirline]->Acquire();
       waitingForSO_C[myNumber]->Signal(&soLineLock);
       //printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
-      soLock[myNumber]->Acquire();
-      
+      soLock[myNumber]->Acquire();      
       soLineLock.Release();
       
+      // Determine if the passenger passes or fails
+      int randomNum = rand() % 100;
+      if(randomNum < probabilityPassingSO) {
+      //passenger passed
+	so_passOrFail[myNumber] = true;
+	printf("Screening officer %d is not suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
+      } else {
+	//passenger failed
+	so_passOrFail[myNumber] = false;
+	printf("Screening officer %d is suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
+      }
 
       waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
       waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]);
@@ -438,17 +448,7 @@ void SecurityOfficer(int myNumber) {
     waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
     waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]);
 
-    // Determine if the passenger passes or fails
-    int randomNum = rand() % 100;
-    if(randomNum < probabilityPassingSO) {
-      //passenger passed
-      so_passOrFail[myNumber] = true;
-      printf("Screening officer %d is not suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
-    } else {
-      //passenger failed
-      so_passOrFail[myNumber] = false;
-      printf("Screening officer %d is suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);
-    }
+    
     
     siLineLock.Acquire();
     // Search for an available SI
