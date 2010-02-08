@@ -223,7 +223,7 @@ void CargoHandler(int myNumber) {
 
   }
 }
-
+Condition *onBreakSI_C[numberOfSO];
 Condition *waitingForSI_C[numberOfSO];
 Condition *waitingForTicket_SI_C[numberOfSO];
 //Condition *waitingForSIAfterQuestioning_C[numberOfSO];
@@ -242,6 +242,91 @@ void SecurityInspector(int myNumber) {
   if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)||(current_test==6)) {
     currentThread->Finish();
   }
+  while(true) {
+    
+    // Acquire the line lock
+    // cisLineLock[myAirline]->Acquire();
+
+    /*
+     * if there is no one in line 
+     * check in staff goes on break
+     *
+     * there are people in line 
+     * signal someone to come into the line
+     * wait for them to hand their ticket
+     * generate boarding pass
+     * signal passenger with boarding pass
+     * 
+     */
+
+    siLineLock.Acquire();
+    if(siLineLengths[myNumber]==0) { // && returning line
+      // go on break
+      onBreakSI_C[myNumber]->Wait(siLineLock);
+    }
+    
+    // If executive line > 0
+    // Help the executives
+    
+    // execLineLock[myAirline]->Acquire();
+    /*
+    if(execLineLengths[myAirline] > 0) {
+      execLineLock[myAirline]->Acquire();
+      waitingForExec[myNumber] = true;
+      // Tell an executive that I am ready 
+      execLineCV[myAirline]->Signal(execLineLock[myAirline]);
+      // Now waiting for the executive to signal 
+      // execLineCV[myAirline]->Wait(execLineLock[myAirline]);
+    
+      execCISLock[myNumber]->Acquire();
+      execLineLock[myAirline]->Release();
+
+      waitingForExec_CIS_C[myNumber]->Wait(execCISLock[myNumber]);
+      waitingForExec_CIS_C[myNumber]->Signal(execCISLock[myNumber]);
+ 
+      cisFlightCount[myAirline]++;
+
+      int flight_number = pass_ticket_buffer[cisPassenger[myNumber]].flight_number;   
+      printf("Airline check-in staff %d of airline %d serves an executive class passenger and economy class line length = %d/n",myNumber,myAirline,cisLineLengths[myNumber]);
+      printf("Airline check-in staff %d of airline %d informs executive passenger %d to board at gate %d\n",myNumber,cisPassenger[myNumber], flight_number);
+      
+      // Add these bags to the total count fort a given airline, specified by Flight Number
+      cis_baggage_buffer[flight_number] += baggage_buffer[cisPassenger[myNumber]].weight;
+      
+      // Now add these bags to the conveyor belt
+      conveyorBelt[cisPassenger[myNumber]].airline_code = flight_number;
+      conveyorBelt[cisPassenger[myNumber]].number_of_bags = baggage_buffer[cisPassenger[myNumber]].numberOfBags;
+      conveyorBelt[cisPassenger[myNumber]].weight = baggage_buffer[cisPassenger[myNumber]].weight;
+      printf("Airline check-in staff %d of airline %d dropped bags to the conveyor system\n", myNumber,myAirline);
+      
+      // CIS not waiting for executive passenger anymore
+      waitingForExec[myNumber]=false;
+      execCISLock[myNumber]->Release();
+    }
+    // execLineLock[myAirline]->Release();
+    // execCISLock[myNumber]->Release();
+
+    // cisLineLock[myAirline]->Acquire();
+    */
+    if(siLineLengths[myNumber] > 0) {
+      //printf("line %d has more than one passenger\n", myNumber);
+      //cisLineLock[myAirline]->Acquire();
+      waitingForCIS_C[myNumber]->Signal(cisLineLock[myAirline]);
+      //printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
+      siLock[myNumber]->Acquire();
+      
+      siLineLock[myAirline]->Release();
+
+      waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
+      waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
+
+      // int flight_number = pass_ticket_buffer[cisPassenger[myNumber]].flight_number;   
+    
+    }
+    siLock[myNumber]->Release();
+  
+  }
+  /*
   while(true) {
     
     si_busy[myNumber] = false;
@@ -315,8 +400,10 @@ void SecurityInspector(int myNumber) {
     siLock[myNumber]->Release();
 
   }
+  */
 }
 
+Condition *onBreakSO_C[numberOfSO];
 Condition *waitingForSO_C[numberOfSO];
 Condition *waitingForTicket_SO_C[numberOfSO];
 Lock soLineLock("sl_LL");
@@ -329,6 +416,47 @@ void SecurityOfficer(int myNumber) {
   if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)||(current_test==6)) {
     currentThread->Finish();
   }
+  while(true) {
+
+    // Acquire the line lock
+    // cisLineLock[myAirline]->Acquire();
+
+    /*
+     * if there is no one in line 
+     * check in staff goes on break
+     *
+     * there are people in line 
+     * signal someone to come into the line
+     * wait for them to hand their ticket
+     * generate boarding pass
+     * signal passenger with boarding pass
+     * 
+     */
+
+    soLineLock[myAirline]->Acquire();
+    if(soLineLengths[myNumber]==0) {
+      // go on break
+      onBreakSO_C[myNumber]->Wait(soLineLock);
+    }
+    
+    if(soLineLengths[myNumber] > 0) {
+      //printf("line %d has more than one passenger\n", myNumber);
+      //cisLineLock[myAirline]->Acquire();
+      waitingForSO_C[myNumber]->Signal(soLineLock[myAirline]);
+      //printf("%s telling Passenger %d to come to counter\n", currentThread->getName(), cis_current_passenger_serving[myNumber]);
+      soLock[myNumber]->Acquire();
+      
+      soLineLock[myAirline]->Release();
+      
+
+      waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
+      waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]);
+
+    }
+    soLock[myNumber]->Release();
+  
+  }
+  /*
   while(true) {
     
     soLineLock.Acquire();
@@ -382,6 +510,7 @@ void SecurityOfficer(int myNumber) {
    
     soLock[myNumber]->Release();
   }
+  */
 }
 
 // Objects for Airport Liaison
@@ -439,6 +568,7 @@ void AirportLiaison(int myNumber) {
     al_baggage_buffer[alPassenger[myNumber]] = passenger_baggage_buffer[alPassenger[myNumber]];
     printf("%s takes note that Passenger %d has %d pieces of luggage\n",currentThread->getName(),alPassenger[myNumber],passenger_baggage_buffer[alPassenger[myNumber]]);
     */
+  
     int flight_number = pass_ticket_buffer[alPassenger[myNumber]].flight_number;   
     al_baggage_buffer[flight_number] += baggage_buffer[alPassenger[myNumber]].numberOfBags;
     // printf("Flight %d has %d bags\n", flight_number,al_baggage_buffer[flight_number]);
@@ -451,6 +581,7 @@ void AirportLiaison(int myNumber) {
     alPassengerCount++;
     alLock[myNumber]->Release();
   }
+  
 }
 
 
@@ -750,8 +881,12 @@ void Passenger(int myNumber) {
   myLineNumber = findShortestLine(soLineLengths, 7);
 
   soLineLengths[myLineNumber]++;
+
+  onBreakSO_C[myLineNumber]->Signal(&soLineLock);
+  // soPassenger[myLineNumber] = myNumber;
+
   printf("Passenger %d gives the hand-luggage to screening officer %d\n", myNumber, myLineNumber);
-  waitingForSO_C[myLineNumber]->Signal(&soLineLock);
+  // waitingForSO_C[myLineNumber]->Signal(&soLineLock);
   waitingForSO_C[myLineNumber]->Wait(&soLineLock);
   
   soLineLengths[myLineNumber]--;
@@ -779,31 +914,33 @@ void Passenger(int myNumber) {
   
   siLineLock.Acquire();
   
-  //myLineNumber = findShortestLine(siLineLengths, 7);
-
-  myLineNumber = passengerGoToSI[myNumber];
-  printf("Passenger %d moves to security inspector %d\n",myNumber,myLineNumber);
+  myLineNumber = findShortestLine(siLineLengths, 7);
 
   siLineLengths[myLineNumber]++;
-  //printf("%s: chose SInspect %d with length %d\n", currentThread->getName(), myLineNumber, siLineLengths[myLineNumber]);
-  
-  waitingForSI_C[myLineNumber]->Signal(&siLineLock);
+
+  onBreakSI_C[myLineNumber]->Signal(&siLineLock);
+  // soPassenger[myLineNumber] = myNumber;
+
+  printf("Passenger %d gives the hand-luggage to screening officer %d\n", myNumber, myLineNumber);
+  // waitingForSO_C[myLineNumber]->Signal(&soLineLock);
   waitingForSI_C[myLineNumber]->Wait(&siLineLock);
   
   siLineLengths[myLineNumber]--;
   siLineLock.Release();
-  
+
   siLock[myLineNumber]->Acquire();
+
   siPassenger[myLineNumber] = myNumber;
 
   // The Passenger now has the line number, so they should go to sleep and
   // release the line lock, letting another Passenger search for a line
-  //printf("%s giving airline ticket to Security Inspector %d\n", currentThread->getName(), myLineNumber);
   waitingForTicket_SI_C[myLineNumber]->Signal(siLock[myLineNumber]);
+  //printf("Passenger %d gives the hand-luggage to screening officer %d\n", myNumber, myLineNumber);
   waitingForTicket_SI_C[myLineNumber]->Wait(siLock[myLineNumber]);
 
   siLock[myLineNumber]->Release();
-  
+
+  /*
   if(passengersFailedSI[myNumber]) {
     //going to further questioning
     printf("Passenger %d goes for further questioning\n",myNumber);
@@ -836,7 +973,7 @@ void Passenger(int myNumber) {
     siLock[myLineNumber]->Acquire();
     siPassenger[myLineNumber] = myNumber;
   }
-  
+  */
   //printf("-----Number of Passengers chosen inspector: %d\n",pass_si_count);
   pass_si_count++;
 
@@ -1006,6 +1143,12 @@ void AirportSimulation() {
     name = new char[20];
     sprintf(name,"soLock%d",i);
     soLock[i] = new Lock(name);
+    name = new char[20];
+    sprintf(name,"onbreaksoc%d",i);
+    onBreakSO_C[i] = new Condition(name);
+    name = new char[20];
+    sprintf(name,"onbreaksic%d",i);
+    onBreakSI_C[i] = new Condition(name);
   }
 
   for(i = 0; i < numberOfSO; i++) {
