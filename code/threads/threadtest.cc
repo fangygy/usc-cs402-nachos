@@ -769,7 +769,7 @@ void Passenger(int myNumber) {
   //
   //
   // --------------------------------------------------------
-  
+  /*
   soLineLock.Acquire();
   
   myLineNumber = findShortestLine(soLineLengths, 7);
