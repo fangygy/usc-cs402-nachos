@@ -293,7 +293,7 @@ void SecurityInspector(int myNumber) {
 
       waitingForReturn_SI_C[myNumber]->Wait(siRLock[myNumber]);
       waitingForReturn_SI_C[myNumber]->Signal(siRLock[myNumber]);
- 
+      printf("Security inspector %d permits returning passenger %d to board\n", myNumber, siPassenger[myNumber]);
       // increment si count of passengers?
 
       // siLineReturns[myNumber]--;
@@ -324,6 +324,7 @@ void SecurityInspector(int myNumber) {
       siLineLock.Release();
       waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);
       waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);
+      printf("Security inspector %d allows passenger %d to board\n", myNumber,siPassenger[myNumber]);
     
     }
     siLock[myNumber]->Release();
