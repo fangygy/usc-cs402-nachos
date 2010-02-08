@@ -273,7 +273,6 @@ void SecurityInspector(int myNumber) {
       waitingSI_C[myNumber]->Wait(&siLineLock);
     }
 
-
     // If people returning line > 0
     // Help them first
     
@@ -334,9 +333,6 @@ void SecurityInspector(int myNumber) {
 	sicount++;
 	printf("si has moved %d passengers\n",sicount);
 	// Keep track of how many passengers are cleared for each airline
-	siAirplaneCountLock.Acquire();
-	siAirlineCount[boarding_pass_buffer[siPassenger[myNumber]].flight_number]++;
-	siAirplaneCountLock.Release();
 	//}
     }
     siLock[myNumber]->Release();
@@ -423,53 +419,7 @@ void SecurityOfficer(int myNumber) {
       printf("socount: %d\n",numbersopassed);
     }
     soLock[myNumber]->Release();
-  
   }
-  /*
-  while(true) {
-    
-    soLineLock.Acquire();
-    
-    if(soLineLengths[myNumber]>0) {
-      //printf("%s: Telling passenger to come through Security\n", currentThread->getName());
-      waitingForSO_C[myNumber]->Signal(&soLineLock);
-    } else {
-      waitingForSO_C[myNumber]->Wait(&soLineLock);
-      //printf("%s: Telling passenger to come through Security\n", currentThread->getName());
-      waitingForSO_C[myNumber]->Signal(&soLineLock);
-    }
-    
-    soLock[myNumber]->Acquire();
-    soLineLock.Release();
-    
-    waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
-    waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]);
-
-    
-    
-    siLineLock.Acquire();
-    // Search for an available SI
-    bool foundAvailableSO = false;
-    while( !foundAvailableSO )
-      {
-	for(int i = 0; i < numberOfSO; i++)
-	  {
-	    if( !(si_busy[i]) ) {
-	      passengerGoToSI[ soPassenger[myNumber] ] = i;
-	      foundAvailableSO = true;
-	      break;
-	    }
-	  }
-      }
-    siLineLock.Release();
-
-    // Clear passenger and direct to Security Inspector
-    socount++;
-    printf("Screening officer %d directs passenger %d to security inspector %d\n", myNumber, soPassenger[myNumber], passengerGoToSI[ soPassenger[myNumber] ]);
-   
-    soLock[myNumber]->Release();
-  }
-  */
 }
 
 // Objects for Airport Liaison
@@ -899,7 +849,7 @@ void Passenger(int myNumber) {
 
   siLock[myLineNumber]->Release();
   
-  if(false) {
+  if(passengersFailedSI[myNumber]) {
     
     siReturnLock[myLineNumber]->Acquire();
     siLineReturns[myLineNumber]++;
