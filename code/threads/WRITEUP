@@ -1,0 +1,338 @@
+Title:  Writeup for Project 1, Spring 2010
+
+ Date:  02/07/2010
+
+ Group Num 03 :        Name            USC Email        Student ID
+
+                       Alex Lee        alexl            6922218502
+                       Kris Tai        ktai             6353657107
+		       Tim Zimmer      tzimmer 		4814912664
+I. Requirements:
+
+	create 7 different types of threads: Passengers, Airport Liaisons, Airline Check-In Staff, 
+		Cargo Handlers, Screening Officers, Security Inspectors, and an Airport Manager.
+		
+	Each thread type has different responsibilities
+		I. Passengers:
+			+ There must be at least 20 passengers
+			+ two types: Executive and Economy
+			+ Each carries 2-3 pieces baggage and a ticket
+			
+			+ Passengers are created
+			+ Passenger waits in shortest line of Airline Liaisons
+            + When Passenger is called, gives AL ticket
+			+ Passenger either waits in executive or shortes economy line of the Check-In Staff of the airline 
+				specified by the AL depending on their type
+			+ When called, Passenger gives ticket and baggage to CIS
+			+ Passenger waits in shortest Screening Officer line
+			+ If necessary, Passenger will undergo questioning before continuing
+			+ If Security Inspector gives ok, Passenger gives boarding pass
+			+ Passenger proceeds to boarding area and waits for the boarding announcement
+		II. Airport Liaison:
+			+ There can be 5 to 7 Airport Liaisons
+			
+			+ AL calls one passenger at a time
+			+ When AL recieves ticket from Passenger, will direct Passenger to correct Airline
+			+ AL records the amount of baggage and which Airline it goes to 
+		III. Airline Check-In Staff:
+			+ There must be 3 to 5 Check-in Staff per Airline
+			+ one line per CIS plus one executive passenger line per airline
+			
+			+ Each CIS calls one Passenger at a time (executive line has priority over their own line)
+			+ CIS takes asks for Passenger ticket and baggage
+			+ CIS gives Passenger boarding pass with seat number assignment (no duplicates per airline)
+			+ CIS tags Passenger baggage with airline code and weight
+			+ CIS puts baggage on conveyor belt (shared by all airlines)
+			+ CIS dismisses Passenger (?)
+			+ CIS records number of passengers to check in and their baggage count
+			
+			+ CIS can go on break if economy AND their line are both empty
+			+ When all Passengers check in, close check-in kiosk (all go on break?)
+         
+		IV. Cargo Handler
+			+ There can be between 6 to 10 Cargo Handlers
+			
+			+ CH will pick up baggage from conveyor, read airline code, and drop off at appropriate aircraft.
+            + CH record number of baggage loaded into each aircraft
+			
+			+ CH can go on break when conveyor is empty
+            + CH all on break or at work at the same time (all or none)
+		V. Screening Officer:
+			+ SO handles one Passenger at a time from their line
+			+ SO generates Pass/Fail report on Passenger (percentage chance of fail)
+			+ SO sends Passenger and report to first available Security Inspector
+		VI. Security Inspector:
+			+ There must be the same number of SI's as SO's
+			
+			+ SI handles one Passenger at a time
+			+ SI creates their own PASS/FAIL report
+			+ If either SO or SI security reports are FAIL, SI sends Passenger to be questioned
+			+ SI must handle their own Passenger returning from questioning before another Passenger from any SO
+			+ SI verifies that each cleared Passenger holds a valid boarding pass
+			+ SI records number of Passengers cleared per airline 
+		VII. Airport Manager:
+			+ There is only one airport manager
+			
+			+ AM checks reports (passenger or baggage) at random intervals to ensure no race conditions
+            + AM signals back to work if there is baggage and CH's are on break
+            + When all Passengers and baggage have reached the airline, AM makes boarding announcement
+			
+			+ AM never goes on break
+
+    There must be at least 3 airlines 
+
+II. Assumptions:
+	+ The 2-3 baggage items handled by the check-in staff per passenger does not include their carry-on baggage
+	+ One aircraft/flight per airline
+	+ Any number of Screening Officers/Security Inspectors allowable as long as their relationship remains 1 to 1
+	+ Screening Officers have lines exactly like Airport Liaisons
+	+ SO's hold their current Passenger until sending them to available SI
+	+ Passengers, Airport Liaisons, Screening Officers, and Security Inspectors never go on break
+	+ All Passenger baggage checked takes up one "slot" on the conveyor (is treated as a single item)
+	+ SI have lines... the only passengers to get in those lines are those returning from questioning
+
+III. Design:
+
+	Airport Manager: on continual loop
+		+ grab conveyor lock and wake up CH's if (onBreak_CH && #bags > 0)
+			+ check baggage statistics, then release
+		+ grab airlineLock[airline#] and wake up CIS's if (onbreak && PassLeft > 0)
+			+ check statistics, then release
+		+ check AL statistics
+		+ check SO/SI statistics
+		+ if (allPassArrived[airline#] && allBagsArrived[airline#]) call for Boarding[airline#]
+		+ thread yield for awhile, then do it all again
+		
+		+ when all flights are off, gather all statistics and compare?
+	Cargo Handlers: on continual loop
+		+ grab conveyor lock
+			+ if onBreakCH, go on break as well (release)
+			+ else check for bags
+				+ if no bags, signal onBreakCH and go on break
+				+ else remove first bags sighted [and record statistics]
+					then release lock, and take to appropriate airline
+	Security Inspector: on continual loop
+		+ set busy status to false and whether next passenger has undergone questioning to false
+		+ grab SILine lock
+			+ if (Passenger in line)-passengers returning from questioning only- signal them
+			+ else wait for SO to give a Passenger and signal them
+				then set busy to true, grab SI lock, and release SILine lock
+		+ if Passenger was questioned, pass them onward [and record statistics]
+		+ else probability-pass/fail Passenger
+			+ if (SOFail || SIFail) then send to questioning, set busy to false, release SI lock
+			+ else pass Passenger onward [and record statistics], set busy to false, release SI lock
+	Screening Officer: on continual loop
+		+ grab SOLine lock
+			+ if (Passenger in line) signal them
+			+ else wait for Passenger to get in line
+		+ grab SO lock, release SOLine lock
+		+ probability-pass/fail Passenger
+		+ grab SILine lock
+			+ if (any SI = NoLine && NotBusy) send Passenger and SOPass/Fail report
+			+ else wait for available SI
+		+ when Passenger sent on, release SILine and SO locks
+	Airport Liaison: on continual loop
+		+ grab ALLine lock
+			+ if (Passenger waiting) then signal them
+			+ else wait for Passenger
+		+ grab AL lock, release ALLine lock
+		+ count number of bags they have, get Passenger ticket, [and record statistics]
+			then point them to correct airline
+		+ release AL lock
+	CheckIn Staff: on continual loop
+		+ Set which airline they are in
+		+ if (execLineEmpty && ownLineEmpty) go on break
+		+ else if (execLineLength > 0) grab execLine lock
+			+ signal Passenger, grab CIS lock, release execLine lock
+			+ get ticket, give boarding pass with unique seat #
+			+ grab conveyor lock
+			+ take baggage, mark it with airline number, put it in 'empty' slot on conveyor
+			+ [and record statistics]
+			+ release conveyor lock, release CIS lock
+		+ else if (ownLineLength > 0) grab CISLine lock
+			+ signal Passenger, grab CIS lock, release CISLine lock
+			+ grab conveyor lock
+			+ take baggage, mark it with airline number, put it in 'empty' slot on conveyor
+			+ [and record statistics]
+			+ release conveyor lock, release CIS lock
+	Passenger
+		+ look at ticket to find executive/or-not status
+		+ grab ALLine lock
+			+ get in shortest line, release ALLine lock
+			+ when signaled, grab AL lock (approach desk)
+			+ give ticket
+			+ when signaled, release AL lock
+		+ at appropriate airline:
+			+ if (exec) grab execLine lock, wait in line, release execLine lock
+			+ else grab CISLine lock, wait in shortest line, release CISLine lock
+			+ when signaled by CIS, grab CIS lock (approach desk)
+			+ give ticket, give baggage, recieve boarding pass, release CIS lock
+		+ grab SOLine lock
+			+ wait in shortest line, release SOLine lock
+			+ when signaled, grab SO lock (approach desk)
+		+ if assigned SI by SO, release SO lock, grab that SI lock (approach them)
+			+ go to questioning OR go to boarding area (pass/fail from SI), release SI lock
+		+ if returning from questioning, grab own SI's SILine lock, wait in line, release SILine lock
+			+ grab SI lock (approach them)
+			+ go to boarding area, release SI lock
+		+ when recieve boarding call, board plane
+		
+IV. Implementation:
+
+            + Files Modified:
+			threadtest.cc
+			main.cc
+			synch.h
+			synch.cc
+            
+	    + Files added
+			threadtest.cc
+			
+            + Data Structures added, and the file they were added to.
+		the following to threadtest.cc:
+			baggageticketbuffer
+			passengerticketbuffer
+			liaisonlines			
+			checkinstafflines
+			conveyerbelt
+			boardingpassbuffer
+			siPassenger
+			soPassenger
+			cisPassenger
+			waitingForTicket_CIS
+			waitingForSO
+			waitingForSI
+			waitingForTicket_SI
+			waitingForAL
+			cisLIneLock
+			soLineLock
+			siLineLock
+			alLineLock
+			
+			
+            + Data Structures modified, and the file they were added to.
+			Lock				~synch.cc/.h
+
+			Condition Class			~synch.cc/.h
+			
+            + Functions added and in which file.
+			All functions from threadtest.cc
+			FindShortestLine()		~functions.h	
+
+            + Functions modified and in which file.
+			Wait() 				~synch.cc/.h
+			Signal()			~synch.cc/.h
+			Broadcast()			~synch.cc/.h
+			isHeldByCurrentThread()		~synch.cc/.h
+			Acquire()			~synch.cc/.h
+			Release()			~synch.cc/.h
+			
+			
+V. Testing:  (For each test case, you must show)
+
+            + How to test
+
+			To test, simply type in -t[test number]
+			For example, to run test one, type "-t1"
+	
+			Test 1: Passenger selects the shortest line
+			Test 2: Passenger is directed by Liaison to correct counters
+			Test 3:	Economy class passengers enter the shortest line while Executives enter their correct line
+			Test 4: Executives are given priority
+			Test 5: Screening officer chooses an available security inspector each time a passenger comes in
+			Test 6: Cargo Handlers choose bags from the conveyor system each time and go on a break if no bags
+			Test 7: Handing over of the hand luggage by the passenger to the screening officer
+			Test 8: Passenger returns to the same security inspector after further questioning
+			Test 9: Baggage weights of all the passengers of a particular airline should match the weights of the bag
+				reported by the cargo handlers 
+			Test 10: Handing over of boarding pass by the passenger to the security inspector
+		
+
+- How to run the test cases, the commands, the arguments and so on.
+		
+			See above. 
+			To the run the entire simulation, type "-p2"
+
+            + Test Output
+
+- Describe the testing output. You don't have to dump all the output info. Just make sure your description can exactly reflect your output.
+
+			* Note: all output is derived from the same guidelines as specified in the assignment requirements
+
+			Test 1: Passengers are initialized, and they  go to the shortest line for the Airport Liaison
+			Test 2: Liaison looks at the passengers ticket and directs the passenger to the correct counter
+			Test 3: While going to check in staff, economy passengers select the shortest line and the executives go to their own line 
+			Test 4: Executives are cleared before passengers, given the check in staff is not currently working with anyone 
+			Test 5: Screening officer looks for an available security inspector, and then tells the passenger to go there.If there are no inspectors
+				available, the screening officer will tell the passenger to go to shortest wait. The passenger will wait until the inspector is ready.
+			Test 6: Cargo handlers remove bags from conveyor belt and then go on break if no bags
+				This test only has cargo handlers and a conveyor belt.
+			Test 7:	Interaction between passenger and screening officer
+			Test 8: Passenger returns to the same security inspector after they go for further questioning
+			Test 9: Baggage weights should match the tallies reported by cargo handlers 
+			Test 10: Handing over of boarding pass to security inspector
+		
+
+
+VI. Discussion:
+
+            + Experiment expectation.  (What you hope will happen.)
+			
+			Test 1: Passenger selects the shortest line
+			Test 2: Passenger is directed by Liaison to correct counters
+			Test 3:	Economy class passengers enter the shortest line while Executives enter their correct line
+			Test 4: Executives are given priority
+			Test 5: Screening officer chooses an available security inspector each time a passenger comes in
+			Test 6: Cargo Handlers choose bags from the conveyor system each time and go on a break if no bags
+			Test 7: Handing over of the hand luggage by the passenger to the screening officer
+			Test 8: Passenger returns to the same security inspector after further questioning
+			Test 9: Baggage weights of all the passengers of a particular airline should match the weights of the bag
+				reported by the cargo handlers 
+			Test 10: Handing over of boarding pass by the passenger to the security inspector
+
+
+            + Experiment result.  (What actually happens.)
+
+			Test 1: Passenger selects the shortest line
+			Test 2: Passenger is directed by Liaison to correct counters
+			Test 3:	Economy class passengers enter the shortest line while Executives enter their correct line
+			Test 4: Executives are given priority
+			Test 5: Screening officer chooses an available security inspector each time a passenger comes in.
+				However, this often times is security inspector 0. 
+			Test 6: Cargo Handlers choose bags from the conveyor system each time and go on a break if no bags.
+				Some cargo handlers do not go on break, since they are already asleep. 
+			Test 7: Handing over of the hand luggage by the passenger to the screening officer
+			Test 8: Passenger returns to the same security inspector after further questioning
+			Test 9: Baggage weights of all the passengers of a particular airline should match the weights of the bag
+				reported by the cargo handlers 
+			Test 10: Handing over of boarding pass by the passenger to the security inspector
+
+
+            + Explanation
+
+                        - Explain your experiment result.
+
+			Test 1: Works correctly
+			Test 2: Works correctly
+			Test 3:	Works correctly
+			Test 4: Works correctly
+			Test 5: However, this often times is security inspector 0. The reason for this is because the screening officer does not 
+				increment the value of the security inspector's "line". So, other screening officers will see that security inspector 0 is 
+				free, and send their passengers there. In real life, this could be explained a screening officer not seeing anyone 
+				that the security inspector is working with and sending their passenger there. All screening officers could do this 
+				at the same time, since to them, the security inspector looks free (the passenger from other screening officers has not arrived 
+				yet).  
+			Test 6: Some cargo handlers do not go on break, since they are already asleep. 
+			Test 7: Works correctly
+			Test 8: Works correctly
+			Test 9: Works correctly 
+			Test 10: Works correctly 
+
+			
+VII. Miscellaneous:
+
+- Whatever else you want the grader know about your development.  You can create your own subsections headings here.
+	    
+	    + Assumptions	
+
+	
