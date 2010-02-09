@@ -90,6 +90,8 @@ II. Assumptions:
 	+ Passengers, Airport Liaisons, Screening Officers, and Security Inspectors never go on break
 	+ All Passenger baggage checked takes up one "slot" on the conveyor (is treated as a single item)
 	+ SI have lines... the only passengers to get in those lines are those returning from questioning
+	+ Passengers place their bags down all at the same time.
+	+ Check-in staff and cargo handlers pick up a customer's bags all at once.
 
 III. Design:
 
