@@ -9,7 +9,7 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
-// Authors Alex Lee
+// Authors Alex Lee, Kris Tai, Tim Zimmer
 
 #include "copyright.h"
 #include "system.h"
@@ -71,6 +71,7 @@ struct baggage {
   int airline_code;
   int passenger_number;
   int numberOfBags;
+  int weights[3];
 } baggage_buffer[numberOfPassengers];
 
 // int passenger_baggage_buffer[numberOfPassengers];
@@ -1150,6 +1151,22 @@ void AirportSimulation() {
     pass_ticket_buffer[i].checkin_counter = -1;
     // TO DO 
     // Randomize weights
+
+    int randNumBags, randNumWeight;
+    randNumBags = rand() % 3 + 2; //random # between 2-3
+    baggage_buffer[i].numberOfBags = randNumBags;
+    numBagsDuringSetup[ pass_ticket_buffer[i].flight_number ] += randNumBags;
+    baggage_buffer[i].weight = 0;
+
+    for(int b=0; b<randNumBags; b++) {
+      randNumWeight = rand() % 30 + 30;  //random # between 30-59
+      baggage_buffer[i].weight += randNumWeight;
+      bagWeightsDuringSetup[ pass_ticket_buffer[i].flight_number ] += randNumWeight;
+      baggage_buffer[i].weights[b] = randNumWeight;
+      totalweight += randNumWeight;
+    }
+
+    /*
     if(i%2==0) {
       baggage_buffer[i].numberOfBags = 2;
       baggage_buffer[i].weight = 120;
@@ -1163,6 +1180,8 @@ void AirportSimulation() {
       numBagsDuringSetup[ pass_ticket_buffer[i].flight_number ] += 3;
       bagWeightsDuringSetup[ pass_ticket_buffer[i].flight_number ] += 180;
     }
+    */
+
     baggage_buffer[i].passenger_number = i;
     baggage_buffer[i].airline_code = (i%numberOfAirlines);
     boarding_pass_buffer[i].passenger_number = i;
