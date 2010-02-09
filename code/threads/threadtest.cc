@@ -904,6 +904,8 @@ void AirportSimulation() {
   char *name;
   int i; 
 
+  srand(1234);
+
   /*
    * Needs Airlines
    * Bags and weights
@@ -1137,6 +1139,7 @@ void AirportSimulation() {
     seatNumber[i]               = 0;
   }
 
+  int randNumBags,randNumWeight;
   // Create the 20 passenger for our airport simulation
   printf("Creating Passengers\n");
   for( i=0; i < numberOfPassengers; i++) {
@@ -1152,8 +1155,9 @@ void AirportSimulation() {
     // TO DO 
     // Randomize weights
 
-    int randNumBags, randNumWeight;
+    //int randNumBags, randNumWeight;
     randNumBags = rand() % 2 + 2; //random # between 2-3
+    //printf("DEBUG: randNumBags=%d\n",randNumBags);
     baggage_buffer[i].numberOfBags = randNumBags;
     numBagsDuringSetup[ pass_ticket_buffer[i].flight_number ] += randNumBags;
     baggage_buffer[i].weight = 0;
