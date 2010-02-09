@@ -14,6 +14,7 @@
 #include "copyright.h"
 #include "system.h"
 #include "functions.h"
+#include <iostream>
 // #include "testsuite.h"
 #ifdef CHANGED
 #include "synch.h"
@@ -655,7 +656,7 @@ void Passenger(int myNumber) {
   // Set the Passenger's Line number
   //printf("%s: Searching for the shortest line\n", currentThread->getName());
   myLineNumber = findShortestLine(alLineLengths,7);
-  
+  printf("Passenger %d chose Liaison %d with a line of length %d\n",myNumber,myLineNumber,alLineLengths[myLineNumber]);  
   // If there are people in the line, or the Airport Liaison is busy
   // then the Passenger must wait in line and NOT approach the Airport Liaison
   if((alLineLengths[myLineNumber] > 0)||(al_busy[myLineNumber])) {
@@ -666,12 +667,13 @@ void Passenger(int myNumber) {
   }
 
   alLineLock.Release();
+
+
+
+  alLock[myLineNumber]->Acquire();
   if(current_test == 1) {
     currentThread->Finish();
   }
-  alLock[myLineNumber]->Acquire();
-
-  printf("Passenger %d chose Liaison %d with a line of length %d\n",myNumber,myLineNumber,alLineLengths[myLineNumber]);
   alLineLengths[myLineNumber]--;
 
   // Passenger is told to go to counter, and hands their ticket to Liaison
@@ -839,7 +841,9 @@ void Passenger(int myNumber) {
   // The Passenger now has the line number, so they should go to sleep and
   // release the line lock, letting another Passenger search for a line
   waitingForTicket_SI_C[myLineNumber]->Signal(siLock[myLineNumber]);
-  //printf("Passenger %d gives the hand-luggage to screening officer %d\n", myNumber, myLineNumber);
+  if(current_test == 10) {
+    printf("Passenger %d handing over boarding pass to Security Officer\n", myNumber);
+  }
   waitingForTicket_SI_C[myLineNumber]->Wait(siLock[myLineNumber]);
 
   siLock[myLineNumber]->Release();
@@ -1250,7 +1254,7 @@ void AirportSimulation() {
   t = new Thread(name);
   t->Fork((VoidFunctionPtr)AirportManager,1);
   
-
+  if(current_test == 0) {
   printf("Number of airport liasons = %d\n",numberOfAL);
   printf("Number of airlines = %d\n",numberOfAirlines);
   printf("Number of check-in staff = %d\n",numberOfCIS);
@@ -1281,6 +1285,7 @@ void AirportSimulation() {
 
   for(int i=0; i < numberOfCIS; i++) {
     printf("Airline check-in staff %d belongs to airline %d\n",i,i);
+  }
   }
 
 }
@@ -1358,6 +1363,49 @@ void Test10() {
   current_test = 10;
   AirportSimulation();
 }
+
+void Main() {
+  int number_run;
+  cout << "Enter a test number" << endl;
+  cout << "0. Entire Simulation" << endl;
+  cout << "1. Passenger getting into shortest line" << endl;
+  cout << "2. Passenger directed to correct airline counters" << endl;
+  cout << "3. Economy passenger gets into shortest line; Executive goes to executive line" << endl;
+  cout << "4. Executives are given priority of line" << endl;
+  cout << "5. Screening officer chooses available Security Officer" << endl;
+  cout << "6. Cargo handlers choose bag from conveyor belt" << endl;
+  cout << "7. Passengers hand over luggage to screening officer" << endl;
+  cout << "8. Passenger returns to same security inspector after questioning" << endl;
+  cout << "9. Baggage weights are equal on all counts" << endl;
+  cout << "10. Passenger hands over boarding pass to Security Inspector" << endl;
+
+  cin >> number_run;
+  if(number_run == 0)
+    AirportSimulation();
+  if(number_run == 1)
+    Test1();
+  if(number_run == 2)
+    Test2();
+  if(number_run == 3)
+    Test3();
+  if(number_run == 4)
+    Test4();
+  if(number_run == 5)
+    Test5();
+  if(number_run == 6)
+    Test6();
+  if(number_run == 7)
+    Test7();
+  if(number_run == 8)
+    Test8();
+  if(number_run == 9)
+    Test9();
+  if(number_run == 10)
+    Test10();
+  
+}
+
+
 
 
 //----------------------------------------------------------------------

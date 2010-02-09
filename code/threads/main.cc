@@ -72,6 +72,7 @@ extern void Test7(void);
 extern void Test8(void);
 extern void Test9(void);
 extern void Test10(void);
+extern void Main(void);
 
 //----------------------------------------------------------------------
 // main
@@ -105,8 +106,8 @@ main(int argc, char **argv)
 #ifdef THREADS
 	if(!strcmp(*argv, "-T")) 
 	  ThreadTest();
-	if(!strcmp(*argv, "-2"))
-	  AirportSimulation();
+	if(!strcmp(*argv, "-P2"))
+	  Main();
 	if(!strcmp(*argv, "-t1"))
 	  Test1();
 	if(!strcmp(*argv, "-t2"))
