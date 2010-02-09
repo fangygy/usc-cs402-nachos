@@ -161,7 +161,7 @@ void AirportManager(int myNumber) {
 	}
 	goToSleep.Wait(airlineLock[i]);
       }
-      printf("flight %d count %d , cisflightcount %d\n",i,flightCount[i],cisFlightCount[i]); 
+      //printf("flight %d count %d , cisflightcount %d\n",i,flightCount[i],cisFlightCount[i]); 
       if(!alreadyCalled[i]&&(flightCount[i] == cisFlightCount[i])&&(flightCount[i]!=0)&&(cisFlightCount[i]!=0)&&(cargoHandlerBaggageCount[i]==al_baggage_buffer[i])) {
 	printf("Airport Manager gives a boarding call to airline %d\n",i);
 	waitingForCallAM_C[i]->Broadcast(airlineLock[i]);
@@ -327,7 +327,7 @@ void SecurityInspector(int myNumber) {
       } else  {
 	printf("Security inspector %d allows passenger %d to board\n", myNumber,siPassenger[myNumber]);
 	sicount++;
-	printf("si has moved %d passengers\n",sicount);
+	//printf("si has moved %d passengers\n",sicount);
 	// Keep track of how many passengers are cleared for each airline
       }
     }
@@ -1153,7 +1153,7 @@ void AirportSimulation() {
     // Randomize weights
 
     int randNumBags, randNumWeight;
-    randNumBags = rand() % 3 + 2; //random # between 2-3
+    randNumBags = rand() % 2 + 2; //random # between 2-3
     baggage_buffer[i].numberOfBags = randNumBags;
     numBagsDuringSetup[ pass_ticket_buffer[i].flight_number ] += randNumBags;
     baggage_buffer[i].weight = 0;
@@ -1270,7 +1270,7 @@ void AirportSimulation() {
     for(int j = 0; j < baggage_buffer[i].numberOfBags; j++) {
       if( j!=0 && j!= (baggage_buffer[i].numberOfBags))
 	printf(",");
-      printf("%d",baggage_buffer[i].weight);
+      printf("%d",baggage_buffer[i].weights[j]);
     }
     printf("\n");
   }
