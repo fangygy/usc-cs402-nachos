@@ -29,15 +29,15 @@
 #define SC_Close	8
 #define SC_Fork		9
 #define SC_Yield	10
-#define SC_Acquire      11
-#define SC_Release      12
-#define SC_Wait         13
-#define SC_Signal       14
-#define SC_Broadcast    15
-#define SC_CreateLock   16
-#define SC_DestroyLock  17
-#define SC_CreateCondition 18
-#define SC_DestroyCondition 19
+#define SC_CreateLock   11
+#define SC_DestroyLock  12 
+#define SC_Acquire      13
+#define SC_Release      14
+#define SC_CreateCondition   15 
+#define SC_DestroyCondition  16 
+#define SC_Wait         17
+#define SC_Signal       18
+#define SC_Broadcast    19
 
 #define MAXFILENAME 256
 

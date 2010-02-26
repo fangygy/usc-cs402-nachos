@@ -30,8 +30,8 @@
 using namespace std;
 
 
-Lock* lockArray[];
-Condition* conditionArray[];
+Lock* lockArray[100];
+Condition* conditionArray[100];
 
 int copyin(unsigned int vaddr, int len, char *buf) {
     // Copy len bytes from the current thread's virtual address vaddr.
