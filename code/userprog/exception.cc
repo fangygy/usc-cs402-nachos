@@ -29,6 +29,10 @@
 
 using namespace std;
 
+
+Lock* lockArray[];
+Condition* conditionArray[];
+
 int copyin(unsigned int vaddr, int len, char *buf) {
     // Copy len bytes from the current thread's virtual address vaddr.
     // Return the number of bytes so read, or -1 if an error occors.
@@ -318,7 +322,7 @@ void ExceptionHandler(ExceptionType which) {
 	        CreateLock_Syscall();
 		break;
 	    case SC_DestroyLock:
-	        DestroyLock_Syscall();
+	        DestroyLock_Syscall(int i);
 		break;
 	    case SC_Acquire:
 		DEBUG('a', "Close syscall.\n");
@@ -332,7 +336,7 @@ void ExceptionHandler(ExceptionType which) {
 	        CreateCondition_Syscall();
 		break;
 	    case SC_DestroyCondition:
-	        DestroyCondition_Syscall();
+	        DestroyCondition_Syscall(int i);
 		break;
 	    case SC_Wait:
 		DEBUG('a', "Close syscall.\n");
