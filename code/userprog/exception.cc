@@ -31,6 +31,7 @@ using namespace std;
 
 
 Lock *lockArray[100];
+int lock_index = 0;
 // Condition *conditionArray[100];
 
 int copyin(unsigned int vaddr, int len, char *buf) {
@@ -242,8 +243,10 @@ void Close_Syscall(int fd) {
 
 int CreateLock_Syscall() {
   // Return position in kernel structure array
-  
-  return -1;
+  Lock lock = new Lock();
+  lockarray[lock_index] = lock;
+  lock_index++;
+  return lock_index-1;
 }
 
 void DestroyLock_Syscall(int index) {
