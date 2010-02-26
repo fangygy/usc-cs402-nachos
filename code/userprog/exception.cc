@@ -31,9 +31,9 @@
 using namespace std;
 
 
-Lock lockArray[100];
+Lock *lockArray[100];
 int lock_index = 0;
-// Condition *conditionArray[100];
+Condition *conditionArray[100];
 
 int copyin(unsigned int vaddr, int len, char *buf) {
     // Copy len bytes from the current thread's virtual address vaddr.
@@ -244,8 +244,7 @@ void Close_Syscall(int fd) {
 
 int CreateLock_Syscall() {
   // Return position in kernel structure array
-  Lock lock = new Lock("");
-  lockArray[lock_index] = lock;
+  lockArray[lock_index] = new Lock("testLock");
   lock_index++;
   return lock_index-1;
 }
