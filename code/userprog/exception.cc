@@ -31,7 +31,7 @@
 using namespace std;
 
 
-Lock *lockArray[100];
+Lock lockArray[100];
 int lock_index = 0;
 // Condition *conditionArray[100];
 
@@ -244,7 +244,7 @@ void Close_Syscall(int fd) {
 
 int CreateLock_Syscall() {
   // Return position in kernel structure array
-  Lock lock = new Lock();
+  Lock lock = new Lock("");
   lockArray[lock_index] = lock;
   lock_index++;
   return lock_index-1;
