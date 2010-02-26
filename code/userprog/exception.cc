@@ -231,6 +231,33 @@ void Close_Syscall(int fd) {
     }
 }
 
+/* New Syscalls
+ * Acquire, Release, Wait, Signal, Broadcast
+ *
+ */
+
+void Acquire_Syscall() {
+
+}
+
+void Release_Syscall() {
+
+}
+
+void Wait_Syscall() {
+
+}
+
+void Signal_Syscall() {
+
+}
+
+void Broadcast_Syscall() {
+
+}
+
+
+
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2); // Which syscall?
     int rv=0; 	// the return value from a syscall
@@ -266,6 +293,26 @@ void ExceptionHandler(ExceptionType which) {
 	    case SC_Close:
 		DEBUG('a', "Close syscall.\n");
 		Close_Syscall(machine->ReadRegister(4));
+		break;
+	    case SC_Acquire:
+		DEBUG('a', "Close syscall.\n");
+		Acquire_Syscall();
+		break;
+	    case SC_Release:
+		DEBUG('a', "Close syscall.\n");
+		Release_Syscall();
+		break;
+	    case SC_Wait:
+		DEBUG('a', "Close syscall.\n");
+		Wait_Syscall();
+		break;
+	    case SC_Signal:
+		DEBUG('a', "Close syscall.\n");
+		Signal_Syscall();
+		break;
+	    case SC_Broadcast:
+		DEBUG('a', "Close syscall.\n");
+		Broadcast_Syscall();
 		break;
 	}
 
