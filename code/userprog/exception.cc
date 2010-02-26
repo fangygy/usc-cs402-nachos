@@ -24,6 +24,7 @@
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
+#include "synch.h"
 #include <stdio.h>
 #include <iostream>
 
@@ -244,7 +245,7 @@ void Close_Syscall(int fd) {
 int CreateLock_Syscall() {
   // Return position in kernel structure array
   Lock lock = new Lock();
-  lockarray[lock_index] = lock;
+  lockArray[lock_index] = lock;
   lock_index++;
   return lock_index-1;
 }
