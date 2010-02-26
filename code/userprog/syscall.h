@@ -135,13 +135,17 @@ void Yield();
  *
  */
 
-// Lock function prototypes
+/* Lock function prototypes
+ *
+ */
 void Acquire();
 
 void Release();
 
 
-// CV function prototypes
+/* CV function prototypes
+ *
+ */
 void Wait();
 
 void Signal();
