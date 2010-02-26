@@ -236,12 +236,32 @@ void Close_Syscall(int fd) {
  *
  */
 
+int CreateLock_Syscall() {
+  // Return position in kernel structure array
+  
+  return -1;
+}
+
+void DestroyLock_Syscall(int index) {
+  // Delete from kernel structure array the lock object at position index
+}
+
 void Acquire_Syscall() {
 
 }
 
 void Release_Syscall() {
 
+}
+
+int CreateCondition_Syscall() {
+  // Return position in kernel structure array 
+
+  return -1;
+}
+
+void DestroyCondition_Syscall(int index) {
+  // Delete from kernel structure array the condition object at position index 
 }
 
 void Wait_Syscall() {
@@ -294,6 +314,12 @@ void ExceptionHandler(ExceptionType which) {
 		DEBUG('a', "Close syscall.\n");
 		Close_Syscall(machine->ReadRegister(4));
 		break;
+	    case SC_CreateLock:
+	        CreateLock_Syscall();
+		break;
+	    case SC_DestroyLock:
+	        DestroyLock_Syscall();
+		break;
 	    case SC_Acquire:
 		DEBUG('a', "Close syscall.\n");
 		Acquire_Syscall();
@@ -301,6 +327,12 @@ void ExceptionHandler(ExceptionType which) {
 	    case SC_Release:
 		DEBUG('a', "Close syscall.\n");
 		Release_Syscall();
+		break;
+	    case SC_CreateCondition:
+	        CreateCondition_Syscall();
+		break;
+	    case SC_DestroyCondition:
+	        DestroyCondition_Syscall();
 		break;
 	    case SC_Wait:
 		DEBUG('a', "Close syscall.\n");

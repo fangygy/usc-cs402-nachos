@@ -34,6 +34,10 @@
 #define SC_Wait         13
 #define SC_Signal       14
 #define SC_Broadcast    15
+#define SC_CreateLock   16
+#define SC_DestroyLock  17
+#define SC_CreateCondition 18
+#define SC_DestroyCondition 19
 
 #define MAXFILENAME 256
 
@@ -138,6 +142,11 @@ void Yield();
 /* Lock function prototypes
  *
  */
+
+void CreateLock();
+
+void DestroyLock();
+
 void Acquire();
 
 void Release();
@@ -146,6 +155,11 @@ void Release();
 /* CV function prototypes
  *
  */
+
+void CreateCondition();
+
+void DestroyCondition();
+
 void Wait();
 
 void Signal();
