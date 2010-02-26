@@ -322,7 +322,7 @@ void ExceptionHandler(ExceptionType which) {
 	        CreateLock_Syscall();
 		break;
 	    case SC_DestroyLock:
-	        DestroyLock_Syscall(int i);
+	        DestroyLock_Syscall(machine->ReadRegister(4));
 		break;
 	    case SC_Acquire:
 		DEBUG('a', "Close syscall.\n");
@@ -336,7 +336,7 @@ void ExceptionHandler(ExceptionType which) {
 	        CreateCondition_Syscall();
 		break;
 	    case SC_DestroyCondition:
-	        DestroyCondition_Syscall(int i);
+	        DestroyCondition_Syscall(machine->ReadRegister(4));
 		break;
 	    case SC_Wait:
 		DEBUG('a', "Close syscall.\n");
