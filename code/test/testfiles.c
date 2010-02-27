@@ -8,6 +8,7 @@ int main() {
   OpenFileId fd;
   int bytesread;
   char buf[20];
+  int lockid;
   /*
     Create("testfile", 8);
     fd = Open("testfile", 8);
@@ -21,9 +22,9 @@ int main() {
     Write( buf, bytesread, ConsoleOutput );
     Close(fd);
   */
-    Write("testing a lock\n");
-    int lockid = createLock();
-    Write(lockid);
-
-    Write("testing a condition \n");
+  Write("testing a lock\n", 16, ConsoleOutput);
+  lockid = createLock();
+  Write(lockid, 16, ConsoleOutput);
+  
+  Write("testing a condition \n");
 }
