@@ -285,16 +285,16 @@ void DestroyCondition_Syscall(int index) {
   }
 }
 
-void Wait_Syscall(int index) {
-  conditionArray[index]->Wait();
+void Wait_Syscall(int index, int lock_index) {
+  conditionArray[index]->Wait(lockArray[lock_index]);
 }
 
-void Signal_Syscall(int index) {
-  conditionArray[index]->Signal();
+void Signal_Syscall(int index, int lock_index) {
+  conditionArray[index]->Signal(lockArray[lock_index]);
 }
 
-void Broadcast_Syscall(int index) {
-  conditionArray[index]->Broadcast();
+void Broadcast_Syscall(int index, int lock_index) {
+  conditionArray[index]->Broadcast(lockArray[lock_index]);
 }
 
 void ExceptionHandler(ExceptionType which) {
@@ -355,15 +355,15 @@ void ExceptionHandler(ExceptionType which) {
 		break;
 	    case SC_Wait:
 		DEBUG('a', "Close syscall.\n");
-		Wait_Syscall(machine->ReadRegister(4));
+		Wait_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
 		break;
 	    case SC_Signal:
 		DEBUG('a', "Close syscall.\n");
-		Signal_Syscall(machine->ReadRegister(4));
+		Signal_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
 		break;
 	    case SC_Broadcast:
 		DEBUG('a', "Close syscall.\n");
-		Broadcast_Syscall(machine->ReadRegister(4));
+		Broadcast_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
 		break;
 	}
 
