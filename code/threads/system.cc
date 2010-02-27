@@ -18,6 +18,9 @@ Interrupt *interrupt;			// interrupt status
 Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
 					// for invoking context switches
+Lock *KernelLockTableLock;
+int nextLockIndex = 0;
+int MAX_LOCKS = 0;
 
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
@@ -80,7 +83,9 @@ Initialize(int argc, char **argv)
     int argCount;
     char* debugArgs = "";
     bool randomYield = FALSE;
-
+    KernelLockTableLock = new Lock("KernelLock");
+    KernelLock osLocks[MAX_LOCKS];
+    
 #ifdef USER_PROGRAM
     bool debugUserProg = FALSE;	// single step user program
 #endif
