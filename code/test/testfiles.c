@@ -24,4 +24,6 @@ int main() {
     Write("testing a lock\n");
     int lockid = createLock();
     Write(lockid);
+
+    Write("testing a condition \n");
 }
