@@ -24,7 +24,7 @@ int main() {
   */
   Write("testing a lock\n", 16, ConsoleOutput);
   lockid = CreateLock();
-  Write(lockid, 16, ConsoleOutput);
+  Write((char)lockid, 16, ConsoleOutput);
   
   Write("testing a condition \n", 16, ConsoleOutput);
 }
