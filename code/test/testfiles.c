@@ -26,5 +26,5 @@ int main() {
   lockid = createLock();
   Write(lockid, 16, ConsoleOutput);
   
-  Write("testing a condition \n");
+  Write("testing a condition \n", 16, ConsoleOutput);
 }
