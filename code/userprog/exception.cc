@@ -285,16 +285,16 @@ void DestroyCondition_Syscall(int index) {
   }
 }
 
-void Wait_Syscall(int index, int lock_index) {
-  conditionArray[index]->Wait(lockArray[lock_index]);
+void Wait_Syscall(int index, int lock_id) {
+  conditionArray[index]->Wait(lockArray[lock_id]);
 }
 
-void Signal_Syscall(int index, int lock_index) {
-  conditionArray[index]->Signal(lockArray[lock_index]);
+void Signal_Syscall(int index, int lock_id) {
+  conditionArray[index]->Signal(lockArray[lock_id]);
 }
 
-void Broadcast_Syscall(int index, int lock_index) {
-  conditionArray[index]->Broadcast(lockArray[lock_index]);
+void Broadcast_Syscall(int index, int lock_id) {
+  conditionArray[index]->Broadcast(lockArray[lock_id]);
 }
 
 void ExceptionHandler(ExceptionType which) {

@@ -158,13 +158,13 @@ void Release(int index);
 
 int CreateCondition();
 
-void DestroyCondition(int index);
+void DestroyCondition(int index, int lock_index);
 
-void Wait(int index);
+void Wait(int index, int lock_index);
 
-void Signal(int index);
+void Signal(int index, int lock_index);
 
-void Broadcast(int index);
+void Broadcast(int index, int lock_index);
 
 
 
