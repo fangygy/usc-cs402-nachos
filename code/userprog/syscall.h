@@ -143,28 +143,28 @@ void Yield();
  *
  */
 
-void CreateLock();
+int CreateLock();
 
-void DestroyLock();
+void DestroyLock(int index);
 
-void Acquire();
+void Acquire(int index);
 
-void Release();
+void Release(int index);
 
 
 /* CV function prototypes
  *
  */
 
-void CreateCondition();
+int CreateCondition();
 
-void DestroyCondition();
+void DestroyCondition(int index);
 
-void Wait();
+void Wait(int index);
 
-void Signal();
+void Signal(int index);
 
-void Broadcast();
+void Broadcast(int index);
 
 
 

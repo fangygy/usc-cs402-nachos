@@ -34,6 +34,7 @@ using namespace std;
 Lock *lockArray[100];
 int lock_index = 0;
 Condition *conditionArray[100];
+int cond_index = 0;
 
 int copyin(unsigned int vaddr, int len, char *buf) {
     // Copy len bytes from the current thread's virtual address vaddr.
@@ -251,39 +252,50 @@ int CreateLock_Syscall() {
 
 void DestroyLock_Syscall(int index) {
   // Delete from kernel structure array the lock object at position index
+  
+  if(index < 100) {
+    if(lockArray[index] != NULL) {
+      lockArray[index] = NULL;
+    }
+  }
 }
 
-void Acquire_Syscall() {
-
+void Acquire_Syscall(int index) {
+  lockArray[index]->Acquire();
 }
 
-void Release_Syscall() {
-
+void Release_Syscall(int index) {
+  lockArray[index]->Release();
 }
 
 int CreateCondition_Syscall() {
   // Return position in kernel structure array 
-
-  return -1;
+  conditionArray[cond_index] = new Condition("testCondition");
+  cond_index++;
+  return cond_index-1;
 }
 
 void DestroyCondition_Syscall(int index) {
   // Delete from kernel structure array the condition object at position index 
+
+ if(index < 100) {
+    if(conditionArray[index] != NULL) {
+      conditionArray[index] = NULL;
+    }
+  }
 }
 
-void Wait_Syscall() {
-
+void Wait_Syscall(int index) {
+  conditionArray[index]->Wait();
 }
 
-void Signal_Syscall() {
-
+void Signal_Syscall(int index) {
+  conditionArray[index]->Signal();
 }
 
-void Broadcast_Syscall() {
-
+void Broadcast_Syscall(int index) {
+  conditionArray[index]->Broadcast();
 }
-
-
 
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2); // Which syscall?
@@ -329,11 +341,11 @@ void ExceptionHandler(ExceptionType which) {
 		break;
 	    case SC_Acquire:
 		DEBUG('a', "Close syscall.\n");
-		Acquire_Syscall();
+		Acquire_Syscall(machine->ReadRegister(4));
 		break;
 	    case SC_Release:
 		DEBUG('a', "Close syscall.\n");
-		Release_Syscall();
+		Release_Syscall(machine->ReadRegister(4));
 		break;
 	    case SC_CreateCondition:
 	        CreateCondition_Syscall();
@@ -343,15 +355,15 @@ void ExceptionHandler(ExceptionType which) {
 		break;
 	    case SC_Wait:
 		DEBUG('a', "Close syscall.\n");
-		Wait_Syscall();
+		Wait_Syscall(machine->ReadRegister(4));
 		break;
 	    case SC_Signal:
 		DEBUG('a', "Close syscall.\n");
-		Signal_Syscall();
+		Signal_Syscall(machine->ReadRegister(4));
 		break;
 	    case SC_Broadcast:
 		DEBUG('a', "Close syscall.\n");
-		Broadcast_Syscall();
+		Broadcast_Syscall(machine->ReadRegister(4));
 		break;
 	}
 
