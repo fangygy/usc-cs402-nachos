@@ -23,7 +23,7 @@ int main() {
     Close(fd);
   */
   Write("testing a lock\n", 16, ConsoleOutput);
-  lockid = createLock();
+  lockid = CreateLock();
   Write(lockid, 16, ConsoleOutput);
   
   Write("testing a condition \n", 16, ConsoleOutput);
