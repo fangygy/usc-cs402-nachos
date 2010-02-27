@@ -297,6 +297,20 @@ void Broadcast_Syscall(int index, int lock_id) {
   conditionArray[index]->Broadcast(lockArray[lock_id]);
 }
 
+void Yield_Syscall() {
+  currentThread->Yield();
+}
+
+void Exit_Syscall(int status) {
+  //TODO - finish this
+  interrupt->Halt();
+  //currentThread->Finish();
+}
+
+void Fork_Syscall(void (*func)()) {
+  
+}
+
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2); // Which syscall?
     int rv=0; 	// the return value from a syscall
@@ -334,9 +348,11 @@ void ExceptionHandler(ExceptionType which) {
 		Close_Syscall(machine->ReadRegister(4));
 		break;
 	    case SC_CreateLock:
+	        DEBUG('a', "CreateLock syscall.\n");
 	        CreateLock_Syscall();
 		break;
 	    case SC_DestroyLock:
+	        DEBUG('a', "DestroyLock syscall.\n");
 	        DestroyLock_Syscall(machine->ReadRegister(4));
 		break;
 	    case SC_Acquire:
@@ -344,26 +360,40 @@ void ExceptionHandler(ExceptionType which) {
 		Acquire_Syscall(machine->ReadRegister(4));
 		break;
 	    case SC_Release:
-		DEBUG('a', "Close syscall.\n");
+		DEBUG('a', "Release syscall.\n");
 		Release_Syscall(machine->ReadRegister(4));
 		break;
 	    case SC_CreateCondition:
+	        DEBUG('a', "CreateCondition syscall.\n");
 	        CreateCondition_Syscall();
 		break;
 	    case SC_DestroyCondition:
+	        DEBUG('a', "DestroyCondition syscall.\n");
 	        DestroyCondition_Syscall(machine->ReadRegister(4));
 		break;
 	    case SC_Wait:
-		DEBUG('a', "Close syscall.\n");
+		DEBUG('a', "Wait syscall.\n");
 		Wait_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
 		break;
 	    case SC_Signal:
-		DEBUG('a', "Close syscall.\n");
+		DEBUG('a', "Signal syscall.\n");
 		Signal_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
 		break;
 	    case SC_Broadcast:
-		DEBUG('a', "Close syscall.\n");
+		DEBUG('a', "Broadcast syscall.\n");
 		Broadcast_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
+		break;
+	    case SC_Yield:
+	        DEBUG('a', "Yield syscall. \n");
+		Yield_Syscall();
+		break;
+	    case SC_Exit:
+	        DEBUG('a', "Exit syscall.\n");
+		Exit_Syscall(machine->ReadRegister(4));
+		break;
+	    case SC_Fork:
+	        DEBUG('a', "Fork syscall.\n");
+		//Fork_Syscall(machine->ReadRegister(4));
 		break;
 	}
 
