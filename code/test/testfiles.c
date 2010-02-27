@@ -20,4 +20,8 @@ int main() {
     bytesread = Read( buf, 100, fd );
     Write( buf, bytesread, ConsoleOutput );
     Close(fd);
+
+    Write("testing a lock\n");
+    int lockid = createLock();
+    Write(lockid);
 }
