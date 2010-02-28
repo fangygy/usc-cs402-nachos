@@ -17,13 +17,7 @@
 
 // Authors Alex Lee, Kris Tai, Tim Zimmer
 
-#include "copyright.h"
-#include "system.h"
 #include "functions.h"
-// #include "testsuite.h"
-#ifdef CHANGED
-// #include "synch.h"
-#endif
 
 using namespace std;
 // ---------------------------------------------------------------------
@@ -1368,7 +1362,7 @@ void Test10() {
 	current_test = 10;
 	AirportSimulation();
 }
-*/
+
 void Main() {
 	int number_run;
 	cout << "Enter a test number" << endl;
@@ -1410,13 +1404,7 @@ void Main() {
 	
 }
 
-
-
-/*
- * START MAIN 
- *
- */
-
+*/
 int main() {
   OpenFileId fd;
   int bytesread;
@@ -1441,5 +1429,3 @@ int main() {
   
   Write("testing a condition \n", 32, ConsoleOutput);
 }
-
-
