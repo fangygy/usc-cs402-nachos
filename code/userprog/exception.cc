@@ -30,6 +30,8 @@
 
 using namespace std;
 
+#define MAX_CHARS 100;
+
 int copyin(unsigned int vaddr, int len, char *buf) {
     // Copy len bytes from the current thread's virtual address vaddr.
     // Return the number of bytes so read, or -1 if an error occors.
@@ -263,7 +265,7 @@ int CreateLock_Syscall(int name, int size) {
   }
   
   
-  osLocks[nextLockIndex].lock          = new Lock("some name");
+  osLocks[nextLockIndex].lock          = new Lock(lockName);
   // Uncomment for now since addressSpace is not working 
   osLocks[nextLockIndex].as   = currentThread->space;
   osLocks[nextLockIndex].usageCounter  = 0;
