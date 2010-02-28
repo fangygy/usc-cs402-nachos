@@ -252,11 +252,11 @@ int CreateLock_Syscall(int name, int size) {
   if(name < 0 || (name+size) >= addressSpaceSize) {
 
   }
-  */
+  
   char *lockName = new char[size+1];
   lockName[size] = '\0';
   copyin(lockName, name, size);
-  
+  */
   KernelLockTableLock->Acquire();
   
   // Make sure the table is not full 
@@ -265,8 +265,7 @@ int CreateLock_Syscall(int name, int size) {
   }
   
   
-  osLocks[nextLockIndex].lock          = new Lock(lockName);
-  // Uncomment for now since addressSpace is not working 
+  osLocks[nextLockIndex].lock          = new Lock("some name goes here");
   osLocks[nextLockIndex].as   = currentThread->space;
   osLocks[nextLockIndex].usageCounter  = 0;
   osLocks[nextLockIndex].toBeDestroyed = FALSE;
@@ -299,13 +298,13 @@ void Acquire_Syscall(int index) {
     DEBUG('a',"LOCK HAS BEEN DESTROYED\n");
   }
   // The lock has not been destroyed
-  /*
+  
     if(curLock.as != currentThread->space) {
     // this lock belongs to a different process
     // since the address space of the lock does not match the 
     // current thread's address space
     }
-  */
+  
   curLock.usageCounter++; 
   // Acquire the lock
   curLock.lock->Acquire();
@@ -313,7 +312,6 @@ void Acquire_Syscall(int index) {
 }
 
 void Release_Syscall(int index) {
-  //lockArray[index]->Release();
   KernelLockTableLock->Acquire();
   KernelLock curLock = osLocks[index];
   if(curLock.lock == NULL) {
@@ -333,7 +331,7 @@ void Release_Syscall(int index) {
 
 int CreateCondition_Syscall() {
   
-  /*
+  /* Fix this
     if(name < 0 || (name+size) >= addressSpaceSize) {
 
     }
@@ -369,10 +367,9 @@ void Wait_Syscall(int index, int lock_id) {
   */
   
   KernelCond curCond = osConds[index];
-  /* check address space
-     if(curCond.as != currentThread->space)
-     return and print a message
-  */
+	if(curCond.as != currentThread->space) {
+     // return and print a message
+	}
   
   KernelLock curLock = osLocks[lock_id];
 
@@ -410,10 +407,9 @@ void Broadcast_Syscall(int index, int lock_id) {
   */
   
   KernelCond curCond = osConds[index];
-  /* check address space
-     if(curCond.as != currentThread->space)
-     return and print a message
-  */
+	if(curCond.as != currentThread->space) {
+		
+	}
   
   KernelLock curLock = osLocks[lock_id];
 
