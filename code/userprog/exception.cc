@@ -244,19 +244,20 @@ int CreateLock_Syscall(int name, int size) {
     DEBUG('a',"OUT OF BOUNDS");
   }
   
+  /* Fix this
   int addressSpaceSize = currentThread->space.addressSpaceSize;
   
   if(name < 0 || (name+size) >= addressSpaceSize) {
 
   }
-  
+  */
   char *lockName = new char[size+1];
   lockName[size] = '\0';
   copyin(lockName, name, size);
   
   KernelLockTableLock->Acquire();
   
-  Make sure the table is not full 
+  // Make sure the table is not full 
   if(nextLockIndex >= MAX_LOCKS) {
      //The table is full of locks 
   }
