@@ -143,7 +143,7 @@ void Yield();
  *
  */
 
-int CreateLock();
+int CreateLock(int size);
 
 void DestroyLock(int index);
 

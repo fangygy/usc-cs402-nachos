@@ -27,7 +27,12 @@ int main() {
   Acquire(lockid);
   
   condid = CreateCondition();
-  /*Wait(condid, lockid);
-  */
+  Wait(condid, lockid);
+	
+  /*
+   Write a test suite here that tests all the syscalls 
+   The ones above test Acquire and Wait
+   */
+  
   Write("tests finished \n", 32, ConsoleOutput);
 }

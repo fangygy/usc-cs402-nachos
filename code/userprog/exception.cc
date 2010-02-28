@@ -237,14 +237,14 @@ void Close_Syscall(int fd) {
  *
  */
 
-int CreateLock_Syscall() {
+int CreateLock_Syscall(int name, int size) {
   // Return position in kernel structure array
-  /*
+  
   if(size < 1 || size > MAX_CHARS) {
     DEBUG('a',"OUT OF BOUNDS");
   }
   
-  currentThread->space.addressSpaceSize;
+  int addressSpaceSize = currentThread->space.addressSpaceSize;
   
   if(name < 0 || (name+size) >= addressSpaceSize) {
 
@@ -253,14 +253,14 @@ int CreateLock_Syscall() {
   char *lockName = new char[size+1];
   lockName[size] = '\0';
   copyin(lockName, name, size);
-  */
+  
   KernelLockTableLock->Acquire();
-  /*
+  
   Make sure the table is not full 
   if(nextLockIndex >= MAX_LOCKS) {
-     The table is full of locks 
+     //The table is full of locks 
   }
-  */
+  
   
   osLocks[nextLockIndex].lock          = new Lock("some name");
   // Uncomment for now since addressSpace is not working 
@@ -470,7 +470,7 @@ void ExceptionHandler(ExceptionType which) {
 		break;
 	    case SC_CreateLock:
 	        DEBUG('a', "CreateLock syscall.\n");
-	        CreateLock_Syscall();
+	        CreateLock_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
 		break;
 	    case SC_DestroyLock:
 	        DEBUG('a', "DestroyLock syscall.\n");
