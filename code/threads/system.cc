@@ -19,8 +19,16 @@ Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
 					// for invoking context switches
 Lock *KernelLockTableLock;
+Lock *KernelCondTableLock;
+
 int nextLockIndex = 0;
-int MAX_LOCKS = 0;
+int MAX_LOCKS = 100;
+
+int nextCondIndex = 0;
+int MAX_CONDS = 100; 
+
+KernelLock osLocks[100];
+KernelCond osConds[100];
 
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
@@ -83,9 +91,10 @@ Initialize(int argc, char **argv)
     int argCount;
     char* debugArgs = "";
     bool randomYield = FALSE;
-    KernelLockTableLock = new Lock("KernelLock");
-    KernelLock osLocks[MAX_LOCKS];
-    
+    KernelLockTableLock = new Lock("KernelLockLock");
+    KernelCondTableLock = new Lock("KernelCondLock");
+    //KernelLock osLocks[MAX_LOCKS];
+    //KernelCond osConds[MAX_CONDS];
 #ifdef USER_PROGRAM
     bool debugUserProg = FALSE;	// single step user program
 #endif

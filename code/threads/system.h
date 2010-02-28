@@ -36,12 +36,25 @@ extern int MAX_LOCKS;
 
 struct KernelLock {
   Lock* lock;
-  AddrSpace* as;
+  //AddrSpace* as;
   int usageCounter;
   bool toBeDestroyed;
 };
 
 extern KernelLock osLocks[];
+
+extern int nextCondIndex;
+extern Lock *KernelCondTableLock;
+extern int MAX_CONDS;
+
+struct KernelCond {
+  Condition *condition;
+  int usageCounter;
+  bool toBeDestroyed;
+  // AddrSpace* as;
+};
+
+extern KernelCond osConds[];
 
 #ifdef USER_PROGRAM
 #include "machine.h"

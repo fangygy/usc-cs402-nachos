@@ -30,12 +30,6 @@
 
 using namespace std;
 
-
-Lock *lockArray[100];
-int lock_index = 0;
-Condition *conditionArray[100];
-int cond_index = 0;
-
 int copyin(unsigned int vaddr, int len, char *buf) {
     // Copy len bytes from the current thread's virtual address vaddr.
     // Return the number of bytes so read, or -1 if an error occors.
@@ -47,12 +41,12 @@ int copyin(unsigned int vaddr, int len, char *buf) {
     while ( n >= 0 && n < len) {
       result = machine->ReadMem( vaddr, 1, paddr );
       while(!result) // FALL 09 CHANGES
-	  {
-   			result = machine->ReadMem( vaddr, 1, paddr ); // FALL 09 CHANGES: TO HANDLE PAGE FAULT IN THE ReadMem SYS CALL
-	  }	
+	{
+	  result = machine->ReadMem( vaddr, 1, paddr ); // FALL 09 CHANGES: TO HANDLE PAGE FAULT IN THE ReadMem SYS CALL
+	}	
       
       buf[n++] = *paddr;
-     
+      
       if ( !result ) {
 	//translation failed
 	return -1;
@@ -245,56 +239,183 @@ void Close_Syscall(int fd) {
 
 int CreateLock_Syscall() {
   // Return position in kernel structure array
-  lockArray[lock_index] = new Lock("testLock");
-  lock_index++;
-  return lock_index-1;
+  /*
+  if(size < 1 || size > MAX_CHARS) {
+    DEBUG('a',"OUT OF BOUNDS");
+  }
+  
+  currentThread->space.addressSpaceSize;
+  
+  if(name < 0 || (name+size) >= addressSpaceSize) {
+
+  }
+  
+  char *lockName = new char[size+1];
+  lockName[size] = '\0';
+  copyin(lockName, name, size);
+  */
+  KernelLockTableLock->Acquire();
+  /*
+  Make sure the table is not full 
+  if(nextLockIndex >= MAX_LOCKS) {
+     The table is full of locks 
+  }
+  */
+  
+  osLocks[nextLockIndex].lock          = new Lock("some name");
+  // Uncomment for now since addressSpace is not working 
+  // osLocks[nextLockIndex].as   = currentThread->space;
+  osLocks[nextLockIndex].usageCounter  = 0;
+  osLocks[nextLockIndex].toBeDestroyed = FALSE;
+  nextLockIndex++;
+  KernelLockTableLock->Release();
+  return nextLockIndex; // this may prove to have some problems if
+                        // we are context switched out before nextLockIndex is
+                        // returned
 }
 
 void DestroyLock_Syscall(int index) {
   // Delete from kernel structure array the lock object at position index
-  
-  if(index < 100) {
-    if(lockArray[index] != NULL) {
-      lockArray[index] = NULL;
-    }
-  }
 }
 
 void Acquire_Syscall(int index) {
-  lockArray[index]->Acquire();
+  int value = index; // this is the value read by machine->readregister
+  KernelLockTableLock->Acquire();
+  
+  // perform series of checks on the lock
+  // to make sure user program is not doing
+  // anything crazy
+  if(value < 0 || value >= nextLockIndex) {
+    // This is a bad value
+    DEBUG('a',"BAD VALUE\n");
+    return;
+  }
+  KernelLock curLock = osLocks[value];
+  if(curLock.lock == NULL) {
+    // The lock has been destroyed 
+    DEBUG('a',"LOCK HAS BEEN DESTROYED\n");
+  }
+  // The lock has not been destroyed
+  /*
+    if(curLock.as != currentThread->space) {
+    // this lock belongs to a different process
+    // since the address space of the lock does not match the 
+    // current thread's address space
+    }
+  */
+  curLock.usageCounter++; 
+  // Acquire the lock
+  curLock.lock->Acquire();
+  KernelLockTableLock->Release();
 }
 
 void Release_Syscall(int index) {
-  lockArray[index]->Release();
+  //lockArray[index]->Release();
+  KernelLockTableLock->Acquire();
+  KernelLock curLock = osLocks[index];
+  if(curLock.lock == NULL) {
+    // The lock has been destroyed 
+    DEBUG('a',"LOCK HAS BEEN DESTROYED\n");
+  }
+  /*
+    if(curLock.as != currentThread->space) {
+    // this lock belongs to a different process
+    // since the address space of the lock does not match the 
+    // current thread's address space    
+    }
+  */
+  curLock.lock->Release();
+  KernelLockTableLock->Release();
 }
 
 int CreateCondition_Syscall() {
-  // Return position in kernel structure array 
-  conditionArray[cond_index] = new Condition("testCondition");
-  cond_index++;
-  return cond_index-1;
+  
+  /*
+    if(name < 0 || (name+size) >= addressSpaceSize) {
+
+    }
+  
+    char *condName = new char[size+1];
+    condName[size] = '\0';
+    copyin(condName, name, size);
+    
+  */
+  KernelCondTableLock->Acquire();
+  if(nextCondIndex >= MAX_CONDS) {
+    DEBUG('a', "OUT OF BOUNDS ERROR\n"); 
+  }
+  osConds[nextCondIndex].condition = new Condition("some name");
+  //osConds[nextCondIndex].as   = currentThread->space;
+  osConds[nextCondIndex].usageCounter = 0;
+  osConds[nextCondIndex].toBeDestroyed = FALSE;
+  nextCondIndex++;
+  KernelCondTableLock->Release();
+  return nextCondIndex; 
 }
 
 void DestroyCondition_Syscall(int index) {
   // Delete from kernel structure array the condition object at position index 
 
- if(index < 100) {
-    if(conditionArray[index] != NULL) {
-      conditionArray[index] = NULL;
-    }
-  }
 }
 
 void Wait_Syscall(int index, int lock_id) {
-  conditionArray[index]->Wait(lockArray[lock_id]);
+  KernelCondTableLock->Acquire();
+  /*
+    Check bounds, check lock is valid 
+    
+  */
+  
+  KernelCond curCond = osConds[index];
+  /* check address space
+     if(curCond.as != currentThread->space)
+     return and print a message
+  */
+  
+  KernelLock curLock = osLocks[lock_id];
+
+  curCond.condition->Wait(curLock.lock); // may get an error here due to pointer usage
+  KernelCondTableLock->Release();
 }
 
 void Signal_Syscall(int index, int lock_id) {
-  conditionArray[index]->Signal(lockArray[lock_id]);
+  KernelCondTableLock->Acquire();
+  /*
+    Check bounds, check lock is valid 
+    
+  */
+  
+  KernelCond curCond = osConds[index];
+  /* check address space
+     if(curCond.as != currentThread->space)
+     return and print a message
+  */
+  
+  KernelLock curLock = osLocks[lock_id];
+
+  curCond.condition->Signal(curLock.lock); // may get an error here due to pointer usage
+  KernelCondTableLock->Release();
+
+
 }
 
 void Broadcast_Syscall(int index, int lock_id) {
-  conditionArray[index]->Broadcast(lockArray[lock_id]);
+
+  KernelCondTableLock->Acquire();
+  /*
+    Check bounds, check lock is valid 
+    
+  */
+  
+  KernelCond curCond = osConds[index];
+  /* check address space
+     if(curCond.as != currentThread->space)
+     return and print a message
+  */
+  
+  KernelLock curLock = osLocks[lock_id];
+
+  curCond.condition->Broadcast(curLock.lock); // may get an error here due to pointer usage
+  KernelCondTableLock->Release();
 }
 
 void Yield_Syscall() {

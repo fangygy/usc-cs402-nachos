@@ -151,7 +151,6 @@ void Acquire(int index);
 
 void Release(int index);
 
-
 /* CV function prototypes
  *
  */
@@ -165,10 +164,6 @@ void Wait(int index, int lock_index);
 void Signal(int index, int lock_index);
 
 void Broadcast(int index, int lock_index);
-
-
-
-
 
 
 #endif /* IN_ASM */
