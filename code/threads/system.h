@@ -53,7 +53,7 @@ struct KernelCond {
   Condition *condition;
   int usageCounter;
   bool toBeDestroyed;
-  // AddrSpace* as;
+  AddrSpace* as;
 };
 
 extern KernelCond osConds[];
