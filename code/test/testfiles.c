@@ -8,7 +8,7 @@ int main() {
   OpenFileId fd;
   int bytesread;
   char buf[20];
-  int lockid;
+  int lockid, condid;
   /*
     Create("testfile", 8);
     fd = Open("testfile", 8);
@@ -26,5 +26,8 @@ int main() {
   lockid = CreateLock();
   Acquire(lockid);
   
-  Write("testing a condition \n", 32, ConsoleOutput);
+  condid = CreateCondition();
+  Wait(condid, lockid);
+  
+  Write("tests finished \n", 32, ConsoleOutput);
 }

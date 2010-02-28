@@ -264,7 +264,7 @@ int CreateLock_Syscall() {
   
   osLocks[nextLockIndex].lock          = new Lock("some name");
   // Uncomment for now since addressSpace is not working 
-  // osLocks[nextLockIndex].as   = currentThread->space;
+  osLocks[nextLockIndex].as   = currentThread->space;
   osLocks[nextLockIndex].usageCounter  = 0;
   osLocks[nextLockIndex].toBeDestroyed = FALSE;
   nextLockIndex++;
@@ -317,13 +317,13 @@ void Release_Syscall(int index) {
     // The lock has been destroyed 
     DEBUG('a',"LOCK HAS BEEN DESTROYED\n");
   }
-  /*
-    if(curLock.as != currentThread->space) {
+  
+  if(curLock.as != currentThread->space) {
     // this lock belongs to a different process
     // since the address space of the lock does not match the 
     // current thread's address space    
-    }
-  */
+  }
+  
   curLock.lock->Release();
   KernelLockTableLock->Release();
 }
@@ -345,7 +345,7 @@ int CreateCondition_Syscall() {
     DEBUG('a', "OUT OF BOUNDS ERROR\n"); 
   }
   osConds[nextCondIndex].condition = new Condition("some name");
-  //osConds[nextCondIndex].as   = currentThread->space;
+  osConds[nextCondIndex].as   = currentThread->space;
   osConds[nextCondIndex].usageCounter = 0;
   osConds[nextCondIndex].toBeDestroyed = FALSE;
   nextCondIndex++;
@@ -385,10 +385,10 @@ void Signal_Syscall(int index, int lock_id) {
   */
   
   KernelCond curCond = osConds[index];
-  /* check address space
-     if(curCond.as != currentThread->space)
-     return and print a message
-  */
+  // check address space
+  if(curCond.as != currentThread->space) {
+     // return and print a message
+  }
   
   KernelLock curLock = osLocks[lock_id];
 
