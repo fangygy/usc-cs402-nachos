@@ -20,7 +20,6 @@
 #include "copyright.h"
 #include "system.h"
 #include "functions.h"
-#include <iostream>
 // #include "testsuite.h"
 #ifdef CHANGED
 // #include "synch.h"
