@@ -281,7 +281,7 @@ void DestroyLock_Syscall(int index) {
 void Acquire_Syscall(int index) {
   int value = index; // this is the value read by machine->readregister
   KernelLockTableLock->Acquire();
-  
+  DEBUG('a',"ACQUIRING LOCK\n\n\n\n\n");
   // perform series of checks on the lock
   // to make sure user program is not doing
   // anything crazy

@@ -24,10 +24,7 @@ int main() {
   */
   Write("testing a lock\n", 16, ConsoleOutput);
   lockid = CreateLock();
-  lockid = CreateLock();
-  lockid = CreateLock();
-  for(int i = 0; i < lockid; i++) {
-    Write("number of lock id\n", 32, ConsoleOutput);
-  }
-  Write("testing a condition \n", 16, ConsoleOutput);
+  Acquire(lockid);
+  
+  Write("testing a condition \n", 32, ConsoleOutput);
 }
