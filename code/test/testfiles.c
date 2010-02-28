@@ -27,7 +27,7 @@ int main() {
   Acquire(lockid);
   
   condid = CreateCondition();
-  //Wait(condid, lockid);
-  
+  /*Wait(condid, lockid);
+  */
   Write("tests finished \n", 32, ConsoleOutput);
 }
