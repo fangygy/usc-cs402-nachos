@@ -242,7 +242,7 @@ void Close_Syscall(int fd) {
 int CreateLock_Syscall(int name, int size) {
   // Return position in kernel structure array
   
-  if((size < 1) || (size > MAX_CHARS)) {
+  if((size < 1) || (size > 100)) {
     DEBUG('a',"OUT OF BOUNDS");
   }
   
