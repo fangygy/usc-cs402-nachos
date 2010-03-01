@@ -119,7 +119,7 @@ SwapHeader (NoffHeader *noffH)
 
 AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
     NoffHeader noffH;
-    unsigned int i, size;
+    unsigned int i, size, index;
 
     // Don't allocate the input or output to disk files
     fileTable.Put(0);
@@ -144,17 +144,25 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
 
     DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
 					numPages, size);
-// first, set up the translation 
+
+    // first, set up the translation 
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
-	pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
-	pageTable[i].physicalPage = i;
-	pageTable[i].valid = TRUE;
-	pageTable[i].use = FALSE;
-	pageTable[i].dirty = FALSE;
-	pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
-					// a separate page, we could set its 
-					// pages to be read-only
+      index = bitmap->Find();
+      if(index == -1) {
+	// If index is -1, then the bitmap is full
+	// and there are no available pages in physical page
+	DEBUG('a',"Bitmap is full");
+	break;
+      }
+      pageTable[i].virtualPage  = index; // index will give us the virtual page location
+      pageTable[i].physicalPage = i;
+      pageTable[i].valid        = TRUE;
+      pageTable[i].use          = FALSE;
+      pageTable[i].dirty        = FALSE;
+      pageTable[i].readOnly     = FALSE;  // if the code segment was entirely on 
+                                          // a separate page, we could set its 
+					  // pages to be read-only
     }
     
 // zero out the entire address space, to zero the unitialized data segment 

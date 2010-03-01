@@ -45,6 +45,8 @@ struct KernelLock {
 
 extern KernelLock osLocks[];
 
+extern BitMap* bitmap;
+
 extern int nextCondIndex;
 extern Lock *KernelCondTableLock;
 extern int MAX_CONDS;

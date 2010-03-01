@@ -21,6 +21,8 @@ Timer *timer;				// the hardware timer device,
 Lock *KernelLockTableLock;
 Lock *KernelCondTableLock;
 
+BitMap *bitmap;
+
 int nextLockIndex = 0;
 int MAX_LOCKS = 100;
 
@@ -93,8 +95,9 @@ Initialize(int argc, char **argv)
     bool randomYield = FALSE;
     KernelLockTableLock = new Lock("KernelLockLock");
     KernelCondTableLock = new Lock("KernelCondLock");
-    //KernelLock osLocks[MAX_LOCKS];
-    //KernelCond osConds[MAX_CONDS];
+    
+    bitmap = new BitMap(NumPhysPages); // this needs to equal NumPhysPages in machine.h
+    
 #ifdef USER_PROGRAM
     bool debugUserProg = FALSE;	// single step user program
 #endif
