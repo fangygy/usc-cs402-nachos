@@ -242,33 +242,47 @@ void Close_Syscall(int fd) {
 int CreateLock_Syscall(int name, int size) {
   // Return position in kernel structure array
   
-  if((size < 1) || (size > 100)) {
-    DEBUG('a',"OUT OF BOUNDS");
+  //limit size of lock name
+  if((size < 1) || (size > MAX_CHARS)) {
+    DEBUG('a',"TOO MANY CHARS");
+    return;
   }
   
-  /* Fix this
+  //NOTE: need to make currentThread and space public for this to work
   int addressSpaceSize = currentThread->space.addressSpaceSize;
-  
-  if(name < 0 || (name+size) >= addressSpaceSize) {
 
+  //make sure we aren't creating any part of the lock outside the alloted space
+  if(name < 0 || (name+size) >= addressSpaceSize) {
+    DEBUG('a',"OUT OF BOUNDS");
+    return;
   }
   
-  char *lockName = new char[size+1];
-  lockName[size] = '\0';
-  copyin(lockName, name, size);
-  */
   KernelLockTableLock->Acquire();
-  
+
   // Make sure the table is not full 
   if(nextLockIndex >= MAX_LOCKS) {
-     //The table is full of locks 
+    //The table is full of locks 
+    KernelLockTableLock->Release();
+    DEBUG('a',"LOCK TABLE FULL");
+    return;
   }
-  
-  
-  osLocks[nextLockIndex].lock          = new Lock("some name goes here");
-  osLocks[nextLockIndex].as   = currentThread->space;
-  osLocks[nextLockIndex].usageCounter  = 0;
+
+  //in the clear to create the lock
+  char *lockName = new char[size+1];
+  lockName[size] = '\0';
+  //copy into
+  copyin(lockName, name, size);
+ 
+  //initialize important vars
+  osLocks[nextLockIndex].lock = new Lock(lockName);
+  osLocks[nextLockIndex].as = currentThread->space;
+  //initialize lock to not in use
+  osLocks[nextLockIndex].usageCounter = 0;
+  //no one wants to destroy the lock right now
   osLocks[nextLockIndex].toBeDestroyed = FALSE;
+  //report number of locks to user first...
+  rv = nextLockIndex;
+  //increment number of locks
   nextLockIndex++;
   KernelLockTableLock->Release();
   return nextLockIndex; // this may prove to have some problems if
@@ -281,52 +295,75 @@ void DestroyLock_Syscall(int index) {
 }
 
 void Acquire_Syscall(int index) {
-  int value = index; // this is the value read by machine->readregister
+  int value = index; // this is the value read by machine->readregister(4)
   KernelLockTableLock->Acquire();
   DEBUG('a',"ACQUIRING LOCK\n\n\n\n\n");
   // perform series of checks on the lock
   // to make sure user program is not doing
   // anything crazy
+
+  //make sure the lock exists
   if(value < 0 || value >= nextLockIndex) {
     // This is a bad value
     DEBUG('a',"BAD VALUE\n");
     return;
   }
+
   KernelLock curLock = osLocks[value];
   if(curLock.lock == NULL) {
     // The lock has been destroyed 
     DEBUG('a',"LOCK HAS BEEN DESTROYED\n");
+    return;
   }
   // The lock has not been destroyed
   
-    if(curLock.as != currentThread->space) {
+  if(curLock.as != currentThread->space) {
     // this lock belongs to a different process
     // since the address space of the lock does not match the 
     // current thread's address space
-    }
-  
+    DEBUG('a',"LOCK BELONGS TO DIFFERENT PROCESS");
+    return;
+  }
+  //ensure that lock isn't destroyed while in use
   curLock.usageCounter++; 
-  // Acquire the lock
+  
+  //has to go above acquire to avoid deadlock
+  KernalLockTableLock->Release();
+  // FINALLY...Acquire the lock
   curLock.lock->Acquire();
-  KernelLockTableLock->Release();
 }
 
 void Release_Syscall(int index) {
+  //NOTE: I just made this the same checks as Acquire for now....
+
   KernelLockTableLock->Acquire();
+  //make sure the lock exists
+  if(value < 0 || value >= nextLockIndex) {
+    // This is a bad value
+    DEBUG('a',"BAD VALUE\n");
+    return;
+  }
   KernelLock curLock = osLocks[index];
   if(curLock.lock == NULL) {
     // The lock has been destroyed 
     DEBUG('a',"LOCK HAS BEEN DESTROYED\n");
+    return;
   }
   
   if(curLock.as != currentThread->space) {
     // this lock belongs to a different process
     // since the address space of the lock does not match the 
     // current thread's address space    
+    DEBUG('a',"LOCK BELONGS TO DIFFERENT PROCESS");
+    return;
   }
+  //ensure that lock isn't destroyed while in use
+  curLock.usageCounter++; 
   
+  //has to go above acquire to avoid deadlock
+  KernalLockTableLock->Release();
+  // FINALLY...Release the lock
   curLock.lock->Release();
-  KernelLockTableLock->Release();
 }
 
 int CreateCondition_Syscall() {
