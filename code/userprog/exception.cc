@@ -239,7 +239,7 @@ void Close_Syscall(int fd) {
  *
  */
 
-int CreateLock_Syscall(int name, int size) {
+void CreateLock_Syscall(int name, int size) {
   // Return position in kernel structure array
   
   //limit size of lock name
@@ -285,7 +285,7 @@ int CreateLock_Syscall(int name, int size) {
   //increment number of locks
   nextLockIndex++;
   KernelLockTableLock->Release();
-  return nextLockIndex; // this may prove to have some problems if
+  return; // this may prove to have some problems if
                         // we are context switched out before nextLockIndex is
                         // returned
 }
