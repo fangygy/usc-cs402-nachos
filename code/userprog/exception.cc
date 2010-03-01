@@ -239,13 +239,13 @@ void Close_Syscall(int fd) {
  *
  */
 
-void CreateLock_Syscall(int name, int size) {
+int CreateLock_Syscall(int name, int size) {
   // Return position in kernel structure array
   
   //limit size of lock name
   if((size < 1) || (size > MAX_CHARS)) {
     DEBUG('a',"TOO MANY CHARS");
-    return;
+    return -1;
   }
   
   //NOTE: need to make currentThread and space public for this to work
@@ -254,7 +254,7 @@ void CreateLock_Syscall(int name, int size) {
   //make sure we aren't creating any part of the lock outside the alloted space
   if(name < 0 || (name+size) >= addressSpaceSize) {
     DEBUG('a',"OUT OF BOUNDS");
-    return;
+    return -1;
   }
   
   KernelLockTableLock->Acquire();
@@ -264,7 +264,7 @@ void CreateLock_Syscall(int name, int size) {
     //The table is full of locks 
     KernelLockTableLock->Release();
     DEBUG('a',"LOCK TABLE FULL");
-    return;
+    return -1;
   }
 
   //in the clear to create the lock
@@ -285,7 +285,7 @@ void CreateLock_Syscall(int name, int size) {
   //increment number of locks
   nextLockIndex++;
   KernelLockTableLock->Release();
-  return; // this may prove to have some problems if
+  return nextLockIndex; // this may prove to have some problems if
                         // we are context switched out before nextLockIndex is
                         // returned
 }
