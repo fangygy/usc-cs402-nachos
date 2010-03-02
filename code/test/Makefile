@@ -62,5 +62,11 @@ testfiles: testfiles.o start.o
 	$(LD) $(LDFLAGS) start.o testfiles.o -o testfiles.coff
 	../bin/coff2noff testfiles.coff testfiles
 
+airport.o: airport.c
+	$(CC) $(CFLAGS) -c airport.c
+airport: airport.o start.o
+	$(LD) $(LDFLAGS) start.o airport.o -o airport.coff
+	../bin/coff2noff airport.coff airport
+
 clean:
 	rm -f *.o *.coff
