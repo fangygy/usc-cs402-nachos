@@ -96,7 +96,7 @@ Machine::ReadMem(int addr, int size, int *value)
     
     exception = Translate(addr, &physicalAddress, size, FALSE);
     if (exception != NoException) {
-	machine->RaiseException(exception, addr);
+        machine->RaiseException(exception, addr);
 	return FALSE;
     }
     switch (size) {
@@ -224,7 +224,7 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
 			virtAddr, pageTableSize);
 	    return AddressErrorException;
 	} else if (!pageTable[vpn].valid) {
-	    DEBUG('a', "virtual page # %d too large for page table size %d!\n", 
+	    DEBUG('a', "virtual page # %d holds invalid bit %d!\n", 
 			virtAddr, pageTableSize);
 	    return PageFaultException;
 	}
