@@ -44,4 +44,28 @@ class AddrSpace {
 					// address space
 };
 
+class ChildProcess {
+ public:
+  ChildProcess();
+  ~ChildProcess();
+ private:
+  int id; // child id 
+  AddrSpace *childAS; // address space pointer of child
+  int numOfChildThreads; // counter for number of child threads
+  // some synch primitive -- won't need this since not implementing join
+  bool exiting; // indication variable for exiting -- won't need this since not implementing join
+  Thread* parentThread; // parent thread pointer
+}
+
+class ProcessTable {
+ public:
+  ProcessTable();
+  ~ProcessTable();
+ private:
+  int numChildProcess;
+  AddrSpace *as; // address pointer of parents
+  spaceId id; 
+  ChildProcess *childProcess;
+  
+}
 #endif // ADDRSPACE_H

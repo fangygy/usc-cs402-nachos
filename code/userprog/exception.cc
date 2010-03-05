@@ -560,7 +560,23 @@ void ExceptionHandler(ExceptionType which) {
 		break;
 	    case SC_Exec:
 	        DEBUG('a',"Exec syscall. \n");
-		//Exec_Syscall(machine->ReadRegister(4));
+
+		OpenFile *executable = fileSystem->Open(machine->ReadRegister(4));
+		AddrSpace *space;
+		
+		if(executable == NULL) {
+		  // printf("Unable to open file %s\n", filename);
+		  return;
+		}
+		// create a new address space for this executable file
+		space = new AddrSpace(executable);
+		Thread *executionThread = new Thread("");
+		executionThread->space = space;
+		executionThread->space->InitRegisters();
+		executionThread->space->RestoreState();
+		machine->Run();
+	        // Write the space id to rv, which will then be written into Register 2
+		rv = space;
 		break;
 	}
 
