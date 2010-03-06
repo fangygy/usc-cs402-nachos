@@ -22,6 +22,7 @@ int main() {
     Write( buf, bytesread, ConsoleOutput );
     Close(fd);
   */
+  /*
   Write("testing a lock\n", 16, ConsoleOutput);
   lockid = CreateLock();
   Acquire(lockid);
@@ -29,10 +30,17 @@ int main() {
   condid = CreateCondition();
   Wait(condid, lockid);
 	
-  /*
+  
    Write a test suite here that tests all the syscalls 
    The ones above test Acquire and Wait
    */
+
+  Write("testing exec\n",16,ConsoleOutput);
+  Create("testfile",8);
+  fd = Open("testfile",8);
+  
+  Exec("helloworld");
+
   
   Write("tests finished \n", 32, ConsoleOutput);
 }
