@@ -17,6 +17,7 @@ int b, c;
 int
 main()
 {
+  Write("Testing halt\n",16,ConsoleOutput);
     Halt();
     /* not reached */
 }

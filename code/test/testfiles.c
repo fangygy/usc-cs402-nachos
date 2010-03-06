@@ -38,7 +38,7 @@ int main() {
   Write("testing exec\n",16,ConsoleOutput);
   
   
-  Exec("helloworld");
+  Exec("halt");
 
   
   Write("tests finished \n", 32, ConsoleOutput);
