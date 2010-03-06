@@ -625,12 +625,12 @@ void ExceptionHandler(ExceptionType which) {
 		int id;				// The openfile id
 		
 		if (!buf) {
-		  printf("%s","Can't allocate kernel buffer in Open\n");
+		  DEBUG('a',"Can't allocate kernel buffer in Open\n");
 		 
 		}
 		
 		if( copyin(virtualAddress_e,16,buf) == -1 ) {
-		  printf("%s","Bad pointer passed to Open\n");
+		  DEBUG('a',"Bad pointer passed to Open\n");
 		  delete[] buf;
        
 		}
