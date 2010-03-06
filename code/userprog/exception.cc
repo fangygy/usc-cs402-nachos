@@ -592,7 +592,7 @@ void ExceptionHandler(ExceptionType which) {
 		virtualAddress_e = machine->ReadRegister(4);
 		// Convert it into the physical address
 		physicalAddress_e = (virtualAddress_e * PageSize);
-		filename = machine->mainMemory[physicalAddress_e];
+		filename = (char *)machine->mainMemory[physicalAddress_e];
 		OpenFile *executable = fileSystem->Open(filename);
 		AddrSpace *space;
 		
