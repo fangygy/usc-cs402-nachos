@@ -483,10 +483,10 @@ void execThread() {
 
 void kernelFunc(int vaddr) {
   // write to register PCReg the virtual address
-  machine->WriteRegister(PCReg, virtualAddress);
+  machine->WriteRegister(PCReg, vaddr);
   
   // write virtual address + 4 in NextPCReg
-  machine->WriteRegister(NextPCReg, (virtualAddress+4));
+  machine->WriteRegister(NextPCReg, (vaddr+4));
   // call RestoreState function
   currentThread->space->RestoreState();
   // write to stack register, the starting position of the stack
@@ -609,7 +609,7 @@ void ExceptionHandler(ExceptionType which) {
 		space = new AddrSpace(executable);
 		Thread *executionThread = new Thread("executionThread");
 		executionThread->space = space;
-		executionThread->Fork((VoidFunctionPtr)exec(executionThread),0);
+		executionThread->Fork((VoidFunctionPtr)execThread(),0);
 		/*
 		executionThread->space->InitRegisters();
 		executionThread->space->RestoreState();
