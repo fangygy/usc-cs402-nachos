@@ -127,7 +127,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
 
     DEBUG('a', "Reading in the executable\n");
 
-    executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
+    // executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
     DEBUG('a', "After reading in the executable\n");
     if ((noffH.noffMagic != NOFFMAGIC) && (WordToHost(noffH.noffMagic) == NOFFMAGIC))
       SwapHeader(&noffH);
