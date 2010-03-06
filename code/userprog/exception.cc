@@ -476,8 +476,8 @@ SpaceId Exec_Syscall(void (*func)()) {
 */
 
 void exec(Thread t) {
-  t->space->InitRegisters();
-  t->space->RestoreState();
+  t.space->InitRegisters();
+  t.space->RestoreState();
   machine->Run();
 }
 
@@ -563,16 +563,17 @@ void ExceptionHandler(ExceptionType which) {
 	    case SC_Fork:
 	        DEBUG('a', "Fork syscall.\n");
 		// get the virtual address of function being forked
+		int virtualAddress;
 		virtualAddress = machine->ReadRegister(4);
 		
-		Thread *kernelThread = new Thread();
+		Thread *kernelThread = new Thread("some thread");
 		// write to register PCReg the virtual address
 		machine->WriteRegister(PCReg, virtualAddress);
 		
 		// write virtual address + 4 in NextPCReg
 		machine->WriteRegister(NextPCReg, (virtualAddress+4));
 		// call RestoreState function
-		executionThread->space->RestoreState();
+		kernelThread->space->RestoreState();
 		// write to stack register, the starting position of the stack
 		machine->WriteRegister(StackReg, 5);
 		
@@ -585,8 +586,14 @@ void ExceptionHandler(ExceptionType which) {
 		break;
 	    case SC_Exec:
 	        DEBUG('a',"Exec syscall. \n");
-
-		OpenFile *executable = fileSystem->Open(machine->ReadRegister(4));
+		int virtualAddress_e, physical_address_e; 
+		char* filename;
+		// Get the virtual addres for the name of the process
+		virtualAddress_e = machine->ReadRegister(4);
+		// Convert it into the physical address
+		physicalAddress_e = (virtualAddress_e * PageSize);
+		filename = machine->mainMemory[physicalAddress_e];
+		OpenFile *executable = fileSystem->Open(filename);
 		AddrSpace *space;
 		
 		if(executable == NULL) {
