@@ -626,13 +626,13 @@ void ExceptionHandler(ExceptionType which) {
 		
 		if (!buf) {
 		  printf("%s","Can't allocate kernel buffer in Open\n");
-		  return -1;
+		 
 		}
 		
-		if( copyin(vaddr,len,buf) == -1 ) {
+		if( copyin(virtualAddress_e,16,buf) == -1 ) {
 		  printf("%s","Bad pointer passed to Open\n");
 		  delete[] buf;
-		  return -1;
+       
 		}
 		
 		buf[len]='\0';
