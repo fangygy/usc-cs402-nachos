@@ -35,9 +35,8 @@ int main() {
    The ones above test Acquire and Wait
    */
 
-  Write("testing exec\n",16,ConsoleOutput);
-  Create("testfile",8);
-  fd = Open("testfile",8);
+  Write("testing ec\n",16,ConsoleOutput);
+  
   
   Exec("helloworld");
 
