@@ -27,7 +27,6 @@
 #include "synch.h"
 #include <stdio.h>
 #include <iostream>
-#include "progtest.cc"
 
 using namespace std;
 
