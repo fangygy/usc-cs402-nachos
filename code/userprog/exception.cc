@@ -637,6 +637,8 @@ void ExceptionHandler(ExceptionType which) {
 		// Allocate the address space to this thread
 		executionThread->space = space;
 		
+		DEBUG('a',"allocated the address space\n");
+		
 		// Update process table
 		int g, spaceId;
 		for(g = 0; g < 64; g++) {
@@ -647,6 +649,9 @@ void ExceptionHandler(ExceptionType which) {
 		    break;
 		  }
 		}
+
+		DEBUG('a',"Updated the process table with new proces");
+
 		// Write the space id to register 2
 		rv = spaceId;
 		// Fork the thread
