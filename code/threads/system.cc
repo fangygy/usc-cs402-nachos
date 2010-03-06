@@ -20,6 +20,7 @@ Timer *timer;				// the hardware timer device,
 					// for invoking context switches
 Lock *KernelLockTableLock;
 Lock *KernelCondTableLock;
+Lock *PageTableLock;
 
 BitMap *bitmap;
 ProcessTable *processTable;
@@ -96,6 +97,7 @@ Initialize(int argc, char **argv)
     int g;
     char* debugArgs = "";
     bool randomYield = FALSE;
+    PageTableLock       = new Lock("PageTableLock");
     KernelLockTableLock = new Lock("KernelLockLock");
     KernelCondTableLock = new Lock("KernelCondLock");
     // Create a process table capable of creating up to 64 processes
@@ -105,6 +107,7 @@ Initialize(int argc, char **argv)
       processTable[g].numChildProcess = 0;
       processTable[g].spaceId = g;
       processTable[g].inUse = FALSE;
+      processTable[g].stackLocation = 0;
     }
 
 

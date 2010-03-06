@@ -310,6 +310,69 @@ void AddrSpace::RestoreState()
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
 }
+unsigned int AddrSpace::NumPages() {
+  return numPages;
+}
+void AddrSpace::NewPageTable() {
+  PageTableLock->Acquire();
+    TranslationEntry *newPageTable;
+    newPageTable = new TranslationEntry[numPages+8];
+    //bzero(machine->mainMemory, size);
+    for (i = 0; i < numPages; i++) {
+
+      newPageTable[i].virtualPage = pageTable[i].virtualPage; 
+      // newPageTable[i].physicalPage = pageTable[i].physicalPage;
+      newPageTable[i].valid       = pageTable[i].valid;
+      newPageTable[i].use         = pageTable[i].use;
+      newPageTable[i].dirty       = pageTable[i].dirty;
+      newPageTable[i].readOnly    = pageTable[i].readOnly;  // if the code segment was entirely on 
+                                          // a separate page, we could set its
+                                          // pages to be read-only 
+      
+    }
+    for(i = 0; i < (numPages+8); i++) {
+      index = bitmap->Find();
+      if(index == -1) {
+	// If index is -1, then the bitmap is full
+	// and there are no available pages in physical page table
+	DEBUG('a',"Bitmap is full");
+	break;
+      }     
+      newPageTable[i].physicalPage = index;
+      if(numCodePages > 0) {
+	DEBUG('c',"Initializing code page, at 0x%x, size %d\n",
+	      index, PageSize);
+	DEBUG('c',"Num code pages %d, Num data pages %d, Num pages %d memory address: %d\n",numCodePages,numInitPages,numPages, index);
+	executable->ReadAt(&(machine->mainMemory[index*PageSize]),PageSize,
+			   (i*PageSize)+noffH.code.inFileAddr);
+	numCodePages--;
+      } else if (numInitPages > 0) {
+	// We are done reading in the pages for the code data
+	// Now read in the initData pages 
+	g = 0;
+	DEBUG('c',"Initializing data page, at 0x%x, size %d\n",
+	      index,PageSize);
+	DEBUG('c',"Num code pages %d, Num data pages %d, Num pages %d memory address: %d\n",numCodePages,numInitPages,numPages, index);
+	executable->ReadAt(&(machine->mainMemory[index*PageSize]),PageSize,
+			   (g*PageSize)+noffH.initData.inFileAddr);
+	numInitPages--;
+	g++;
+      } else {
+	DEBUG('c',"OTHER\n");
+      }
+    }
+    // delete old page table
+    delete[] pageTable;
+    pageTable = newPageTable;
+    machine->pageTable = pageTable;
+    numPages = numPages+8;
+
+    PageTableLock->Release();
+      
+      
+    
+}
+
 
 ProcessTable::ProcessTable() {
   

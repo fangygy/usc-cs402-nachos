@@ -35,7 +35,10 @@ class AddrSpace {
 
     void SaveState();			// Save/restore address space-specific
     void RestoreState();		// info on a context switch
-    Table fileTable;			// Table of openfiles
+    Table fileTable;                    // Table of openfiles
+
+    void NewPageTable();
+    unsigned int NumPages();
 
  private:
     TranslationEntry *pageTable;	// Assume linear page table translation
@@ -64,7 +67,8 @@ class ProcessTable {
   int numChildProcess;
   AddrSpace *as; // address pointer of parents
   int spaceId; 
-  ChildProcess *childProcess;
+  int stackLocation;
+  // ChildProcess *childProcess;
   bool inUse;
  private:
 

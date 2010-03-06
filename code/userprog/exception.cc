@@ -581,12 +581,28 @@ void ExceptionHandler(ExceptionType which) {
 		// get the virtual address of function being forked
 		int virtualAddress;
 		virtualAddress = machine->ReadRegister(4);
-		
-		Thread *kernelThread = new Thread("some thread");
+		int i, spaceId_f;
+		// get the space id for this new thread
+		for(i=0; i<64; i++) {
+		  if(processTable[i].as == currentThread->space) {
+		    spaceId_f = i;
+		    break;
+		  } else { 
+		    // Trying to fork a thread without an existing address space
+		    DEBUG('a', "Trying to fork a thread without an existing address space\n");
+		  }
+		}
+		Thread *kernelThread = new Thread("kernelThread");
 		// this is the same as the currentThread->space b/c this thread
 		// is a child of the currentThread
 		kernelThread->space = currentThread->space;
-		kernelFunc(virtualAddress);
+		// Create a new page table with 8 pages more of stack
+		kernelThread->space->NewPageTable();
+
+		// Update page table
+		processTable[spaceId_f].stackLocation = (kernelThread->space->NumPages()*PageSize)-16;
+		processTable[spaceId_f].numChildProcess++;
+		kernelThread->Fork(kernelFunc,virtualAddress);
 		
 		break;
 	    case SC_Exec:
