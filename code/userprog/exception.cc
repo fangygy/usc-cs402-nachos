@@ -608,13 +608,25 @@ void ExceptionHandler(ExceptionType which) {
 		// create a new address space for this executable file
 		space = new AddrSpace(executable);
 		Thread *executionThread = new Thread("executionThread");
+		// Allocate the address space to this thread
 		executionThread->space = space;
+		
+		// Update process table
+		int g, spaceId;
+		for(g = 0; g < 64; g++) {
+		  if(!processTable[g].inUse) {
+		    spaceId = g;
+		    // Set the appropriate address space
+		    processTable[spaceId].as = space;
+		    break;
+		  }
+		}
+		// Write the space id to register 2
+		rv = spaceId;
+		// Fork the thread
 		executionThread->Fork((VoidFunctionPtr)execThread,0);
-		/*
-		executionThread->space->InitRegisters();
-		executionThread->space->RestoreState();
-		machine->Run();
-		*/
+		
+
 	        // Write the space id to rv, which will then be written into Register 2
 		// rv = space;
 		break;

@@ -93,11 +93,22 @@ void
 Initialize(int argc, char **argv)
 {
     int argCount;
+    int g;
     char* debugArgs = "";
     bool randomYield = FALSE;
     KernelLockTableLock = new Lock("KernelLockLock");
     KernelCondTableLock = new Lock("KernelCondLock");
-    processTable        = new ProcessTable();
+    // Create a process table capable of creating up to 64 processes
+    processTable        = new ProcessTable[64];
+    for(g = 0; g < 64; g++) {
+      processTable[g].as = NULL;
+      processTable[g].numChildProcess = 0;
+      processTable[g].spaceId = g;
+      processTable[g].inUse = FALSE;
+    }
+
+
+
     bitmap = new BitMap(NumPhysPages); // this needs to equal NumPhysPages in machine.h
     
 #ifdef USER_PROGRAM
