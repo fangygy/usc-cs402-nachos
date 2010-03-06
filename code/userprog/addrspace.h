@@ -61,12 +61,12 @@ class ProcessTable {
  public:
   ProcessTable();
   ~ProcessTable();
-  
- private:
   int numChildProcess;
   AddrSpace *as; // address pointer of parents
   int spaceId; 
   ChildProcess *childProcess;
   bool inUse;
+ private:
+
 };
 #endif // ADDRSPACE_H
