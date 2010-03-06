@@ -626,6 +626,7 @@ void ExceptionHandler(ExceptionType which) {
 		OpenFile *executable = fileSystem->Open(filename);
 		AddrSpace *space;
 		
+		DEBUG('a',"Got the physical address and virtual address\n");
 		if(executable == NULL) {
 		  printf("Unable to open file %s\n", filename);
 		  return;
