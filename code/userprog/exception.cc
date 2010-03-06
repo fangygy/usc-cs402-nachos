@@ -632,10 +632,10 @@ void ExceptionHandler(ExceptionType which) {
 		  return;
 		}
 		// create a new address space for this executable file
-		space = new AddrSpace(executable);
+		//space = new AddrSpace(executable);
 		Thread *executionThread = new Thread("executionThread");
 		// Allocate the address space to this thread
-		executionThread->space = space;
+		//executionThread->space = space;
 		
 		DEBUG('a',"allocated the address space\n");
 		
@@ -645,7 +645,7 @@ void ExceptionHandler(ExceptionType which) {
 		  if(!processTable[g].inUse) {
 		    spaceId = g;
 		    // Set the appropriate address space
-		    processTable[spaceId].as = space;
+		    //processTable[spaceId].as = space;
 		    break;
 		  }
 		}
