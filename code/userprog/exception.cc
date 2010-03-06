@@ -586,7 +586,7 @@ void ExceptionHandler(ExceptionType which) {
 		break;
 	    case SC_Exec:
 	        DEBUG('a',"Exec syscall. \n");
-		int virtualAddress_e, physical_address_e; 
+		int virtualAddress_e, physicalAddress_e; 
 		char* filename;
 		// Get the virtual addres for the name of the process
 		virtualAddress_e = machine->ReadRegister(4);
@@ -604,14 +604,14 @@ void ExceptionHandler(ExceptionType which) {
 		space = new AddrSpace(executable);
 		Thread *executionThread = new Thread("");
 		executionThread->space = space;
-		executionThread->Fork((VoidFunctionPtr)exec(executionThread));
+		// executionThread->Fork((VoidFunctionPtr)exec(executionThread));
 		/*
 		executionThread->space->InitRegisters();
 		executionThread->space->RestoreState();
 		machine->Run();
 		*/
 	        // Write the space id to rv, which will then be written into Register 2
-		rv = space;
+		// rv = space;
 		break;
 	}
 
