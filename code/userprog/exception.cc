@@ -620,8 +620,24 @@ void ExceptionHandler(ExceptionType which) {
 		char* filename;
 		// Get the virtual address for the name of the process
 		virtualAddress_e = machine->ReadRegister(4);
-		Open_Syscall(virtualAddress_e,16);
+		char *buf = new char[len+1];	// Kernel buffer to put the name in
+		OpenFile *f;			// The new open file
+		int id;				// The openfile id
 		
+		if (!buf) {
+		  printf("%s","Can't allocate kernel buffer in Open\n");
+		  return -1;
+		}
+		
+		if( copyin(vaddr,len,buf) == -1 ) {
+		  printf("%s","Bad pointer passed to Open\n");
+		  delete[] buf;
+		  return -1;
+		}
+		
+		buf[len]='\0';
+		
+		f = fileSystem->Open(buf);		
 		AddrSpace *space;
 		
 		DEBUG('a',"Got the physical address and virtual address\n");
