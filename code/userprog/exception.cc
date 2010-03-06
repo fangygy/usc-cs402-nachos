@@ -621,8 +621,8 @@ void ExceptionHandler(ExceptionType which) {
 		// Get the virtual address for the name of the process
 		virtualAddress_e = machine->ReadRegister(4);
 		// Convert it into the physical address
-		physicalAddress_e = (virtualAddress_e);
-		filename = (char *)machine->mainMemory[physicalAddress_e];
+		//physicalAddress_e = (virtualAddress_e);
+		filename = virtualAddress_e;
 		OpenFile *executable = fileSystem->Open(filename);
 		AddrSpace *space;
 		
