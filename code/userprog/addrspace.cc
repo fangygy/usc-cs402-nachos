@@ -176,7 +176,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
 	DEBUG('c',"Initializing code page, at 0x%x, size %d\n",
 	      index, PageSize);
 	DEBUG('c',"Num code pages %d, Num data pages %d, Num pages %d memory address: %d\n",numCodePages,numInitPages,numPages, index);
-	executable->ReadAt(&(machine->mainMemory[index*PageSize]),PageSize,
+	executable->ReadAt(index*PageSize),PageSize,
 			   (i*PageSize)+noffH.code.inFileAddr);
 	numCodePages--;
       } else if (numInitPages > 0) {
@@ -186,7 +186,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
 	DEBUG('c',"Initializing data page, at 0x%x, size %d\n",
 	      index,PageSize);
 	DEBUG('c',"Num code pages %d, Num data pages %d, Num pages %d memory address: %d\n",numCodePages,numInitPages,numPages, index);
-	executable->ReadAt(&(machine->mainMemory[index*PageSize]),PageSize,
+	executable->ReadAt(index*PageSize),PageSize,
 		   (g*PageSize)+noffH.initData.inFileAddr);
 	numInitPages--;
 	g++;
@@ -343,7 +343,7 @@ void AddrSpace::NewPageTable() {
 	DEBUG('c',"Initializing code page, at 0x%x, size %d\n",
 	      index, PageSize);
 	DEBUG('c',"Num code pages %d, Num data pages %d, Num pages %d memory address: %d\n",numCodePages,numInitPages,numPages, index);
-	executable->ReadAt(&(machine->mainMemory[index*PageSize]),PageSize,
+	executable->ReadAt(index*PageSize),PageSize,
 			   (i*PageSize)+noffH.code.inFileAddr);
 	numCodePages--;
       } else if (numInitPages > 0) {
@@ -353,7 +353,7 @@ void AddrSpace::NewPageTable() {
 	DEBUG('c',"Initializing data page, at 0x%x, size %d\n",
 	      index,PageSize);
 	DEBUG('c',"Num code pages %d, Num data pages %d, Num pages %d memory address: %d\n",numCodePages,numInitPages,numPages, index);
-	executable->ReadAt(&(machine->mainMemory[index*PageSize]),PageSize,
+	executable->ReadAt(index*PageSize),PageSize,
 			   (g*PageSize)+noffH.initData.inFileAddr);
 	numInitPages--;
 	g++;

@@ -45,6 +45,8 @@ class AddrSpace {
 					// for now!
     unsigned int numPages;		// Number of pages in the virtual 
 					// address space
+    int numCodePages, numInitPages;
+
 };
 
 class ChildProcess {
