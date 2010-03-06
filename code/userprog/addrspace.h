@@ -55,7 +55,7 @@ class ChildProcess {
   // some synch primitive -- won't need this since not implementing join
   bool exiting; // indication variable for exiting -- won't need this since not implementing join
   // Thread* parentThread; // parent thread pointer
-}
+};
 
 class ProcessTable {
  public:
@@ -67,5 +67,5 @@ class ProcessTable {
   int spaceId; 
   ChildProcess *childProcess;
   
-}
+};
 #endif // ADDRSPACE_H
