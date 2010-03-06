@@ -609,7 +609,7 @@ void ExceptionHandler(ExceptionType which) {
 		space = new AddrSpace(executable);
 		Thread *executionThread = new Thread("executionThread");
 		executionThread->space = space;
-		executionThread->Fork((VoidFunctionPtr)execThread(),0);
+		executionThread->Fork((VoidFunctionPtr)execThread,0);
 		/*
 		executionThread->space->InitRegisters();
 		executionThread->space->RestoreState();
