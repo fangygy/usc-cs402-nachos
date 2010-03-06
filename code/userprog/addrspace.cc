@@ -314,3 +314,6 @@ void AddrSpace::RestoreState()
 ProcessTable::ProcessTable() {
   
 }
+ProcessTable::~ProcessTable() {
+
+}
