@@ -133,6 +133,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
     	SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFFMAGIC);
 
+    DEBUG('a',"After reading in file\n");
     size = noffH.code.size + noffH.initData.size + noffH.uninitData.size ;
     numPages = divRoundUp(size, PageSize) + divRoundUp(UserStackSize,PageSize);
                                                 // we need to increase the size
@@ -147,6 +148,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
 						// at least until we have
 						// virtual memory
 
+    
     DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
 					numPages, size);
 
