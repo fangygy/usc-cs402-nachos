@@ -175,7 +175,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
 	DEBUG('c',"Initializing code page, at 0x%x, size %d\n",
 	      index, PageSize);
 	DEBUG('c',"Num code pages %d, Num data pages %d, Num pages %d memory address: %d\n",numCodePages,numInitPages,numPages, index);
-	executable->ReadAt(index*PageSize),PageSize,
+	executable->ReadAt(&(machine->mainMemory[index*PageSize]),PageSize,
 			   (i*PageSize)+noffH.code.inFileAddr);
 	numCodePages--;
       } else if (numInitPages > 0) {
@@ -185,7 +185,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
 	DEBUG('c',"Initializing data page, at 0x%x, size %d\n",
 	      index,PageSize);
 	DEBUG('c',"Num code pages %d, Num data pages %d, Num pages %d memory address: %d\n",numCodePages,numInitPages,numPages, index);
-	executable->ReadAt(index*PageSize),PageSize,
+	executable->ReadAt(&(machine->mainMemory[index*PageSize]),PageSize,
 		   (g*PageSize)+noffH.initData.inFileAddr);
 	numInitPages--;
 	g++;
@@ -310,10 +310,11 @@ void AddrSpace::RestoreState()
     machine->pageTableSize = numPages;
 }
 unsigned int AddrSpace::NumPages() {
-  return numPages;
+    return numPages;
 }
 void AddrSpace::NewPageTable() {
-  PageTableLock->Acquire();
+    
+    PageTableLock->Acquire();
     TranslationEntry *newPageTable;
     newPageTable = new TranslationEntry[numPages+8];
     //bzero(machine->mainMemory, size);
