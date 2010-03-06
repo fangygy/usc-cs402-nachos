@@ -620,7 +620,7 @@ void ExceptionHandler(ExceptionType which) {
 		char* filename;
 		// Get the virtual address for the name of the process
 		virtualAddress_e = machine->ReadRegister(4);
-		char *buf = new char[len+1];	// Kernel buffer to put the name in
+		char *buf = new char[16+1];	// Kernel buffer to put the name in
 		OpenFile *f;			// The new open file
 		int id;				// The openfile id
 		
