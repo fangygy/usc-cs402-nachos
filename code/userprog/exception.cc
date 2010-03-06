@@ -27,6 +27,7 @@
 #include "synch.h"
 #include <stdio.h>
 #include <iostream>
+#include "progtest.cc"
 
 using namespace std;
 
@@ -616,6 +617,8 @@ void ExceptionHandler(ExceptionType which) {
 		break;
 	    case SC_Exec:
 	        DEBUG('a',"Exec syscall. \n");
+		
+		
 		int virtualAddress_e, physicalAddress_e; 
 		char* filename;
 		// Get the virtual address for the name of the process
@@ -637,10 +640,12 @@ void ExceptionHandler(ExceptionType which) {
 		buf[16]='\0';
 		
 		printf("%s\n",buf);
+		StartProcess(buf);
+		/*
 		f = fileSystem->Open(buf);		
 		AddrSpace *space;
 		
-		DEBUG('a',"Got the physical address and virtual address\n");
+		DEBUG('a',"Got the file open\n");
 		
 		
 		// create a new address space for this executable file
@@ -662,7 +667,7 @@ void ExceptionHandler(ExceptionType which) {
 		  }
 		}
 
-		DEBUG('a',"Updated the process table with new proces");
+		DEBUG('a',"Updated the process table with new process");
 
 		// Write the space id to register 2
 		rv = spaceId;
@@ -671,7 +676,7 @@ void ExceptionHandler(ExceptionType which) {
 		
 	        // Write the space id to rv, which will then be written into Register 2
 		// rv = space;
-		
+		*/
 		break;
 	}
 
