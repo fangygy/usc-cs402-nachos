@@ -627,11 +627,12 @@ void ExceptionHandler(ExceptionType which) {
 		AddrSpace *space;
 		
 		DEBUG('a',"Got the physical address and virtual address\n");
-		/*
+		
 		if(executable == NULL) {
 		  printf("Unable to open file %s\n", filename);
 		  return;
 		}
+		/*
 		// create a new address space for this executable file
 		space = new AddrSpace(executable);
 		Thread *executionThread = new Thread("executionThread");
