@@ -650,7 +650,6 @@ void ExceptionHandler(ExceptionType which) {
 		
 		DEBUG('a',"Got the file open\n");
 		
-		
 		// create a new address space for this executable file
 		space = new AddrSpace(f);
 		Thread *executionThread = new Thread("executionThread");
