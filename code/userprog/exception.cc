@@ -32,32 +32,6 @@ using namespace std;
 
 #define MAX_CHARS 100;
 
-void
-StaProcess(char *filename)
-{
-    OpenFile *executable = fileSystem->Open(filename);
-    AddrSpace *space;
-
-    if (executable == NULL) {
-	printf("Unable to open file %s\n", filename);
-	return;
-    }
-   
-    space = new AddrSpace(executable);
-
-    currentThread->space = space;
-
-    delete executable;			// close file
-
-    space->InitRegisters();		// set the initial register values
-    space->RestoreState();		// load page table register
-
-    machine->Run();			// jump to the user progam
-    ASSERT(FALSE);			// machine->Run never returns;
-					// the address space exits
-					// by doing the syscall "exit"
-}
-
 int copyin(unsigned int vaddr, int len, char *buf) {
     // Copy len bytes from the current thread's virtual address vaddr.
     // Return the number of bytes so read, or -1 if an error occors.
@@ -665,9 +639,11 @@ void ExceptionHandler(ExceptionType which) {
 		buf[16]='\0';
 		
 		printf("%s\n",buf);
-		StaProcess(buf);
-		/*
-		f = fileSystem->Open(buf);		
+		
+		f = fileSystem->Open(buf);
+		if(f == NULL) {
+		  printf("%s","unable to open file\n");
+		}
 		AddrSpace *space;
 		
 		DEBUG('a',"Got the file open\n");
