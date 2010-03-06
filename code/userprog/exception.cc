@@ -641,9 +641,11 @@ void ExceptionHandler(ExceptionType which) {
 		printf("%s\n",buf);
 		
 		f = fileSystem->Open(buf);
+
 		if(f == NULL) {
 		  printf("%s","unable to open file\n");
 		}
+
 		AddrSpace *space;
 		
 		DEBUG('a',"Got the file open\n");
@@ -677,7 +679,7 @@ void ExceptionHandler(ExceptionType which) {
 		
 	        // Write the space id to rv, which will then be written into Register 2
 		// rv = space;
-		*/
+		
 		break;
 	}
 
