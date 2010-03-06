@@ -313,8 +313,9 @@ unsigned int AddrSpace::NumPages() {
     return numPages;
 }
 void AddrSpace::NewPageTable() {
-    
+  
     PageTableLock->Acquire();
+    int i, index;
     TranslationEntry *newPageTable;
     newPageTable = new TranslationEntry[numPages+8];
     //bzero(machine->mainMemory, size);
