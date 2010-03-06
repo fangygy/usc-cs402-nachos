@@ -627,15 +627,16 @@ void ExceptionHandler(ExceptionType which) {
 		AddrSpace *space;
 		
 		DEBUG('a',"Got the physical address and virtual address\n");
+		/*
 		if(executable == NULL) {
 		  printf("Unable to open file %s\n", filename);
 		  return;
 		}
 		// create a new address space for this executable file
-		//space = new AddrSpace(executable);
+		space = new AddrSpace(executable);
 		Thread *executionThread = new Thread("executionThread");
 		// Allocate the address space to this thread
-		//executionThread->space = space;
+		executionThread->space = space;
 		
 		DEBUG('a',"allocated the address space\n");
 		
@@ -645,7 +646,7 @@ void ExceptionHandler(ExceptionType which) {
 		  if(!processTable[g].inUse) {
 		    spaceId = g;
 		    // Set the appropriate address space
-		    //processTable[spaceId].as = space;
+		    processTable[spaceId].as = space;
 		    break;
 		  }
 		}
@@ -659,6 +660,7 @@ void ExceptionHandler(ExceptionType which) {
 		
 	        // Write the space id to rv, which will then be written into Register 2
 		// rv = space;
+		*/
 		break;
 	}
 
