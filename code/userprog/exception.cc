@@ -475,6 +475,12 @@ SpaceId Exec_Syscall(void (*func)()) {
 }
 */
 
+void exec(Thread t) {
+  t->space->InitRegisters();
+  t->space->RestoreState();
+  machine->Run();
+}
+
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2); // Which syscall?
     int rv = 0;
@@ -556,7 +562,26 @@ void ExceptionHandler(ExceptionType which) {
 		break;
 	    case SC_Fork:
 	        DEBUG('a', "Fork syscall.\n");
-		//Fork_Syscall(machine->ReadRegister(4));
+		// get the virtual address of function being forked
+		virtualAddress = machine->ReadRegister(4);
+		
+		Thread *kernelThread = new Thread();
+		// write to register PCReg the virtual address
+		machine->WriteRegister(PCReg, virtualAddress);
+		
+		// write virtual address + 4 in NextPCReg
+		machine->WriteRegister(NextPCReg, (virtualAddress+4));
+		// call RestoreState function
+		executionThread->space->RestoreState();
+		// write to stack register, the starting position of the stack
+		machine->WriteRegister(StackReg, 5);
+		
+		// allocate address space to the thread
+		// this is the same as the currentThread->space b/c this thread
+		// is a child of the currentThread
+		kernelThread->space = currentThread->space;
+		machine->Run();
+
 		break;
 	    case SC_Exec:
 	        DEBUG('a',"Exec syscall. \n");
@@ -572,9 +597,12 @@ void ExceptionHandler(ExceptionType which) {
 		space = new AddrSpace(executable);
 		Thread *executionThread = new Thread("");
 		executionThread->space = space;
+		executionThread->Fork((VoidFunctionPtr)exec(executionThread));
+		/*
 		executionThread->space->InitRegisters();
 		executionThread->space->RestoreState();
 		machine->Run();
+		*/
 	        // Write the space id to rv, which will then be written into Register 2
 		rv = space;
 		break;

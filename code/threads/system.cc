@@ -22,6 +22,8 @@ Lock *KernelLockTableLock;
 Lock *KernelCondTableLock;
 
 BitMap *bitmap;
+ProcessTable *processTable;
+
 
 int nextLockIndex = 0;
 int MAX_LOCKS = 100;
@@ -95,7 +97,7 @@ Initialize(int argc, char **argv)
     bool randomYield = FALSE;
     KernelLockTableLock = new Lock("KernelLockLock");
     KernelCondTableLock = new Lock("KernelCondLock");
-    
+    processTable        = new ProcessTable();
     bitmap = new BitMap(NumPhysPages); // this needs to equal NumPhysPages in machine.h
     
 #ifdef USER_PROGRAM

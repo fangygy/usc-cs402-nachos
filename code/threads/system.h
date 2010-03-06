@@ -58,6 +58,9 @@ struct KernelCond {
 
 extern KernelCond osConds[];
 
+extern ProcessTable *processTable;
+
+
 #ifdef USER_PROGRAM
 #include "machine.h"
 extern Machine* machine;	// user program memory and registers

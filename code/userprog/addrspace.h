@@ -51,10 +51,10 @@ class ChildProcess {
  private:
   int id; // child id 
   AddrSpace *childAS; // address space pointer of child
-  int numOfChildThreads; // counter for number of child threads
+  //int numOfChildThreads; // counter for number of child threads
   // some synch primitive -- won't need this since not implementing join
   bool exiting; // indication variable for exiting -- won't need this since not implementing join
-  Thread* parentThread; // parent thread pointer
+  // Thread* parentThread; // parent thread pointer
 }
 
 class ProcessTable {
@@ -64,7 +64,7 @@ class ProcessTable {
  private:
   int numChildProcess;
   AddrSpace *as; // address pointer of parents
-  spaceId id; 
+  int spaceId; 
   ChildProcess *childProcess;
   
 }
