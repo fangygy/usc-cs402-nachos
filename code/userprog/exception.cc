@@ -620,19 +620,12 @@ void ExceptionHandler(ExceptionType which) {
 		char* filename;
 		// Get the virtual address for the name of the process
 		virtualAddress_e = machine->ReadRegister(4);
-		// Convert it into the physical address
-		//physicalAddress_e = (virtualAddress_e);
-		filename = virtualAddress_e;
-		OpenFile *executable = fileSystem->Open(filename);
+		Open_Syscall(virtualAddress_e,16);
+		
 		AddrSpace *space;
 		
 		DEBUG('a',"Got the physical address and virtual address\n");
 		
-		if(executable == NULL) {
-		  DEBUG('a',"executable == null\n");
-		  printf("Unable to open file %s\n", filename);
-		  return;
-		}
 		/*
 		// create a new address space for this executable file
 		space = new AddrSpace(executable);
