@@ -488,14 +488,12 @@ void kernelFunc(int vaddr) {
   // write virtual address + 4 in NextPCReg
   machine->WriteRegister(NextPCReg, (virtualAddress+4));
   // call RestoreState function
-  kernelThread->space->RestoreState();
+  currentThread->space->RestoreState();
   // write to stack register, the starting position of the stack
   machine->WriteRegister(StackReg, 5); // 5 is some bs number -- we have to get this value from process table
 		
   // allocate address space to the thread
-  // this is the same as the currentThread->space b/c this thread
-  // is a child of the currentThread
-  kernelThread->space = currentThread->space;
+
   machine->Run();
 }
 
@@ -585,6 +583,9 @@ void ExceptionHandler(ExceptionType which) {
 		virtualAddress = machine->ReadRegister(4);
 		
 		Thread *kernelThread = new Thread("some thread");
+		// this is the same as the currentThread->space b/c this thread
+		// is a child of the currentThread
+		kernelThread->space = currentThread->space;
 		kernelFunc(virtualAddress);
 		
 		break;
