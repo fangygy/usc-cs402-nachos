@@ -632,11 +632,11 @@ void ExceptionHandler(ExceptionType which) {
 		if( copyin(virtualAddress_e,16,buf) == -1 ) {
 		  DEBUG('a',"Bad pointer passed to Open\n");
 		  delete[] buf;
-       
 		}
 		
 		buf[16]='\0';
 		
+		printf("%s\n",buf);
 		f = fileSystem->Open(buf);		
 		AddrSpace *space;
 		
