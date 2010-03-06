@@ -33,7 +33,7 @@ using namespace std;
 #define MAX_CHARS 100;
 
 void
-StartProcess(char *filename)
+StaProcess(char *filename)
 {
     OpenFile *executable = fileSystem->Open(filename);
     AddrSpace *space;
@@ -665,7 +665,7 @@ void ExceptionHandler(ExceptionType which) {
 		buf[16]='\0';
 		
 		printf("%s\n",buf);
-		StartProcess(buf);
+		StaProcess(buf);
 		/*
 		f = fileSystem->Open(buf);		
 		AddrSpace *space;
