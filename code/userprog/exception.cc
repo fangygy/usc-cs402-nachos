@@ -475,9 +475,27 @@ SpaceId Exec_Syscall(void (*func)()) {
 }
 */
 
-void exec(Thread t) {
+void exec(Thread* t) {
   t.space->InitRegisters();
   t.space->RestoreState();
+  machine->Run();
+}
+
+void kernelFunc(int vaddr) {
+  // write to register PCReg the virtual address
+  machine->WriteRegister(PCReg, virtualAddress);
+  
+  // write virtual address + 4 in NextPCReg
+  machine->WriteRegister(NextPCReg, (virtualAddress+4));
+  // call RestoreState function
+  kernelThread->space->RestoreState();
+  // write to stack register, the starting position of the stack
+  machine->WriteRegister(StackReg, 5); // 5 is some bs number -- we have to get this value from process table
+		
+  // allocate address space to the thread
+  // this is the same as the currentThread->space b/c this thread
+  // is a child of the currentThread
+  kernelThread->space = currentThread->space;
   machine->Run();
 }
 
@@ -567,22 +585,8 @@ void ExceptionHandler(ExceptionType which) {
 		virtualAddress = machine->ReadRegister(4);
 		
 		Thread *kernelThread = new Thread("some thread");
-		// write to register PCReg the virtual address
-		machine->WriteRegister(PCReg, virtualAddress);
+		kernelFunc(virtualAddress);
 		
-		// write virtual address + 4 in NextPCReg
-		machine->WriteRegister(NextPCReg, (virtualAddress+4));
-		// call RestoreState function
-		kernelThread->space->RestoreState();
-		// write to stack register, the starting position of the stack
-		machine->WriteRegister(StackReg, 5);
-		
-		// allocate address space to the thread
-		// this is the same as the currentThread->space b/c this thread
-		// is a child of the currentThread
-		kernelThread->space = currentThread->space;
-		machine->Run();
-
 		break;
 	    case SC_Exec:
 	        DEBUG('a',"Exec syscall. \n");
@@ -602,9 +606,9 @@ void ExceptionHandler(ExceptionType which) {
 		}
 		// create a new address space for this executable file
 		space = new AddrSpace(executable);
-		Thread *executionThread = new Thread("");
+		Thread *executionThread = new Thread("executionThread");
 		executionThread->space = space;
-		// executionThread->Fork((VoidFunctionPtr)exec(executionThread));
+		executionThread->Fork((VoidFunctionPtr)exec(executionThread));
 		/*
 		executionThread->space->InitRegisters();
 		executionThread->space->RestoreState();
