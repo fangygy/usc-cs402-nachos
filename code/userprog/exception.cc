@@ -482,6 +482,15 @@ void execThread() {
 }
 
 void kernelFunc(int vaddr) {
+  int i, spaceId;
+  for(i = 0; i < 64; i++) {
+    if(currentThread->space == processTable[i].as) {
+      spaceId = i;
+      break;
+    } else {
+
+    }
+  }
   // write to register PCReg the virtual address
   machine->WriteRegister(PCReg, vaddr);
   
@@ -490,7 +499,7 @@ void kernelFunc(int vaddr) {
   // call RestoreState function
   currentThread->space->RestoreState();
   // write to stack register, the starting position of the stack
-  machine->WriteRegister(StackReg, 5); // 5 is some bs number -- we have to get this value from process table
+  machine->WriteRegister(StackReg,processTable[spaceId].stackLocation); // 5 is some bs number -- we have to get this value from process table
 		
   // allocate address space to the thread
 
@@ -618,7 +627,7 @@ void ExceptionHandler(ExceptionType which) {
 		AddrSpace *space;
 		
 		if(executable == NULL) {
-		  // printf("Unable to open file %s\n", filename);
+		  printf("Unable to open file %s\n", filename);
 		  return;
 		}
 		// create a new address space for this executable file
@@ -642,7 +651,6 @@ void ExceptionHandler(ExceptionType which) {
 		// Fork the thread
 		executionThread->Fork((VoidFunctionPtr)execThread,0);
 		
-
 	        // Write the space id to rv, which will then be written into Register 2
 		// rv = space;
 		break;
