@@ -629,6 +629,7 @@ void ExceptionHandler(ExceptionType which) {
 		DEBUG('a',"Got the physical address and virtual address\n");
 		
 		if(executable == NULL) {
+		  DEBUG('a',"executable == null\n");
 		  printf("Unable to open file %s\n", filename);
 		  return;
 		}
