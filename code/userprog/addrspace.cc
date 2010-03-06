@@ -121,7 +121,6 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
     NoffHeader noffH;
     unsigned int i, size, index, g;
     unsigned int codeSize, initDataSize;
-    int numCodePages, numInitPages;
     // Don't allocate the input or output to disk files
     fileTable.Put(0);
     fileTable.Put(0);
@@ -321,7 +320,7 @@ void AddrSpace::NewPageTable() {
     for (i = 0; i < numPages; i++) {
 
       newPageTable[i].virtualPage = pageTable[i].virtualPage; 
-      // newPageTable[i].physicalPage = pageTable[i].physicalPage;
+      newPageTable[i].physicalPage = pageTable[i].physicalPage;
       newPageTable[i].valid       = pageTable[i].valid;
       newPageTable[i].use         = pageTable[i].use;
       newPageTable[i].dirty       = pageTable[i].dirty;
@@ -330,7 +329,8 @@ void AddrSpace::NewPageTable() {
                                           // pages to be read-only 
       
     }
-    for(i = 0; i < (numPages+8); i++) {
+    // Allocate space for new stack in address
+    for(i = numPages; i < (numPages+8); i++) {
       index = bitmap->Find();
       if(index == -1) {
 	// If index is -1, then the bitmap is full
@@ -339,27 +339,7 @@ void AddrSpace::NewPageTable() {
 	break;
       }     
       newPageTable[i].physicalPage = index;
-      if(numCodePages > 0) {
-	DEBUG('c',"Initializing code page, at 0x%x, size %d\n",
-	      index, PageSize);
-	DEBUG('c',"Num code pages %d, Num data pages %d, Num pages %d memory address: %d\n",numCodePages,numInitPages,numPages, index);
-	executable->ReadAt(index*PageSize),PageSize,
-			   (i*PageSize)+noffH.code.inFileAddr);
-	numCodePages--;
-      } else if (numInitPages > 0) {
-	// We are done reading in the pages for the code data
-	// Now read in the initData pages 
-	g = 0;
-	DEBUG('c',"Initializing data page, at 0x%x, size %d\n",
-	      index,PageSize);
-	DEBUG('c',"Num code pages %d, Num data pages %d, Num pages %d memory address: %d\n",numCodePages,numInitPages,numPages, index);
-	executable->ReadAt(index*PageSize),PageSize,
-			   (g*PageSize)+noffH.initData.inFileAddr);
-	numInitPages--;
-	g++;
-      } else {
-	DEBUG('c',"OTHER\n");
-      }
+
     }
     // delete old page table
     delete[] pageTable;
