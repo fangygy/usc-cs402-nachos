@@ -35,10 +35,10 @@ int main() {
    The ones above test Acquire and Wait
    */
 
-  Write("testing ec\n",16,ConsoleOutput);
+  Write("testing exec\n",16,ConsoleOutput);
   
   
-  Exec("helloworld");
+  Exec("halt");
 
   
   Write("tests finished \n", 32, ConsoleOutput);
