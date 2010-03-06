@@ -1,5 +1,5 @@
 #include "syscall.h"
 
 int main() {
-  Write("hello world!\n",16,ConsoleOutput);
+  Write("asdf world!\n",16,ConsoleOutput);
 }
