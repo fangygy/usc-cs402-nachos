@@ -642,9 +642,9 @@ void ExceptionHandler(ExceptionType which) {
 		
 		DEBUG('a',"Got the physical address and virtual address\n");
 		
-		/*
+		
 		// create a new address space for this executable file
-		space = new AddrSpace(executable);
+		space = new AddrSpace(f);
 		Thread *executionThread = new Thread("executionThread");
 		// Allocate the address space to this thread
 		executionThread->space = space;
@@ -671,7 +671,7 @@ void ExceptionHandler(ExceptionType which) {
 		
 	        // Write the space id to rv, which will then be written into Register 2
 		// rv = space;
-		*/
+		
 		break;
 	}
 
