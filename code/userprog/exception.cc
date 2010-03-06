@@ -475,9 +475,9 @@ SpaceId Exec_Syscall(void (*func)()) {
 }
 */
 
-void exec(Thread* t) {
-  t.space->InitRegisters();
-  t.space->RestoreState();
+void execThread() {
+  currentThread->space->InitRegisters();
+  currentThread->space->RestoreState();
   machine->Run();
 }
 
