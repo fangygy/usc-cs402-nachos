@@ -635,7 +635,7 @@ void ExceptionHandler(ExceptionType which) {
        
 		}
 		
-		buf[len]='\0';
+		buf[16]='\0';
 		
 		f = fileSystem->Open(buf);		
 		AddrSpace *space;
