@@ -240,7 +240,26 @@ void Close_Syscall(int fd) {
  */
 
 int CreateLock_Syscall(int name, int size) {
-  size = 16;
+  // Return position in kernel structure array
+  
+  //limit size of lock name
+  /*
+  if((size < 1) || (size > MAX_CHARS)) {
+    DEBUG('a',"TOO MANY CHARS");
+    return -1;
+  }
+  
+  //NOTE: need to make currentThread and space public for this to work
+  int addressSpaceSize = currentThread->space.addressSpaceSize;
+  */
+  //make sure we aren't creating any part of the lock outside the alloted space
+  /*
+  if(name < 0 || (name+size) >= addressSpaceSize) {
+    DEBUG('a',"OUT OF BOUNDS");
+    return -1;
+  }
+  */
+  int size = 16;
   int max_chars = 20;
 
   //limit size of lock name
@@ -287,7 +306,6 @@ int CreateLock_Syscall(int name, int size) {
   // this may prove to have some problems if
   // we are context switched out before nextLockIndex is
   // returned
-
 }
 
 void DestroyLock_Syscall(int index) {
