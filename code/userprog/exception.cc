@@ -240,7 +240,7 @@ void Close_Syscall(int fd) {
  */
 
 int CreateLock_Syscall(int name, int size) {
-  int size = 16;
+  size = 16;
   int max_chars = 20;
 
   //limit size of lock name
