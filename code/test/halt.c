@@ -1163,7 +1163,7 @@ int main () {
   onBreakCH = CreateCondition();
   
   /* waitingForAL condition variable */
-  Write("Creating Airport Liaison\n");
+  Write("Creating Airport Liaison\n", 32, ConsoleOutput);
   for(i = 0; i < numberOfAL; i++) {
     /*name = new char [20];
     sprintf(name, "WFAL_C%d",i);
@@ -1173,7 +1173,7 @@ int main () {
   }
 
   /* waitingForCIS condition variable */
-  Write("Creating waitingForCIS CV\n");
+  Write("Creating waitingForCIS CV\n", 32, ConsoleOutput);
   for(i = 0; i < numberOfCIS; i++) {
     /*name = new char [20];
     sprintf(name,"WFCIS_C%d",i);
@@ -1183,7 +1183,7 @@ int main () {
   }
 
   /* waitingForSO condition variable */
-  Write("Creating  waitinForSO CV\n");
+  Write("Creating  waitinForSO CV\n", 32, ConsoleOutput);
   for(i = 0; i < numberOfSO; i++) {
     /*name = new char [20];
     sprintf(name,"WFSO_C%d",i);
@@ -1193,7 +1193,7 @@ int main () {
   }
 
   /* waitingForSI condition variable */
-  Write("Creating waitingForSI CV\n");
+  Write("Creating waitingForSI CV\n", 32, ConsoleOutput);
   for(i = 0; i < numberOfSO; i++) {
     /*name = new char [20];
     sprintf(name,"WFSI_C%d",i);
@@ -1203,7 +1203,7 @@ int main () {
   }
 
   /* waitingForTicket_AL condition variable */
-  Write("Creating waitingForTicket_AL CV\n");
+  Write("Creating waitingForTicket_AL CV\n", 32, ConsoleOutput);
 
   for(i = 0; i < numberOfAL; i++) {
     /*name = new char [20];
@@ -1213,7 +1213,7 @@ int main () {
   }
   
   /* waitingForTicket_CIS_C condition variable */
-  Write("Creating waitingForTICKETCISC CV\n");
+  Write("Creating waitingForTICKETCISC CV\n", 32, ConsoleOutput);
 
   for(i = 0; i < numberOfCIS; i++) {
     /* name = new char[20];
@@ -1223,7 +1223,7 @@ int main () {
   }
 
   /* waitingForTicket_SO_C condition variable */
-  Write("Creating waitingForTicketSOC CV\n");
+  Write("Creating waitingForTicketSOC CV\n", 32, ConsoleOutput);
 
   for(i = 0; i < numberOfSO; i++) {
     /*name = new char[20];
@@ -1233,7 +1233,7 @@ int main () {
   }
 
   /* waitingForTicket_SI_C condition variable */
-  Write("Creating waitingForTicketSIC CV\n");
+  Write("Creating waitingForTicketSIC CV\n", 32, ConsoleOutput);
 
   for(i = 0; i < numberOfSO; i++) {
     /*name = new char[20];
@@ -1243,7 +1243,7 @@ int main () {
   }
 
   /* onBreakCIS_C condition variable */
-  Write("Creating onBreakCV\n");
+  Write("Creating onBreakCV\n", 32, ConsoleOutput);
 
   for(i = 0; i < numberOfCIS; i++) {
     /*name = new char[20];
@@ -1253,7 +1253,7 @@ int main () {
   }
    
   /* waitingForCallAM_C condition variable */
-  Write("Creating waitingForCALLAM CV\n");
+  Write("Creating waitingForCALLAM CV\n", 32, ConsoleOutput);
 
   for(i = 0; i < numberOfAirlines; i++) {
     /*name = new char[20];*/
@@ -1284,7 +1284,7 @@ int main () {
    Initialize Airport Liaison Locks
    printf("creating al locks\n"); */
 
-  DEBUG('m',"Creating Locks\n");
+  DEBUG('m',"Creating Locks\n", 32, ConsoleOutput);
 
   for(i = 0; i < numberOfAL; i++) {
     /*name = new char[20];
@@ -1511,7 +1511,7 @@ int main () {
   /* Create all the Airport Staff First */
 
   /* Create the Airport Liaison */
-  Write("Forking Airport Liaison\n");
+  Write("Forking Airport Liaison\n", 32, ConsoleOutput);
 
   for(i = 0; i < numberOfAL; i++) {
     /*
@@ -1523,7 +1523,7 @@ int main () {
   }
 
   /* Create the Airline Check In Staff */
-  Write("Forking Airport Liaison\n");
+  Write("Forking Airport Liaison\n", 32, ConsoleOutput);
 
   for(i=0; i < numberOfCIS; i++) {
     waitingForExec[i] = 0;
@@ -1536,7 +1536,7 @@ int main () {
   }
   
   /* Create the Security Officer Staff */
-  Write("Forking Airport Liaison\n");
+  Write("Forking Airport Liaison\n", 32, ConsoleOutput);
 
   for(i=0; i < numberOfSO; i++) {
     /*
@@ -1548,7 +1548,7 @@ int main () {
   }
   
   /* Create the Airline Check In Staff */
-  Write("Forking Airline Security Inspector\n");
+  Write("Forking Airline Security Inspector\n", 32, ConsoleOutput);
 
   for(i=0; i < numberOfSO; i++) {
     /*
@@ -1558,7 +1558,7 @@ int main () {
     */
     Fork(SecurityInspector);
   }
-  Write("Forking Cargo Handler\n");
+  Write("Forking Cargo Handler\n", 32, ConsoleOutput);
 
   for(i=0; i < numberOfCH; i++) {
     /*
@@ -1574,7 +1574,7 @@ int main () {
   t = new Thread(name);
   */
 
-  DEBUG('m',"Forking Airport Manager\n");
+  DEBUG('m',"Forking Airport Manager\n", 32, ConsoleOutput);
 
   Fork(AirportManager);
   
