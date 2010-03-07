@@ -1402,7 +1402,7 @@ int main () {
 
   /* int randNumBags,randNumWeight; */
   /* Create the 20 passenger for our airport simulation */
-  printf("Creating Passengers\n");
+  /*printf("Creating Passengers\n");*/
   for( i=0; i < numberOfPassengers; i++) {
     /* Create a ticket for the passenger */
     pass_ticket_buffer[i].passenger_number = i;
@@ -1523,13 +1523,14 @@ int main () {
   Fork(AirportManager);
   
   if(current_test == 0) {
+    /*
   printf("Number of airport liasons = %d\n",numberOfAL);
   printf("Number of airlines = %d\n",numberOfAirlines);
   printf("Number of check-in staff = %d\n",numberOfCIS);
   printf("Number of cargo handlers = %d\n",numberOfCH);
   printf("Number of screening officers = %d\n",numberOfSO);
   printf("Total number of passengers = %d\n",numberOfPassengers);
-
+    */
   for(i=0; i < numberOfAirlines; i++) {
     int j;
     int numPassengersOnAirline = 0;
@@ -1537,64 +1538,56 @@ int main () {
       if(pass_ticket_buffer[j].flight_number == i)
 	numPassengersOnAirline++;
     }
-    printf("Number of passengers for airline %d = %d\n",0,numPassengersOnAirline);
+    /*printf("Number of passengers for airline %d = %d\n",0,numPassengersOnAirline);*/
   }
 
   for(i=0; i < numberOfPassengers; i++) {
     int j;
+    /*
     printf("Passenger %d belongs to airline %d\n",i,pass_ticket_buffer[i].flight_number);
     printf("Passenger %d: Number of bags = %d\n",i,baggage_buffer[i].numberOfBags);
     printf("Passenger %d: Weight of bags = ",i);
+    */
     for(j = 0; j < baggage_buffer[i].numberOfBags; j++) {
       if( j!=0 && j!= (baggage_buffer[i].numberOfBags))
-	printf(",");
+	/*printf(",");
       printf("%d",baggage_buffer[i].weights[j]);
+	*/
     }
-    printf("\n");
+    /*printf("\n");*/
   }
 
   for(i=0; i < numberOfCIS; i++) {
-    printf("Airline check-in staff %d belongs to airline %d\n",i,i);
+    /*printf("Airline check-in staff %d belongs to airline %d\n",i,i);*/
   }
   }
 
 }
 
 void Test1() {
-  printf("Starting Test One\n");
   current_test = 1;
-  AirportSimulation();
 }
 
 void Test2() {
-  printf("Starting Test Two\n");
   current_test = 2;
-  AirportSimulation();
 }
 
 void Test3() {
-  printf("Starting Test Three\n");
   current_test = 3;
-  AirportSimulation();
 }
 
 void Test4() {
-  printf("Starting Test Four\n");
   current_test = 4;
-  AirportSimulation();
 }
 
 void Test5() {
-  printf("Starting Test Five\n");
   current_test = 5;
-  AirportSimulation();
 }
 
 void Test6() {
   int i;
   char* name;
   onBreak_CH = 0;
-  printf("Starting Test Six\n");
   current_test = 6;
   for(i=0; i <numberOfPassengers; i++) {
     conveyorBelt[i].number_of_bags = (i%2)+2;
@@ -1612,27 +1605,19 @@ void Test6() {
 }
 
 void Test7() {
-  printf("Starting Test Seven\n");
   current_test = 7;
-  AirportSimulation();
 }
 
 void Test8() {
-  printf("Starting Test Eight\n");
   current_test = 8;
-  AirportSimulation();
 }
 
 void Test9() {
-  printf("Starting Test Nine\n");
   /* current_test = 9; */
-  AirportSimulation();
 }
 
 void Test10() {
-  printf("Starting Test Ten\n");
   current_test = 10;
-  AirportSimulation();
 }
 /*
 void Main() {
