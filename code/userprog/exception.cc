@@ -447,7 +447,29 @@ void Yield_Syscall() {
 void Exit_Syscall(int status) {
   //TODO - finish this
   //interrupt->Halt();
-  currentThread->Finish();
+
+  //cout<<"id of current thread= "<<currentThread->getMyId()<<endl;
+
+  //currentThread->Finish();
+
+  int i, spaceId_f;
+  // get the space id for this new thread
+  for(i=0; i<64; i++) {
+    if(processTable[i].as == currentThread->space) {
+      spaceId_f = i;
+      break;
+    } else { 
+      // Trying to exit a thread without an existing address space
+      DEBUG('a', "Trying to exit a thread without an existing address space\n");
+      interrupt->Halt();
+    }
+  }
+
+  //cout<<"num child processes: "<<processTable[spaceId_f].numChildProcess<<endl;
+  if(processTable[spaceId_f].numChildProcess > 0) {
+    // do something
+  }
+
 }
 
 void execThread() {
