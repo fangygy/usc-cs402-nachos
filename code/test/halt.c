@@ -1163,7 +1163,7 @@ int main () {
   onBreakCH = CreateCondition();
   
   /* waitingForAL condition variable */
-  DEBUG('m',"Creating Airport Liaison\n");
+  Write("Creating Airport Liaison\n");
   for(i = 0; i < numberOfAL; i++) {
     /*name = new char [20];
     sprintf(name, "WFAL_C%d",i);
@@ -1173,7 +1173,7 @@ int main () {
   }
 
   /* waitingForCIS condition variable */
-  DEBUG('m',"Creating waitingForCIS CV\n");
+  Write("Creating waitingForCIS CV\n");
   for(i = 0; i < numberOfCIS; i++) {
     /*name = new char [20];
     sprintf(name,"WFCIS_C%d",i);
@@ -1183,7 +1183,7 @@ int main () {
   }
 
   /* waitingForSO condition variable */
-  DEBUG('m',"Creating  waitinForSO CV\n");
+  Write("Creating  waitinForSO CV\n");
   for(i = 0; i < numberOfSO; i++) {
     /*name = new char [20];
     sprintf(name,"WFSO_C%d",i);
@@ -1193,7 +1193,7 @@ int main () {
   }
 
   /* waitingForSI condition variable */
-  DEBUG('m',"Creating waitingForSI CV\n");
+  Write("Creating waitingForSI CV\n");
   for(i = 0; i < numberOfSO; i++) {
     /*name = new char [20];
     sprintf(name,"WFSI_C%d",i);
@@ -1203,7 +1203,7 @@ int main () {
   }
 
   /* waitingForTicket_AL condition variable */
-  DEBUG('m',"Creating waitingForTicket_AL CV\n");
+  Write("Creating waitingForTicket_AL CV\n");
 
   for(i = 0; i < numberOfAL; i++) {
     /*name = new char [20];
@@ -1213,7 +1213,7 @@ int main () {
   }
   
   /* waitingForTicket_CIS_C condition variable */
-  DEBUG('m',"Creating waitingForTICKETCISC CV\n");
+  Write("Creating waitingForTICKETCISC CV\n");
 
   for(i = 0; i < numberOfCIS; i++) {
     /* name = new char[20];
@@ -1223,7 +1223,7 @@ int main () {
   }
 
   /* waitingForTicket_SO_C condition variable */
-  DEBUG('m',"Creating waitingForTicketSOC CV\n");
+  Write("Creating waitingForTicketSOC CV\n");
 
   for(i = 0; i < numberOfSO; i++) {
     /*name = new char[20];
@@ -1233,7 +1233,7 @@ int main () {
   }
 
   /* waitingForTicket_SI_C condition variable */
-  DEBUG('m',"Creating waitingForTicketSIC CV\n");
+  Write("Creating waitingForTicketSIC CV\n");
 
   for(i = 0; i < numberOfSO; i++) {
     /*name = new char[20];
@@ -1243,7 +1243,7 @@ int main () {
   }
 
   /* onBreakCIS_C condition variable */
-  DEBUG('m',"Creating onBreakCV\n");
+  Write("Creating onBreakCV\n");
 
   for(i = 0; i < numberOfCIS; i++) {
     /*name = new char[20];
@@ -1253,7 +1253,7 @@ int main () {
   }
    
   /* waitingForCallAM_C condition variable */
-  DEBUG('m',"Creating waitingForCALLAM CV\n");
+  Write("Creating waitingForCALLAM CV\n");
 
   for(i = 0; i < numberOfAirlines; i++) {
     /*name = new char[20];*/
@@ -1511,7 +1511,7 @@ int main () {
   /* Create all the Airport Staff First */
 
   /* Create the Airport Liaison */
-  DEBUG('m',"Forking Airport Liaison\n");
+  Write("Forking Airport Liaison\n");
 
   for(i = 0; i < numberOfAL; i++) {
     /*
@@ -1523,7 +1523,7 @@ int main () {
   }
 
   /* Create the Airline Check In Staff */
-  DEBUG('m',"Forking Airport Liaison\n");
+  Write("Forking Airport Liaison\n");
 
   for(i=0; i < numberOfCIS; i++) {
     waitingForExec[i] = 0;
@@ -1536,7 +1536,7 @@ int main () {
   }
   
   /* Create the Security Officer Staff */
-  DEBUG('m',"Forking Airport Liaison\n");
+  Write("Forking Airport Liaison\n");
 
   for(i=0; i < numberOfSO; i++) {
     /*
@@ -1548,7 +1548,7 @@ int main () {
   }
   
   /* Create the Airline Check In Staff */
-    DEBUG('m',"Forking Airline Security Inspector\n");
+  Write("Forking Airline Security Inspector\n");
 
   for(i=0; i < numberOfSO; i++) {
     /*
@@ -1558,7 +1558,7 @@ int main () {
     */
     Fork(SecurityInspector);
   }
-  DEBUG('m',"Forking Cargo Handler\n");
+  Write("Forking Cargo Handler\n");
 
   for(i=0; i < numberOfCH; i++) {
     /*
