@@ -1549,10 +1549,11 @@ int main () {
     printf("Passenger %d: Weight of bags = ",i);
     */
     for(j = 0; j < baggage_buffer[i].numberOfBags; j++) {
-      if( j!=0 && j!= (baggage_buffer[i].numberOfBags))
+      if( j!=0 && j!= (baggage_buffer[i].numberOfBags)) {
 	/*printf(",");
       printf("%d",baggage_buffer[i].weights[j]);
 	*/
+      }
     }
     /*printf("\n");*/
   }
