@@ -1284,7 +1284,7 @@ int main () {
    Initialize Airport Liaison Locks
    printf("creating al locks\n"); */
 
-  Write('m',"Creating Locks\n", 32, ConsoleOutput);
+  Write("Creating Locks\n", 32, ConsoleOutput);
 
   for(i = 0; i < numberOfAL; i++) {
     /*name = new char[20];
@@ -1574,7 +1574,7 @@ int main () {
   t = new Thread(name);
   */
 
-  Write('m',"Forking Airport Manager\n", 32, ConsoleOutput);
+  Write("Forking Airport Manager\n", 32, ConsoleOutput);
 
   Fork(AirportManager);
   
