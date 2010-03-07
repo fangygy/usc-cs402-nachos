@@ -240,25 +240,26 @@ void Close_Syscall(int fd) {
  */
 
 int CreateLock_Syscall(int name, int size) {
-  // Return position in kernel structure array
-  
+  int size = 16;
+  int max_chars = 20;
+
   //limit size of lock name
-  /*
-  if((size < 1) || (size > MAX_CHARS)) {
+  if((size < 1) || (size > max_chars)) {
     DEBUG('a',"TOO MANY CHARS");
     return -1;
   }
   
-  //NOTE: need to make currentThread and space public for this to work
-  int addressSpaceSize = currentThread->space.addressSpaceSize;
-  */
+  int addressSpaceSize = currentThread->space->NumPages * PageSize;
+  //in the clear to create the lock
+  char *lockName = new char[size+1];
+  lockName[size] = '\0';
+
   //make sure we aren't creating any part of the lock outside the alloted space
-  /*
-  if(name < 0 || (name+size) >= addressSpaceSize) {
+  if(vaddr < 0 || (vaddr+size) >= addressSpaceSize) {
     DEBUG('a',"OUT OF BOUNDS");
     return -1;
   }
-  */
+
   KernelLockTableLock->Acquire();
 
   // Make sure the table is not full 
@@ -269,12 +270,8 @@ int CreateLock_Syscall(int name, int size) {
     return -1;
   }
 
-  //in the clear to create the lock
-  char *lockName = new char[size+1];
-  lockName[size] = '\0';
-  //copy into
-  // copyin(lockName, name, size);
- 
+  copyin(vaddr,size+1,lockName);
+
   //initialize important vars
   osLocks[nextLockIndex].lock = new Lock(lockName);
   osLocks[nextLockIndex].as = currentThread->space;
@@ -286,9 +283,11 @@ int CreateLock_Syscall(int name, int size) {
   //increment number of locks
   nextLockIndex++;
   KernelLockTableLock->Release();
-  return nextLockIndex; // this may prove to have some problems if
-                        // we are context switched out before nextLockIndex is
-                        // returned
+  return nextLockIndex-1;//-1 to get current lock index?
+  // this may prove to have some problems if
+  // we are context switched out before nextLockIndex is
+  // returned
+
 }
 
 void DestroyLock_Syscall(int index) {
