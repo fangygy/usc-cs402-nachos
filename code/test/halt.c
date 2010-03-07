@@ -1548,7 +1548,7 @@ int main () {
     sprintf(name, "Airline check-in-staff%d",i);
     t = new Thread(name);
     */
-    Fork(CheckInStaff);
+    /*Fork(CheckInStaff);*/
   }
   
   /* Create the Security Officer Staff */
@@ -1560,7 +1560,7 @@ int main () {
     sprintf(name, "SecurityOfficer%d",i);
     t = new Thread(name);
     */
-    Fork(SecurityOfficer);
+    /*Fork(SecurityOfficer);*/
   }
   
   /* Create the Airline Check In Staff */
@@ -1572,7 +1572,7 @@ int main () {
     sprintf(name, "SecurityInspector%d",i);
     t = new Thread(name);
     */
-    Fork(SecurityInspector);
+    /*Fork(SecurityInspector);*/
   }
   Write("Forking Cargo Handler\n", 32, ConsoleOutput);
 
@@ -1582,7 +1582,7 @@ int main () {
     sprintf(name, "CargoHandler%d",i);
     t = new Thread(name);
     */
-      Fork(CargoHandler);
+    /*Fork(CargoHandler);*/
   }
     /*
       name = new char[20];
@@ -1592,7 +1592,7 @@ int main () {
 
   Write("Forking Airport Manager\n", 32, ConsoleOutput);
 
-  Fork(AirportManager);
+  /*Fork(AirportManager);*/
   
   if(current_test == 0) {
     /*
