@@ -330,7 +330,7 @@ int siAirlineCount[numberOfAirlines];
 void SecurityInspector(int myNumber) {
   if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)||(current_test==6)) {
     /* currentThread->Finish(); */
-    Finish();
+    /*Finish();*/
   }
   while(1) {
     
@@ -1142,8 +1142,6 @@ int main () {
   int randNumBags, randNumWeight;
   /* Thread *t; Create a thread pointer variable */
   char *name;
-
-  srand(1234);
 
   /*
    * Needs Airlines
