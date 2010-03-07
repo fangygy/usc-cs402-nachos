@@ -1460,7 +1460,7 @@ int main () {
     sprintf(name,"Passenger%d",i);
     /* printf("Creating %s\n",name); */
     /*t = new Thread(name); // Give the Passenger a name */
-    Fork(Passenger,i);
+    Fork(Passenger);
   }
 
   /* Create all the Airport Staff First */
@@ -1472,7 +1472,7 @@ int main () {
     sprintf(name, "AL%d",i);
     t = new Thread(name);
     */
-    Fork(AirportLiaison,i);
+    Fork(AirportLiaison);
   }
 
   /* Create the Airline Check In Staff */
@@ -1483,7 +1483,7 @@ int main () {
     sprintf(name, "Airline check-in-staff%d",i);
     t = new Thread(name);
     */
-    Fork(CheckInStaff,i);
+    Fork(CheckInStaff);
   }
   
   /* Create the Security Officer Staff */
@@ -1493,7 +1493,7 @@ int main () {
     sprintf(name, "SecurityOfficer%d",i);
     t = new Thread(name);
     */
-    Fork(SecurityOfficer,i);
+    Fork(SecurityOfficer);
   }
   
   /* Create the Airline Check In Staff */
@@ -1504,7 +1504,7 @@ int main () {
     sprintf(name, "SecurityInspector%d",i);
     t = new Thread(name);
     */
-    Fork(SecurityInspector,i);
+    Fork(SecurityInspector);
   }
 
   for(i=0; i < numberOfCH; i++) {
@@ -1513,14 +1513,14 @@ int main () {
     sprintf(name, "CargoHandler%d",i);
     t = new Thread(name);
     */
-    Fork(CargoHandler,i);
+    Fork(CargoHandler);
   }
   /*
   name = new char[20];
   name = "AirportManager";
   t = new Thread(name);
   */
-  Fork(AirportManager,1);
+  Fork(AirportManager);
   
   if(current_test == 0) {
   printf("Number of airport liasons = %d\n",numberOfAL);
@@ -1607,7 +1607,7 @@ void Test6() {
     sprintf(name, "CargoHandler%d",i);
     t = new Thread(name);
     */    
-    Fork(CargoHandler,i);
+    Fork(CargoHandler);
   }
 }
 
