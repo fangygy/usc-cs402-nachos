@@ -1203,7 +1203,7 @@ int main () {
   }
 
   /* waitingForTicket_AL condition variable */
-  Write("Creating waitingForTicket_AL CV\n", 32, ConsoleOutput);
+  Write("Creating waitingForTicket_AL CV\n", 40, ConsoleOutput);
 
   for(i = 0; i < numberOfAL; i++) {
     /*name = new char [20];
@@ -1213,7 +1213,7 @@ int main () {
   }
   
   /* waitingForTicket_CIS_C condition variable */
-  Write("Creating waitingForTICKETCISC CV\n", 32, ConsoleOutput);
+  Write("Creating waitingForTICKETCISC CV\n", 40, ConsoleOutput);
 
   for(i = 0; i < numberOfCIS; i++) {
     /* name = new char[20];
@@ -1223,7 +1223,7 @@ int main () {
   }
 
   /* waitingForTicket_SO_C condition variable */
-  Write("Creating waitingForTicketSOC CV\n", 32, ConsoleOutput);
+  Write("Creating waitingForTicketSOC CV\n",40, ConsoleOutput);
 
   for(i = 0; i < numberOfSO; i++) {
     /*name = new char[20];
@@ -1233,7 +1233,7 @@ int main () {
   }
 
   /* waitingForTicket_SI_C condition variable */
-  Write("Creating waitingForTicketSIC CV\n", 32, ConsoleOutput);
+  Write("Creating waitingForTicketSIC CV\n", 40, ConsoleOutput);
 
   for(i = 0; i < numberOfSO; i++) {
     /*name = new char[20];
@@ -1253,7 +1253,7 @@ int main () {
   }
    
   /* waitingForCallAM_C condition variable */
-  Write("Creating waitingForCALLAM CV\n", 32, ConsoleOutput);
+  Write("Creating waitingForCALLAM CV\n", 40, ConsoleOutput);
 
   for(i = 0; i < numberOfAirlines; i++) {
     /*name = new char[20];*/
