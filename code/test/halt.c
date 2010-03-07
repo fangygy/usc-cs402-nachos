@@ -10,6 +10,7 @@
  *	be careful to allocate a big enough stack to hold the automatics!
  */
 
+#include "functions.h"
 #include "syscall.h"
 int a[3];
 int b, c;
