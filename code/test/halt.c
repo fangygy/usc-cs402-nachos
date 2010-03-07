@@ -1113,7 +1113,7 @@ int main () {
 
   int i, b;
   int randNumBags, randNumWeight;
-  Thread *t; /* Create a thread pointer variable */
+  /* Thread *t; Create a thread pointer variable */
   char *name;
 
   srand(1234);
@@ -1456,60 +1456,71 @@ int main () {
     /* Initialize so pass or fail */
     so_passOrFail[i] = 1;
 
-    name = new char [20]; 
+    /*name = new char [20]; 
     sprintf(name,"Passenger%d",i);
     /* printf("Creating %s\n",name); */
-    t = new Thread(name); // Give the Passenger a name
-    t->Fork((VoidFunctionPtr)Passenger,i);
+    /*t = new Thread(name); // Give the Passenger a name */
+    Fork((VoidFunctionPtr)Passenger,i);
   }
 
   /* Create all the Airport Staff First */
 
   /* Create the Airport Liaison */
   for(i = 0; i < numberOfAL; i++) {
+    /*
     name = new char[20];
     sprintf(name, "AL%d",i);
     t = new Thread(name);
-    t->Fork((VoidFunctionPtr)AirportLiaison,i);
+    */
+    Fork((VoidFunctionPtr)AirportLiaison,i);
   }
 
   /* Create the Airline Check In Staff */
   for(i=0; i < numberOfCIS; i++) {
     waitingForExec[i] = 0;
+    /*
     name = new char[20];
     sprintf(name, "Airline check-in-staff%d",i);
     t = new Thread(name);
-    t->Fork((VoidFunctionPtr)CheckInStaff,i);
+    */
+    Fork((VoidFunctionPtr)CheckInStaff,i);
   }
   
   /* Create the Security Officer Staff */
   for(i=0; i < numberOfSO; i++) {
+    /*
     name = new char[20];
     sprintf(name, "SecurityOfficer%d",i);
     t = new Thread(name);
-    t->Fork((VoidFunctionPtr)SecurityOfficer,i);
+    */
+    Fork((VoidFunctionPtr)SecurityOfficer,i);
   }
   
   /* Create the Airline Check In Staff */
   
   for(i=0; i < numberOfSO; i++) {
+    /*
     name = new char[20];
     sprintf(name, "SecurityInspector%d",i);
     t = new Thread(name);
-    t->Fork((VoidFunctionPtr)SecurityInspector,i);
+    */
+    Fork((VoidFunctionPtr)SecurityInspector,i);
   }
 
   for(i=0; i < numberOfCH; i++) {
+    /*
     name = new char[20];
     sprintf(name, "CargoHandler%d",i);
     t = new Thread(name);
-    t->Fork((VoidFunctionPtr)CargoHandler,i);
+    */
+    Fork((VoidFunctionPtr)CargoHandler,i);
   }
-  
+  /*
   name = new char[20];
   name = "AirportManager";
   t = new Thread(name);
-  t->Fork((VoidFunctionPtr)AirportManager,1);
+  */
+  Fork((VoidFunctionPtr)AirportManager,1);
   
   if(current_test == 0) {
   printf("Number of airport liasons = %d\n",numberOfAL);
