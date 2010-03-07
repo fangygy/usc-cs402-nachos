@@ -653,7 +653,6 @@ void ExceptionHandler(ExceptionType which) {
 		  rv = spaceId;
 		  // Fork the thread
 		  executionThread->Fork((VoidFunctionPtr)execThread,0);
-		  DEBUG('f',"Forking the thread\n");
 		}
 		break;
 	}
