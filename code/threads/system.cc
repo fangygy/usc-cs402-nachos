@@ -27,13 +27,13 @@ ProcessTable *processTable;
 
 
 int nextLockIndex = 0;
-int MAX_LOCKS = 100;
+int MAX_LOCKS = 1000;
 
 int nextCondIndex = 0;
-int MAX_CONDS = 100; 
+int MAX_CONDS = 1000; 
 
-KernelLock osLocks[100];
-KernelCond osConds[100];
+KernelLock osLocks[1000];
+KernelCond osConds[1000];
 
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
