@@ -101,6 +101,8 @@ class Thread {
     void setStatus(ThreadStatus st) { status = st; }
     char* getName() { return (name); }
     void Print() { printf("%s, ", name); }
+    void setStack(int* s) { stackTop = s; }
+
 
   private:
     // some of the private data for this class is listed above
@@ -114,6 +116,7 @@ class Thread {
     void StackAllocate(VoidFunctionPtr func, int arg);
     					// Allocate a stack for thread.
 					// Used internally by Fork()
+    
 
 #ifdef USER_PROGRAM
 // A thread running a user program actually has *two* sets of CPU registers -- 

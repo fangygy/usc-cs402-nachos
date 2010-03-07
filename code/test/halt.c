@@ -14,10 +14,21 @@
 int a[3];
 int b, c;
 
+void hello() {
+  Write("hello\n",16,ConsoleOutput);
+  Exit(0);
+}
+
 int
 main()
 {
+  /*
+    
+  */
   Write("Testing halt\n",16,ConsoleOutput);
-    Halt();
-    /* not reached */
+  Write("Testing fork\n",16,ConsoleOutput);
+  Fork(hello);
+  
+  /* not reached */
+  /* Halt() */
 }

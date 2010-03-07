@@ -461,24 +461,17 @@ void Yield_Syscall() {
 
 void Exit_Syscall(int status) {
   //TODO - finish this
-  interrupt->Halt();
-  //currentThread->Finish();
+  //interrupt->Halt();
+  currentThread->Finish();
 }
-
-void Fork_Syscall(void (*func)()) {
-  
-}
-/*
-SpaceId Exec_Syscall(void (*func)()) {
-// perhaps invoke StartProcess()
-  return (SpaceId);
-}
-*/
 
 void execThread() {
+  DEBUG('f',"running the thread 1\n");
   currentThread->space->InitRegisters();
+  DEBUG('f',"running the thread 2 \n");
   currentThread->space->RestoreState();
   machine->Run();
+  DEBUG('f',"running the thread\n");
 }
 
 void kernelFunc(int vaddr) {
@@ -499,10 +492,10 @@ void kernelFunc(int vaddr) {
   // call RestoreState function
   currentThread->space->RestoreState();
   // write to stack register, the starting position of the stack
-  machine->WriteRegister(StackReg,processTable[spaceId].stackLocation); // 5 is some bs number -- we have to get this value from process table
+  machine->WriteRegister(StackReg,processTable[spaceId].stackLocation);
 		
+  currentThread->setStack((int *)processTable[spaceId].stackLocation);
   // allocate address space to the thread
-
   machine->Run();
 }
 
@@ -617,7 +610,6 @@ void ExceptionHandler(ExceptionType which) {
 	    case SC_Exec:
 	        DEBUG('a',"Exec syscall. \n");
 		
-		
 		int virtualAddress_e, physicalAddress_e; 
 		char* filename;
 		// Get the virtual address for the name of the process
@@ -637,48 +629,47 @@ void ExceptionHandler(ExceptionType which) {
 		}
 		
 		buf[16]='\0';
-		
-		printf("%s\n",buf);
-		
-		f = fileSystem->Open(buf);
 
+		// Print out filename
+		printf("%s\n",buf);
+
+		f = fileSystem->Open(buf);
 		if(f == NULL) {
 		  printf("%s","unable to open file\n");
-		}
+		  
+		} else {
 
-		AddrSpace *space;
-		
-		DEBUG('a',"Got the file open\n");
-		
-		// create a new address space for this executable file
-		space = new AddrSpace(f);
-		Thread *executionThread = new Thread("executionThread");
-		// Allocate the address space to this thread
-		executionThread->space = space;
-		
-		DEBUG('a',"allocated the address space\n");
-		
-		// Update process table
-		int g, spaceId;
-		for(g = 0; g < 64; g++) {
-		  if(!processTable[g].inUse) {
-		    spaceId = g;
-		    // Set the appropriate address space
-		    processTable[spaceId].as = space;
-		    break;
+		  AddrSpace *space;
+		  DEBUG('a',"Got the file open\n");
+		  
+		  // create a new address space for this executable file
+		  space = new AddrSpace(f);
+		  Thread *executionThread = new Thread("executionThread");
+		  // Allocate the address space to this thread
+		  executionThread->space = space;
+		  
+		  DEBUG('a',"allocated the address space\n");
+		  
+		  // Update process table
+		  int g, spaceId;
+		  for(g = 0; g < 64; g++) {
+		    if(!processTable[g].inUse) {
+		      spaceId = g;
+		      // Set the appropriate address space
+		      processTable[spaceId].as = space;
+		      processTable[spaceId].stackLocation = (space->NumPages()*PageSize) - 16;
+		      break;
+		    }
 		  }
+		  
+		  DEBUG('a',"Updated the process table with new process\n");
+		  
+		  // Write the space id to register 2
+		  rv = spaceId;
+		  // Fork the thread
+		  executionThread->Fork((VoidFunctionPtr)execThread,0);
+		  DEBUG('f',"Forking the thread\n");
 		}
-
-		DEBUG('a',"Updated the process table with new process");
-
-		// Write the space id to register 2
-		rv = spaceId;
-		// Fork the thread
-		executionThread->Fork((VoidFunctionPtr)execThread,0);
-		
-	        // Write the space id to rv, which will then be written into Register 2
-		// rv = space;
-		
 		break;
 	}
 

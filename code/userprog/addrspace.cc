@@ -153,7 +153,6 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
 					numPages, size);
 
     // first, set up the translation 
-     bzero(machine->mainMemory,size);
 
     pageTable = new TranslationEntry[numPages];
     //bzero(machine->mainMemory, size);
@@ -194,7 +193,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
 	numInitPages--;
 	g++;
       } else {
-	DEBUG('c',"OTHER\n");
+	DEBUG('c',"STACK\n");
       }
       
       
@@ -322,17 +321,16 @@ void AddrSpace::NewPageTable() {
     int i, index;
     TranslationEntry *newPageTable;
     newPageTable = new TranslationEntry[numPages+8];
-    //bzero(machine->mainMemory, size);
-    for (i = 0; i < numPages; i++) {
 
+    for (i = 0; i < numPages; i++) {
       newPageTable[i].virtualPage = pageTable[i].virtualPage; 
       newPageTable[i].physicalPage = pageTable[i].physicalPage;
       newPageTable[i].valid       = pageTable[i].valid;
       newPageTable[i].use         = pageTable[i].use;
       newPageTable[i].dirty       = pageTable[i].dirty;
       newPageTable[i].readOnly    = pageTable[i].readOnly;  // if the code segment was entirely on 
-                                          // a separate page, we could set its
-                                          // pages to be read-only 
+                                                            // a separate page, we could set its
+                                                            // pages to be read-only 
       
     }
     // Allocate space for new stack in address
@@ -345,20 +343,20 @@ void AddrSpace::NewPageTable() {
 	break;
       }     
       newPageTable[i].physicalPage = index;
-
+      newPageTable[i].valid        = TRUE; 
+      newPageTable[i].use          = FALSE;
+      newPageTable[i].dirty        = FALSE;
+      newPageTable[i].readOnly     = FALSE;
     }
     // delete old page table
     delete[] pageTable;
     pageTable = newPageTable;
     machine->pageTable = pageTable;
+
+    // Increase the number of pages by the number of new pages allocated to stack
     numPages = numPages+8;
-
-    PageTableLock->Release();
-      
-      
-    
+    PageTableLock->Release();      
 }
-
 
 ProcessTable::ProcessTable() {
   
