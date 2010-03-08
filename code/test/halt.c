@@ -144,10 +144,12 @@ int consoleLock;
 
 void AirportManager(int myNumber) {
 	Write("Forking Airport Manager\n",24,ConsoleOutput);
+	Exit(0);
 }
 
 void CargoHandler(int myNumber) {
 	Write("Forking Cargo Handler\n",22,ConsoleOutput);
+	Exit(0);
 }
 /*Condition *waitingSI_C[numberOfSO];*/
 int waitingSI_C[numberOfSO];
@@ -180,6 +182,7 @@ int siAirlineCount[numberOfAirlines];
 
 void SecurityInspector() {
 	Write("Forking Security Inspector\n",27,ConsoleOutput);
+	Exit(0);
 }
 /* Condition *waitingSO_C[numberOfSO]; */
 int waitingSO_C[numberOfSO];
@@ -198,6 +201,7 @@ int numbersopassed = 0;
 
 void SecurityOfficer() {
 	Write("Forking Security Officer\n",25,ConsoleOutput);
+	Exit(0);
 }
 /* Objects for Check In Staff */
 /* Condition *waitingForCIS_C[numberOfCIS]; */
@@ -235,6 +239,7 @@ int cisBaggageWeight[numberOfAirlines]; /* keep track of the weight for each air
 
 void CheckInStaff() {
 	Write("Forking Check In Staff\n",23,ConsoleOutput);
+	Exit(0);
 }
 /* Objects for Airport Liaison */
 /* Condition *waitingForAL_C[numberOfAL]; */
@@ -252,11 +257,13 @@ int alPassenger[numberOfAL];
 
 void AirportLiaison() {
 	Write("Forking Airport Liaison\n",24,ConsoleOutput);
+	Exit(0);
 }
 
 
 void Passenger(int myNumber) {
 	Write("Forking Passenger\n",18,ConsoleOutput);
+	Exit(0);
 }
 
 
