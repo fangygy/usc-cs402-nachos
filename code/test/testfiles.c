@@ -25,6 +25,8 @@ int main() {
   /*
   Write("testing a lock\n", 16, ConsoleOutput);
   lockid = CreateLock();
+  Write("number of lock id\n", 32, ConsoleOutput);
+  Write("testing a condition \n", 16, ConsoleOutput);
   Acquire(lockid);
   
   condid = CreateCondition();
@@ -40,4 +42,5 @@ int main() {
   Exec("../test/halt");
   
   Write("tests finished\n", 15, ConsoleOutput);
+>>>>>>> .r453
 }
