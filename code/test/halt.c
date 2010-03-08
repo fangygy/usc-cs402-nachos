@@ -16,21 +16,27 @@ int a[3];
 int b, c;
 /*
 void hello() {
-  Write("hello\n",16,ConsoleOutput);
+  Write("hello\n",6,1);
   Exit(0);
 }
-
-int
-main()
+void world() {
+  Write("world\n",6,1);
+  Exit(0);
+}
+int main()
 { 
-  Write("Testing halt\n",16,ConsoleOutput);
-  Write("Testing fork\n",16,ConsoleOutput);
-  Fork(hello);
-  
-   not reached
-   Halt() 
+  int z;
+  Write("Testing halt\n",13,1);
+
+  Write("Testing fork\n",13,1);
+  for(z = 0; z < 1; z++) {
+    Fork(hello);
+    Fork(world);
+  }
+  Exit(0);
 }
 */
+
 
 #ifdef CHANGED
 #include "synch.h"
@@ -134,7 +140,10 @@ int passengerGoToSI[numberOfPassengers];
 int g;
 g = 0;
 
+int consoleLock;
+
 void AirportManager(int myNumber) {
+  Write("Forking to Airport Manager\n",27,ConsoleOutput);
   if(current_test > 0) {
     /*currentThread->Finish();*/
     Exit(0);
@@ -180,7 +189,6 @@ void AirportManager(int myNumber) {
 	printf("Passenger count reported by airline check-in staff = %d\n",cisPassengerCount);
 	printf("Passenger count reported by security inspector = %d\n",sicount);
 	*/
-	Write("Passenger Count\n", 32, ConsoleOutput);
 	/*for(int g = 0; g < numberOfPassengers; g++) {
 	  printf("[%d, %d]",g,conveyorBelt[g].number_of_bags);
 	}
@@ -221,7 +229,8 @@ void AirportManager(int myNumber) {
 }
 
 void CargoHandler(int myNumber) {
-  
+  Write("Forking to Cargo Handler\n",25,ConsoleOutput);
+
   while(1) {
     int passCounter = 0;
     /*conveyorBelt_Lock.Acquire();*/
@@ -243,7 +252,6 @@ void CargoHandler(int myNumber) {
     
     if(onBreak_CH==1) {
       /*printf("Cargo Handler %d is going on a break\n",myNumber);*/
-      Write("Cargo Hander is going on a break\n",64,ConsoleOutput);
       if(current_test == 6) {
 	/*conveyorBelt_Lock.Release();*/
 	Release(conveyorBelt_Lock);
@@ -312,6 +320,8 @@ int siPassenger[numberOfSO];
 int siAirlineCount[numberOfAirlines];
 
 void SecurityInspector(int myNumber) {
+  Write("Forking to Security Inspector\n",30,ConsoleOutput);
+
   if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)||(current_test==6)) {
     /* currentThread->Finish(); */
     /*Finish();*/
@@ -404,13 +414,11 @@ void SecurityInspector(int myNumber) {
 	/*&
 	printf("Security inspector %d asks passenger %d to go for further examination\n", myNumber, siPassenger[myNumber]);
 	*/
-	Write("Security inspector asks passenger to go for further examination\n",128,ConsoleOutput);
 	passengersFailedSI[ siPassenger[myNumber] ] = 1;
       } else  {
 	/*
 	printf("Security inspector %d allows passenger %d to board\n", myNumber,siPassenger[myNumber]);
 	*/
-	Write("Security inspector allows passenger to board\n", 128, ConsoleOutput);
 	sicount++;
 	/* printf("si has moved %d passengers\n",sicount);
 	   Keep track of how many passengers are cleared for each airline */
@@ -438,6 +446,7 @@ int soPassenger[numberOfSO];
 int numbersopassed = 0;
 
 void SecurityOfficer(int myNumber) {
+  Write("Forking Security Officer\n",25,ConsoleOutput);
   if((current_test == 1)||(current_test==2)||(current_test==3)||(current_test==4)||(current_test==6)) {
     /* currentThread->Finish(); */
     Exit(0);
@@ -492,12 +501,10 @@ void SecurityOfficer(int myNumber) {
       if((soPassenger[myNumber]==3)||(soPassenger[myNumber]==13)||(soPassenger[myNumber]==17)) {
 	so_passOrFail[soPassenger[myNumber]] = 0;
 	/*printf("Screening officer %d is suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);*/
-	Write("Screening officer is suspicious of the hand luggage of passenger\n", 128, ConsoleOutput);
 
       } else {
 	so_passOrFail[soPassenger[myNumber]] = 1;
 	/*printf("Screening officer %d is not suspicious of the hand luggage of passenger %d\n", myNumber,soPassenger[myNumber]);*/
-	Write("Screening officer is not suspicious of the hand luggage of passenger\n", 128, ConsoleOutput);
       }
 
       /* Screening Officer looks for an available line
@@ -512,7 +519,6 @@ void SecurityOfficer(int myNumber) {
       Wait(waitingForTicket_SO_C[myNumber], soLock[myNumber]);
       Signal(waitingForTicket_SO_C[myNumber], soLock[myNumber]);
       /*printf("Screening officer %d directs passenger %d to security inspector %d\n", myNumber, soPassenger[myNumber], passengerGoToSI[ soPassenger[myNumber] ]);*/
-      Write("Screening officer directs passenger to security inspector\n", 128, ConsoleOutput);
       numbersopassed++;
       /* printf("socount: %d\n",numbersopassed); */
     }
@@ -536,6 +542,7 @@ int alPassenger[numberOfAL];
 /* int alPassengerCount = 0; */
 
 void AirportLiaison(int myNumber) {
+  Write("Forking Airport Liaison\n",24, ConsoleOutput);
   while(1) {
     int flight_number = 0;
     /* Acquire the Line Lock
@@ -546,12 +553,11 @@ void AirportLiaison(int myNumber) {
     Acquire(alLineLock);
 
     /* If there are passengers in the line, then
-     the Airport Liaison must tell the Passenger to step up to the counter
+     the Airport Liaison must tell the Passengerto step up to the counter
      He does this by Signaling the Condition Variable which puts the first Passenger
      on to the Ready Queue */
     if(alLineLengths[myNumber]>0) {
-      /* printf("%s telling Passenger to step up to counter\n",currentThread->getName());
-	 The first passenger waiting for the LineLock gets put on to the Ready Queue */
+      /* The first passenger waiting for the LineLock gets put on to the Ready Queue */
       /* waitingForAL_C[myNumber]->Signal(&alLineLock); */
       Signal(waitingForAL_C[myNumber], alLineLock);
     } else {
@@ -585,7 +591,8 @@ void AirportLiaison(int myNumber) {
     /* Count the passenger's baggage */
     /*
     al_baggage_buffer[alPassenger[myNumber]] = passenger_baggage_buffer[alPassenger[myNumber]];
-    printf("%s takes note that Passenger %d has %d pieces of luggage\n",currentThread->getName(),alPassenger[myNumber],passenger_baggage_buffer[alPassenger[myNumber]]);
+    
+    Print("Airport Liaison %d takes note that Passenger %d has %d pieces of luggage\n",myNumber,alPassenger[myNumber],passenger_baggage_buffer[alPassenger[myNumber]]);
     */
   
     flight_number = pass_ticket_buffer[alPassenger[myNumber]].flight_number;   
@@ -598,9 +605,8 @@ void AirportLiaison(int myNumber) {
     pass_ticket_buffer[alPassenger[myNumber]].checkin_counter = pass_ticket_buffer[alPassenger[myNumber]].flight_number;  
     /* pass_ticket_buffer[alPassengerpmyNumber]].checkin_counter = */
     /*
-    printf("Airport Liason %d directed passenger %d of airline %d\n", myNumber, alPassenger[myNumber], pass_ticket_buffer[alPassenger[myNumber]].flight_number);
+    Print("Airport Liason %d directed passenger %d of airline %d\n", myNumber, alPassenger[myNumber], pass_ticket_buffer[alPassenger[myNumber]].flight_number);
     */
-    Write("Airport Liason directed passenger of airline\n", 128, ConsoleOutput);
 
     alPassengerCount++;
     /* alLock[myNumber]->Release(); */
@@ -645,6 +651,7 @@ int seatNumber[numberOfAirlines];
 int cisBaggageWeight[numberOfAirlines]; /* keep track of the weight for each airline */
 
 void CheckInStaff(int myNumber) {
+  Write("Forking Check In Staff\n",23,ConsoleOutput);
   if((current_test == 1)||(current_test==2)||(current_test == 3)) {
     /* currentThread->Finish(); */
     Exit(0);
@@ -716,8 +723,6 @@ void CheckInStaff(int myNumber) {
 	printf("Airline check-in staff %d of airline %d serves an executive class passenger and economy class line length = %d\n",myNumber,myAirline,cisLineLengths[myNumber]);
       printf("Airline check-in staff %d of airline %d informs executive passenger %d to board at gate %d\n",myNumber,myAirline,cisPassenger[myNumber], flight_number);
       */
-      	Write("Airline check-in staff of airline serves an executive class passenger and economy of class line length\n", 128, ConsoleOutput);
-	Write("Airline check-in staff of airline informs executive passenger to board at gate\n", 128, ConsoleOutput);
 
       /* Add these bags to the total count fort a given airline, specified by Flight Number */
       cis_baggage_buffer[flight_number] += baggage_buffer[cisPassenger[myNumber]].weight;
@@ -729,7 +734,6 @@ void CheckInStaff(int myNumber) {
       /*
       printf("Airline check-in staff %d of airline %d dropped bags to the conveyor system\n", myNumber,myAirline);
       */
-      Write("Airline check-in staff of airline dropped bags to the conveyor system\n", 128, ConsoleOutput);
 
       /* CIS not waiting for executive passenger anymore */
       waitingForExec[myNumber]=0;
@@ -764,10 +768,8 @@ void CheckInStaff(int myNumber) {
       flight_number = pass_ticket_buffer[cisPassenger[myNumber]].flight_number;   
 
       /*
-      printf("Airline check-in staff %d of airline %d serves an economy class passenger and executive class line length = %d\n",myNumber,myAirline,execLineLengths[myNumber]);
+      Print("Airline check-in staff %d of airline %d serves an economy class passenger and executive class line length = %d\n",myNumber,myAirline,execLineLengths[myNumber]);
       */
-      	Write("Airline check-in staff of airline serves an executive class passenger and economy of class line length\n", 128, ConsoleOutput);
-	Write("Airline check-in staff of airline informs executive passenger to board at gate\n", 128, ConsoleOutput);
       /* Give the Passenger a seat number */
       boarding_pass_buffer[cisPassenger[myNumber]].seat_number = seatNumber[flight_number]++;
       /*
@@ -785,7 +787,6 @@ void CheckInStaff(int myNumber) {
       printf("Airline check-in staff %d of airline %d dropped bags to the conveyor system\n",myNumber,myAirline);
       */
       /* printf("%s giving Passenger %d ticket number and directing them to gate\n", currentThread->getName(), cis_current_passenger_serving[myNumber]); */
-      Write("Airline check-in staff of airline dropped bags to the conveyor system\n",128,ConsoleOutput);
       cisFlightCount[myAirline]++;
       cisPassengerCount++;
     }
@@ -796,7 +797,6 @@ void CheckInStaff(int myNumber) {
 }
 
 void Passenger(int myNumber) {
-
     int myLineNumber;
 
     int myFlightNumber;
@@ -805,6 +805,7 @@ void Passenger(int myNumber) {
     int checkin_counter_number;
     int start, stop;
 
+    Write("Forking Passenger\n",18,ConsoleOutput);
   /* --------------------------------------------------------
   1. Passenger goes to see Airport Liaison
   
@@ -824,18 +825,15 @@ void Passenger(int myNumber) {
 
   /* Set the Passenger's Line number */
   /* printf("%s: Searching for the shortest line\n", currentThread->getName()); */
+  
   myLineNumber = findShortestLine(alLineLengths,7);
-  /*
-  printf("Passenger %d chose Liaison %d with a line of length %d\n",myNumber,myLineNumber,alLineLengths[myLineNumber]);  
-  */
-  Write("Passenger chose Liaison with a line of length\n", 128, ConsoleOutput);
+  /*Print("Passenger %d chose Liaison %d with a line of length %d\n",myNumber,myLineNumber,alLineLengths[myLineNumber]);*/
+
   /* If there are people in the line, or the Airport Liaison is busy
      then the Passenger must wait in line and NOT approach the Airport Liaison */
   if((alLineLengths[myLineNumber] > 0)||(al_busy[myLineNumber]==1)) {
     alLineLengths[myLineNumber]++;
-    /* printf("%s chose Liaison %d  with a line of length %d\n",currentThread->getName(),myLineNumber,alLineLengths[myLineNumber]); */
     /* waitingForAL_C[myLineNumber]->Wait(&alLineLock); */
-    Write("Passenger chose Liaison with a line of length\n", 128, ConsoleOutput);
    
     Wait(waitingForAL_C[myLineNumber], alLineLock);
     al_busy[myLineNumber] == 1;
@@ -860,10 +858,8 @@ void Passenger(int myNumber) {
     waitingForTicket_AL_C[myLineNumber]->Wait(alLock[myLineNumber]);*/
   Signal(waitingForTicket_AL_C[myLineNumber], alLock[myLineNumber]);
   Wait(waitingForTicket_AL_C[myLineNumber], alLock[myLineNumber]);
-  /*
-  printf("Passenger %d of Airline %d is directed to the check-in counter\n",myNumber,pass_ticket_buffer[myNumber].flight_number);
-  */
-  Write("Passenger of Airline is directed to the check-in counter\n", 128, ConsoleOutput);
+  
+  
 
   /* alLock[myLineNumber]->Release(); */
   Release(alLock[myLineNumber]);
@@ -895,10 +891,6 @@ void Passenger(int myNumber) {
     int tempCount = 0;
     /* execLineLock[checkin_counter_number]->Acquire(); */
     Acquire(execLineLock[checkin_counter_number]);
-    /*
-    printf("Passenger %d of Airline %d chose is waiting in the executive class line\n",myNumber,pass_ticket_buffer[myNumber].flight_number);
-    */
-    Write("Passenger of Airline is waiting in the executive class line\n", 128, ConsoleOutput);
 
     execLineLengths[checkin_counter_number]++;
     /* execLineCV[checkin_counter_number]->Wait(execLineLock[checkin_counter_number]); */
@@ -917,8 +909,9 @@ void Passenger(int myNumber) {
     
     /* Tell CIS that passenger is ready */
     /* execLineCV[checkin_counter_number]->Signal(execLineLock[checkin_counter_number]);
-    printf("Passenger %d of Airline %d is waiting in the executive class line\n", currentThread->getName(), pass_ticket_buffer[myNumber].flight_number);
-     Waiting for CIS to give them boarding pass
+     */
+     
+    /*Waiting for CIS to give them boarding pass
      execLineCV[checkin_counter_number]->Wait(execLineLock[checkin_counter_number]); */
     execLineLengths[checkin_counter_number]--;
   
@@ -948,10 +941,8 @@ void Passenger(int myNumber) {
     Signal(onBreakCIS_C[myLineNumber], cisLineLock[checkin_counter_number]);
 
     cis_current_passenger_serving[myLineNumber] = myNumber;
-    /*
-    printf("Passenger %d of Airline %d chose Airline Check-In staff %d with a line length %d\n", myNumber, pass_ticket_buffer[myNumber].flight_number, myLineNumber, cisLineLengths[myLineNumber]);
-    */
-    Write("Passenger of Airline chose Airline Check-In staff with a line length\n", 128, ConsoleOutput);
+    
+    
 
     /* waitingForCIS_C[myLineNumber]->Wait(cisLineLock[checkin_counter_number]);*/
     Wait(waitingForCIS_C[myLineNumber], cisLineLock[checkin_counter_number]);
@@ -983,8 +974,6 @@ void Passenger(int myNumber) {
     /* cisLock[myLineNumber]->Release(); */
     Release(cisLock[myLineNumber]);
 
-    /*printf("Passenger %d of Airline %d was informed to board at gate %d\n",myNumber,pass_ticket_buffer[myNumber].flight_number,pass_ticket_buffer[myNumber].flight_number);*/
-    Write("Passenger of Airline was informed to board at gate\n", 128, ConsoleOutput);
 
   }
   if((current_test == 4)||(current_test == 6)) {
@@ -1011,7 +1000,6 @@ void Passenger(int myNumber) {
     printf("Passenger %d gives the hand-luggage to screening officer %d\n", myNumber, myLineNumber);*/
   /* waitingForSO_C[myLineNumber]->Signal(&soLineLock); */
   /* waitingForSO_C[myLineNumber]->Wait(&soLineLock); */
-    Write("Passenger gives the hand-luggage to screening officer\n", 128, ConsoleOutput);
 
   Wait(waitingForSO_C[myLineNumber], soLineLock);
   
@@ -1035,9 +1023,9 @@ void Passenger(int myNumber) {
   /* soLock[myLineNumber]->Release(); */
   Release(soLock[myLineNumber]);
 
-  if(current_test == 7)
-    /* currentThread->Finish(); */
+  if(current_test == 7) {
     Exit(0);
+  }
   /* --------------------------------------------------------
    4. Passenger goes to see Airport Security Inspector
   
@@ -1053,8 +1041,7 @@ void Passenger(int myNumber) {
   Signal(waitingSI_C[myLineNumber], siLineLock);
   /* soPassenger[myLineNumber] = myNumber; */
   siLineLengths[myLineNumber]++;
-  /*
-    printf("Passenger %d gives the hand-luggage to screening officer %d\n", myNumber, myLineNumber);*/
+  
   /* waitingForSO_C[myLineNumber]->Signal(&soLineLock); */
   /* waitingForSI_C[myLineNumber]->Wait(&siLineLock); */
   Wait(waitingForSI_C[myLineNumber], siLineLock);
@@ -1093,8 +1080,6 @@ void Passenger(int myNumber) {
     Wait(returnLineCV[myLineNumber], siReturnLock[myLineNumber]);
     /*going to further questioning*/
 
-    /*printf("Passenger %d goes for further questioning\n",myNumber);*/
-    Write("Passenger goes for further questioning\n", 128, ConsoleOutput);
 
     /*
     for(int i = 0; i < 10; i++) {
@@ -1119,7 +1104,7 @@ void Passenger(int myNumber) {
     Signal(waitingForReturn_SI_C[myLineNumber], siRLock[myLineNumber]);
     Wait(waitingForReturn_SI_C[myLineNumber], siRLock[myLineNumber]);
     /*siRLock[myLineNumber]->Release();*/
-    Release(siRLock);
+    Release(siRLock[myLineNumber]);
     
   }
 
@@ -1145,9 +1130,8 @@ void Passenger(int myNumber) {
   Wait(waitingForCallAM_C[myFlightNumber], airlineLock[myFlightNumber]);
   /*airlineLock[myFlightNumber]->Release();*/
   Release(airlineLock[myFlightNumber]);
-  /*printf("Passenger %d of Airline %d boarded airline %d\n", myNumber,myFlightNumber,myFlightNumber);
-   */
-    Write("Passenger of Airline boarded airline\n", 128, ConsoleOutput);
+  Write("Passenger boarded airline\n",27, ConsoleOutput);
+   
 
   /* FIN */
   
@@ -1159,6 +1143,7 @@ int main () {
   int randNumBags, randNumWeight;
   /* Thread *t; Create a thread pointer variable */
   char *name;
+  consoleLock = CreateLock(1);
 
   /*
    * Needs Airlines
@@ -1179,7 +1164,6 @@ int main () {
   onBreakCH = CreateCondition();
   
   /* waitingForAL condition variable */
-  Write("Creating Airport Liaison\n", 32, ConsoleOutput);
   for(i = 0; i < numberOfAL; i++) {
     /*name = new char [20];
     sprintf(name, "WFAL_C%d",i);
@@ -1189,7 +1173,6 @@ int main () {
   }
 
   /* waitingForCIS condition variable */
-  Write("Creating waitingForCIS CV\n", 32, ConsoleOutput);
   for(i = 0; i < numberOfCIS; i++) {
     /*name = new char [20];
     sprintf(name,"WFCIS_C%d",i);
@@ -1199,7 +1182,6 @@ int main () {
   }
 
   /* waitingForSO condition variable */
-  Write("Creating  waitinForSO CV\n", 32, ConsoleOutput);
   for(i = 0; i < numberOfSO; i++) {
     /*name = new char [20];
     sprintf(name,"WFSO_C%d",i);
@@ -1209,7 +1191,6 @@ int main () {
   }
 
   /* waitingForSI condition variable */
-  Write("Creating waitingForSI CV\n", 32, ConsoleOutput);
   for(i = 0; i < numberOfSO; i++) {
     /*name = new char [20];
     sprintf(name,"WFSI_C%d",i);
@@ -1219,7 +1200,6 @@ int main () {
   }
 
   /* waitingForTicket_AL condition variable */
-  Write("Creating waitingForTicket_AL CV\n", 40, ConsoleOutput);
 
   for(i = 0; i < numberOfAL; i++) {
     /*name = new char [20];
@@ -1229,7 +1209,6 @@ int main () {
   }
   
   /* waitingForTicket_CIS_C condition variable */
-  Write("Creating waitingForTICKETCISC CV\n", 40, ConsoleOutput);
 
   for(i = 0; i < numberOfCIS; i++) {
     /* name = new char[20];
@@ -1239,7 +1218,6 @@ int main () {
   }
 
   /* waitingForTicket_SO_C condition variable */
-  Write("Creating waitingForTicketSOC CV\n",40, ConsoleOutput);
 
   for(i = 0; i < numberOfSO; i++) {
     /*name = new char[20];
@@ -1249,7 +1227,6 @@ int main () {
   }
 
   /* waitingForTicket_SI_C condition variable */
-  Write("Creating waitingForTicketSIC CV\n", 40, ConsoleOutput);
 
   for(i = 0; i < numberOfSO; i++) {
     /*name = new char[20];
@@ -1259,7 +1236,6 @@ int main () {
   }
 
   /* onBreakCIS_C condition variable */
-  Write("Creating onBreakCV\n", 32, ConsoleOutput);
 
   for(i = 0; i < numberOfCIS; i++) {
     /*name = new char[20];
@@ -1269,7 +1245,6 @@ int main () {
   }
    
   /* waitingForCallAM_C condition variable */
-  Write("Creating waitingForCALLAM CV\n", 40, ConsoleOutput);
 
   for(i = 0; i < numberOfAirlines; i++) {
     /*name = new char[20];*/
@@ -1300,7 +1275,6 @@ int main () {
    Initialize Airport Liaison Locks
    printf("creating al locks\n"); */
 
-  Write("Creating Locks\n", 32, ConsoleOutput);
 
   for(i = 0; i < numberOfAL; i++) {
     /*name = new char[20];
@@ -1527,7 +1501,6 @@ int main () {
   /* Create all the Airport Staff First */
 
   /* Create the Airport Liaison */
-  Write("Forking Airport Liaison\n", 32, ConsoleOutput);
   
   for(i = 0; i < numberOfAL; i++) {
     /*
@@ -1539,7 +1512,6 @@ int main () {
   }
 
   /* Create the Airline Check In Staff */
-  Write("Forking Airport Liaison\n", 32, ConsoleOutput);
 
   for(i=0; i < numberOfCIS; i++) {
     waitingForExec[i] = 0;
@@ -1548,11 +1520,10 @@ int main () {
     sprintf(name, "Airline check-in-staff%d",i);
     t = new Thread(name);
     */
-    /*Fork(CheckInStaff);*/
+    Fork(CheckInStaff);
   }
   
   /* Create the Security Officer Staff */
-  Write("Forking Airport Liaison\n", 32, ConsoleOutput);
 
   for(i=0; i < numberOfSO; i++) {
     /*
@@ -1560,11 +1531,10 @@ int main () {
     sprintf(name, "SecurityOfficer%d",i);
     t = new Thread(name);
     */
-    /*Fork(SecurityOfficer);*/
+    Fork(SecurityOfficer);
   }
   
   /* Create the Airline Check In Staff */
-  Write("Forking Airline Security Inspector\n", 32, ConsoleOutput);
 
   for(i=0; i < numberOfSO; i++) {
     /*
@@ -1572,9 +1542,8 @@ int main () {
     sprintf(name, "SecurityInspector%d",i);
     t = new Thread(name);
     */
-    /*Fork(SecurityInspector);*/
+    Fork(SecurityInspector);
   }
-  Write("Forking Cargo Handler\n", 32, ConsoleOutput);
 
   for(i=0; i < numberOfCH; i++) {
     /*
@@ -1582,17 +1551,15 @@ int main () {
     sprintf(name, "CargoHandler%d",i);
     t = new Thread(name);
     */
-    /*Fork(CargoHandler);*/
+    Fork(CargoHandler);
   }
-    /*
-      name = new char[20];
-  name = "AirportManager";
-  t = new Thread(name);
+  /*
+    name = new char[20];
+    name = "AirportManager";
+    t = new Thread(name);
   */
 
-  Write("Forking Airport Manager\n", 32, ConsoleOutput);
-
-  /*Fork(AirportManager);*/
+  Fork(AirportManager);
   
   if(current_test == 0) {
     /*

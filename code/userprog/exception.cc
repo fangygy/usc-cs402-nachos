@@ -268,7 +268,7 @@ int CreateLock_Syscall(int name, int size) {
   //increment number of locks
   nextLockIndex++;
   KernelLockTableLock->Release();
-  return nextLockIndex; // this may prove to have some problems if
+  return nextLockIndex-1; // this may prove to have some problems if
                         // we are context switched out before nextLockIndex is
                         // returned
 
@@ -374,7 +374,7 @@ int CreateCondition_Syscall() {
   osConds[nextCondIndex].toBeDestroyed = FALSE;
   nextCondIndex++;
   KernelCondTableLock->Release();
-  return nextCondIndex; 
+  return nextCondIndex-1; 
 }
 
 void DestroyCondition_Syscall(int index) {
@@ -450,10 +450,11 @@ void Exit_Syscall(int status) {
 
   //cout<<"id of current thread= "<<currentThread->getMyId()<<endl;
 
-  //currentThread->Finish();
-
+  currentThread->Finish();
+  
   int i, spaceId_f;
   // get the space id for this new thread
+  /*
   for(i=0; i<64; i++) {
     if(processTable[i].as == currentThread->space) {
       spaceId_f = i;
@@ -464,11 +465,15 @@ void Exit_Syscall(int status) {
       interrupt->Halt();
     }
   }
-
+  */
   //cout<<"num child processes: "<<processTable[spaceId_f].numChildProcess<<endl;
   if(processTable[spaceId_f].numChildProcess > 0) {
     // do something
   }
+
+}
+
+void Print_Syscall() {
 
 }
 
@@ -502,7 +507,6 @@ void kernelFunc(int vaddr) {
   machine->WriteRegister(StackReg,processTable[spaceId].stackLocation);
 		
   currentThread->setStack((int *)processTable[spaceId].stackLocation);
-  // allocate address space to the thread
   machine->Run();
 }
 
@@ -601,6 +605,8 @@ void ExceptionHandler(ExceptionType which) {
 		    DEBUG('a', "Trying to fork a thread without an existing address space\n");
 		  }
 		}
+		
+		
 		Thread *kernelThread = new Thread("kernelThread");
 		// this is the same as the currentThread->space b/c this thread
 		// is a child of the currentThread
@@ -608,7 +614,7 @@ void ExceptionHandler(ExceptionType which) {
 		// Create a new page table with 8 pages more of stack
 		kernelThread->space->NewPageTable();
 
-		// Update page table
+		// Update process table
 		processTable[spaceId_f].stackLocation = (kernelThread->space->NumPages()*PageSize)-16;
 		processTable[spaceId_f].numChildProcess++;
 		kernelThread->Fork(kernelFunc,virtualAddress);
@@ -638,7 +644,7 @@ void ExceptionHandler(ExceptionType which) {
 		buf[16]='\0';
 
 		// Print out filename
-		printf("%s\n",buf);
+		// printf("%s\n",buf);
 
 		f = fileSystem->Open(buf);
 		if(f == NULL) {
@@ -668,6 +674,7 @@ void ExceptionHandler(ExceptionType which) {
 		      break;
 		    }
 		  }
+		  printf("stack id: %d \n",spaceId);
 		  
 		  DEBUG('a',"Updated the process table with new process\n");
 		  
@@ -677,6 +684,26 @@ void ExceptionHandler(ExceptionType which) {
 		  executionThread->Fork((VoidFunctionPtr)execThread,0);
 		}
 		break;
+	case SC_Print:
+	  int virtualAddress_p;
+	  int p1, p2, p3;
+	  char *buf_p = new char[168+1];
+	  
+	  virtualAddress_p = machine->ReadRegister(4);
+	  p1 = machine->ReadRegister(5);
+	  p2 = machine->ReadRegister(6);
+	  p3 = machine->ReadRegister(7);
+	  if(!buf) {
+	    DEBUG('a',"Can't allocate kernel buffer in Print\n");
+	  }
+	  
+	  if(copyin(virtualAddress_p, 128, buf_p)==-1) {
+	    DEBUG('a',"Bad pointer passed to Print\n");
+	    delete[] buf;
+	  }
+	  buf_p[128] = '\0';
+	  printf(buf_p,p1,p2,p3);
+	  break;
 	}
 
 	// Put in the return value and increment the PC

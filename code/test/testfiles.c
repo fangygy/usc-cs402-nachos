@@ -8,7 +8,7 @@ int main() {
   OpenFileId fd;
   int bytesread;
   char buf[20];
-  int lockid, condid;
+  int lockid, condid, i;
   /*
     Create("testfile", 8);
     fd = Open("testfile", 8);
@@ -35,11 +35,9 @@ int main() {
    The ones above test Acquire and Wait
    */
 
-  Write("testing exec\n",16,ConsoleOutput);
-  
-  
-  Exec("../test/halt");
+  Write("testing exec\n",13,ConsoleOutput);
 
+  Exec("../test/halt");
   
-  Write("tests finished \n", 32, ConsoleOutput);
+  Write("tests finished\n", 15, ConsoleOutput);
 }

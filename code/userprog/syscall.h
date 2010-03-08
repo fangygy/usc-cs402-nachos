@@ -38,6 +38,7 @@
 #define SC_Wait         17
 #define SC_Signal       18
 #define SC_Broadcast    19
+#define SC_Print        20
 
 #define MAXFILENAME 256
 
@@ -165,6 +166,7 @@ void Signal(int index, int lock_index);
 
 void Broadcast(int index, int lock_index);
 
+void Print(char* buf, int p1, int p2, int p3);
 
 #endif /* IN_ASM */
 

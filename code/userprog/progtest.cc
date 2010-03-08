@@ -37,6 +37,18 @@ StartProcess(char *filename)
 
     currentThread->space = space;
 
+    // Update process table
+    int g, spaceId;
+    for(g = 0; g < 64; g++) {
+      if(!processTable[g].inUse) {
+	spaceId = g;
+	// Set the appropriate address space
+	processTable[spaceId].as = space;
+	processTable[spaceId].stackLocation = (space->NumPages()*PageSize) - 16;
+	break;
+      }
+    }
+
     delete executable;			// close file
 
     space->InitRegisters();		// set the initial register values
