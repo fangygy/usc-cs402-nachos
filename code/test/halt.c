@@ -149,18 +149,106 @@ void AirportManager(int myNumber) {
 void CargoHandler(int myNumber) {
 	Write("Forking Cargo Handler\n",22,ConsoleOutput);
 }
+/*Condition *waitingSI_C[numberOfSO];*/
+int waitingSI_C[numberOfSO];
+/*Condition *waitingForSI_C[numberOfSO];*/
+int waitingForSI_C[numberOfSO];
+/*Condition *waitingForTicket_SI_C[numberOfSO];*/
+int waitingForTicket_SI_C[numberOfSO];
+/*Condition *returnLineCV[numberOfSO];*/
+int returnLineCV[numberOfSO];
+/*Condition *waitingForReturn_SI_C[numberOfSO];*/
+int waitingForReturn_SI_C[numberOfSO];
+
+/* Lock siLineLock("si_LL"); */
+int siLineLock;
+/* Lock *siLock[numberOfSO]; */
+int siLock[numberOfSO];
+/* Lock siAirplaneCountLock("si_ALL"); */
+/* int siAirplaneCountLock; - not used? */
+/* Lock *siReturnLock[numberOfSO]; */
+int siReturnLock[numberOfSO];
+/* Lock *siRLock[numberOfSO]; */
+int siRLock[numberOfSO];
+
+int siLineReturns[numberOfSO];
+int siLineLengths[numberOfSO];
+int si_busy[numberOfSO]; /* changed from bool */
+int so_passOrFail[numberOfPassengers]; /* changed from bool */
+int siPassenger[numberOfSO];
+int siAirlineCount[numberOfAirlines];
 
 void SecurityInspector() {
 	Write("Forking Security Inspector\n",27,ConsoleOutput);
 }
+/* Condition *waitingSO_C[numberOfSO]; */
+int waitingSO_C[numberOfSO];
+/* Condition *waitingForSO_C[numberOfSO]; */
+int waitingForSO_C[numberOfSO];
+/* Condition *waitingForTicket_SO_C[numberOfSO]; */
+int waitingForTicket_SO_C[numberOfSO];
+/* Lock soLineLock("sl_LL"); */
+int soLineLock;
+/* Lock *soLock[numberOfSO]; */
+int soLock[numberOfSO];
+int soLineLengths[numberOfSO];
+int so_busy[numberOfSO]; /* changed from bool */
+int soPassenger[numberOfSO];
+int numbersopassed = 0;
 
 void SecurityOfficer() {
 	Write("Forking Security Officer\n",25,ConsoleOutput);
 }
+/* Objects for Check In Staff */
+/* Condition *waitingForCIS_C[numberOfCIS]; */
+int waitingForCIS_C[numberOfCIS];
+/*Condition *waitingForTicket_CIS_C[numberOfCIS]; */
+int waitingForTicket_CIS_C[numberOfCIS];
+/* Condition *onBreakCIS_C[numberOfCIS]; */
+int onBreakCIS_C[numberOfCIS];
+/* Condition *execLineCV[numberOfAirlines]; */
+int execLineCV[numberOfAirlines];
+/* Condition *waitingForExec_CIS_C[numberOfCIS]; */
+int waitingForExec_CIS_C[numberOfCIS];
+
+/* Lock *cisLineLock[numberOfAirlines]; */
+int cisLineLock[numberOfAirlines];
+/* Lock *cisLock[numberOfCIS]; */
+int cisLock[numberOfCIS];
+/* Lock *execLineLock[numberOfAirlines]; */
+int execLineLock[numberOfAirlines];
+/* Lock *execCISLock[numberOfCIS]; */
+int execCISLock[numberOfCIS];
+
+int cisLineLengths[numberOfCIS];
+int cis_busy[numberOfCIS]; /* changed from bool */
+int execLineLengths[numberOfAirlines];
+int waitingForExec[numberOfCIS]; /* changed from bool */
+
+/* Use this to keep track of passenger */
+int cisPassenger[numberOfCIS];
+
+int seatNumber[numberOfAirlines];
+
+/*int cisPassengerCount = 0;*/
+int cisBaggageWeight[numberOfAirlines]; /* keep track of the weight for each airline */
 
 void CheckInStaff() {
 	Write("Forking Check In Staff\n",23,ConsoleOutput);
 }
+/* Objects for Airport Liaison */
+/* Condition *waitingForAL_C[numberOfAL]; */
+int waitingForAL_C[numberOfAL];
+/* Condition *waitingForTicket_AL_C[numberOfAL]; */
+int waitingForTicket_AL_C[numberOfAL];
+/* Lock alLineLock("al_LL"); */
+int alLineLock;
+/* Lock *alLock[numberOfAL]; */
+int alLock[numberOfAL];
+int alLineLengths[numberOfAL];
+int al_busy[numberOfAL]; /* changed from bool */
+int alPassenger[numberOfAL];
+/* int alPassengerCount = 0; */
 
 void AirportLiaison() {
 	Write("Forking Airport Liaison\n",24,ConsoleOutput);
