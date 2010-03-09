@@ -158,7 +158,6 @@ int consoleLock;
 void AirportManager() {
   int myNumber;
 
-  Write("Forking to Airport Manager\n",27,ConsoleOutput);
   myNumber = 1;
   if(current_test > 0) {
     /*currentThread->Finish();*/
@@ -215,24 +214,19 @@ void AirportManager() {
         for(secAirlineCounter = 0; secAirlineCounter < numberOfAirlines; secAirlineCounter++) {
           
           /*printf("----------------Statistics--------------\n");*/
-          /*printf("From setup: Baggage count of airline %d = %d\n",secAirlineCounter,numBagsDuringSetup[secAirlineCounter]);
-          printf("From airport liason: Baggage count of airline %d = %d\n",secAirlineCounter, al_baggage_buffer[secAirlineCounter]);
-          printf("From cargo handlers: Baggage count of airline %d = %d\n",secAirlineCounter, cargoHandlerBaggageCount[secAirlineCounter]);
-          printf("From setup: Baggage weight of airline %d = %d\n",secAirlineCounter,bagWeightsDuringSetup[secAirlineCounter]);
-          printf("From airline check-in staff: Baggage weight of airline %d = %d\n",secAirlineCounter, cis_baggage_buffer[secAirlineCounter]);
-          printf("From cargo handlers: Baggage weight of airline %d = %d\n",secAirlineCounter,chBagWeights[secAirlineCounter]);
-          */
+          Print("From setup: Baggage count of airline %d = %d\n",secAirlineCounter,numBagsDuringSetup[secAirlineCounter],0);
+          Print("From airport liason: Baggage count of airline %d = %d\n",secAirlineCounter, al_baggage_buffer[secAirlineCounter],0);
+          Print("From cargo handlers: Baggage count of airline %d = %d\n",secAirlineCounter, cargoHandlerBaggageCount[secAirlineCounter],0);
+          Print("From setup: Baggage weight of airline %d = %d\n",secAirlineCounter,bagWeightsDuringSetup[secAirlineCounter],0);
+          Print("From airline check-in staff: Baggage weight of airline %d = %d\n",secAirlineCounter, cis_baggage_buffer[secAirlineCounter],0);
+          Print("From cargo handlers: Baggage weight of airline %d = %d\n",secAirlineCounter,chBagWeights[secAirlineCounter],0);
+          
         }
         /*goToSleep.Wait(airlineLock[airlineCounter]);*/
         Wait(goToSleep, airlineLock[airlineCounter]);
       }
       /*printf("flight %d count %d , cisflightcount %d\n",i,flightCount[i],cisFlightCount[i]); */
 
-      Print("Airline %d \n",airlineCounter,0,0);
-      Print("cargoHandler baggage count: %d\n",cargoHandlerBaggageCount[airlineCounter],0,0);
-      Print("al baggage count: %d\n",al_baggage_buffer[airlineCounter],0,0);
-      Print("flight count: %d cis flight count: %d \n", flightCount[airlineCounter],cisFlightCount[airlineCounter],0);
-      Print("\n\n\n\n",0,0,0);
       if(!alreadyCalled[airlineCounter]==1&&(flightCount[airlineCounter] == cisFlightCount[airlineCounter])&&(flightCount[airlineCounter]!=0)&&(cisFlightCount[airlineCounter]!=0)&&(cargoHandlerBaggageCount[airlineCounter]==al_baggage_buffer[airlineCounter])) {
         Print("Airport Manager gives a boarding call to airline %d\n",airlineCounter,0,0);
         /* waitingForCallAM_C[airlineCounter]->Broadcast(airlineLock[airlineCounter]); */
@@ -255,7 +249,6 @@ void AirportManager() {
 }
 void CargoHandler() {
   int myNumber;
-  Write("Forking to Cargo Handler\n",25,ConsoleOutput);
   Acquire(cargoHandlerNumLock);
   myNumber = cargoHandlerNum;
   cargoHandlerNum++;
@@ -352,7 +345,6 @@ int siAirlineCount[numberOfAirlines];
 
 void SecurityInspector() {
   int myNumber;
-  Write("Forking to Security Inspector\n",30,ConsoleOutput);
   Acquire(securityInsNumLock);
   myNumber = securityInsNum;
   securityInsNum++;
@@ -486,7 +478,6 @@ int numbersopassed = 0;
 
 void SecurityOfficer() {
   int myNumber;
-  Write("Forking Security Officer\n",25,ConsoleOutput);
   Acquire(securityOffNumLock);
   myNumber = securityOffNum;
   securityOffNum++;
@@ -591,7 +582,6 @@ int alPassenger[numberOfAL];
 
 void AirportLiaison() {
   int myNumber;
-  Write("Forking Airport Liaison\n",24, ConsoleOutput);
   
   Acquire(airportLNumLock);
   myNumber = airportLNum;
@@ -708,7 +698,6 @@ int cisBaggageWeight[numberOfAirlines]; /* keep track of the weight for each air
 void CheckInStaff() {
   
   int myNumber;
-  Write("Forking Check In Staff\n",23,ConsoleOutput);
   
   Acquire(cisNumLock);
   myNumber = cisNum;
@@ -849,8 +838,6 @@ void CheckInStaff() {
 
       
       Print("Airline check-in staff %d of airline %d dropped bags to the conveyor system\n",myNumber,myAirline,0);
-      Print("CIS %d serving Passenger %d of Airline %d",myNumber, cisPassenger[myNumber], flight_number);
-      Print(" Flight count: %d\n",cisFlightCount[myAirline],0,0);
       cisFlightCount[myAirline]++;
       cisPassengerCount++;
     }
@@ -870,15 +857,12 @@ void Passenger() {
     int start, stop;
     int myNumber;
     
-    Print("Forking Passenger\n",0,0,0);
     
     Acquire(passengerNumLock);
     myNumber = passengerNum;
     passengerNum++;
     Release(passengerNumLock);
 
-    Print("Passenger Number: %d \n",myNumber,0,0);
-    
     /* --------------------------------------------------------
        1. Passenger goes to see Airport Liaison
        
@@ -887,7 +871,6 @@ void Passenger() {
 
     /* Passenger acquires the lock so they can search for shortest line amongst all lines */
   /* alLineLock.Acquire(); */
-    Print("Passenger %d trying to acquire lock %d\n",myNumber,alLineLock,0);
     Acquire(alLineLock);
     
     /* Declare the variable for the Passenger's line number
@@ -898,7 +881,6 @@ void Passenger() {
     printf("Passenger %d is an executive passenger\n",myNumber);*/
   
   /* Set the Passenger's Line number */
-  Print("Passenger %d: Searching for the shortest line\n", myNumber,0,0);
   
   myLineNumber = findShortestLine(alLineLengths,7);
   Print("Passenger %d chose Liaison %d with a line of length %d\n",myNumber,myLineNumber,alLineLengths[myLineNumber]);
@@ -1064,18 +1046,12 @@ void Passenger() {
 
    
    -------------------------------------------------------- */
-  
-  if(myNumber ==9) {
-    Print("\n\n Passenger 9 acquiring so line lock \n\n",0,0,0);
-  }
+
   
   /* soLineLock.Acquire(); */
   Acquire(soLineLock);
   
-  if(myNumber ==9) {
-    Print("\n\n Passenger 9 has acquire so line lock \n\n",0,0,0);
-  }
-  
+
   myLineNumber = findShortestLine(soLineLengths,7);
 
   soLineLengths[myLineNumber]++;
@@ -1122,10 +1098,6 @@ void Passenger() {
   /* siLineLock.Acquire(); */
   Acquire(siLineLock);
 
-  if(myNumber ==9) {
-    Print("\n\nPassenger 9 acquiring si line lock \n\n",0,0,0);
-  }  
-  
   myLineNumber = 0; /*passengerGoToSI[myNumber];*/
 
 
@@ -1168,10 +1140,6 @@ void Passenger() {
 
   /* siLock[myLineNumber]->Release(); */
   Release(siLock[myLineNumber]);
-  
-  if(myNumber ==9) {
-    Print("\n\nPassenger 9 releasing si lock \n\n",0,0,0);
-  }  
 
   if(passengersFailedSI[myNumber]==1) {
     
@@ -1229,7 +1197,6 @@ void Passenger() {
   /*airlineLock[myFlightNumber]->Acquire();*/
   Acquire(airlineLock[myFlightNumber]);
   flightCount[myFlightNumber]++;
-  Print("\n\nPassenger %d incremented flight counter %d to %d\n\n",myNumber,myFlightNumber,flightCount[myFlightNumber]);
   /*waitingForCallAM_C[myFlightNumber]->Wait(airlineLock[myFlightNumber]);*/
   Wait(waitingForCallAM_C[myFlightNumber], airlineLock[myFlightNumber]);
   /*airlineLock[myFlightNumber]->Release();*/

@@ -31,7 +31,7 @@ CPP = $(GCCDIR)cpp
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
-all: halt matmult sort testfiles testLocks testConds
+all: halt matmult sort testfiles testLocks testConds exittest exectest forktest
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.s > strt.s
@@ -74,11 +74,22 @@ testConds: testConds.o start.o
 	$(LD) $(LDFLAGS) start.o testConds.o -o testConds.coff
 	../bin/coff2noff testConds.coff testConds
 
-airport.o: airport.c
-	$(CC) $(CFLAGS) -c airport.c
-airport: airport.o start.o
-	$(LD) $(LDFLAGS) start.o airport.o -o airport.coff
-	../bin/coff2noff airport.coff airport
+exittest.o: exittest.c
+	$(CC) $(CFLAGS) -c exittest.c
+exittest: exittest.o start.o
+	$(LD) $(LDFLAGS) start.o exittest.o -o exittest.coff
+	../bin/coff2noff exittest.coff exittest
 
+exectest.o: exectest.c
+	$(CC) $(CFLAGS) -c exectest.c
+exectest: exectest.o start.o
+	$(LD) $(LDFLAGS) start.o exectest.o -o exectest.coff
+	../bin/coff2noff exectest.coff exectest
+
+forktest.o: forktest.c
+	$(CC) $(CFLAGS) -c forktest.c
+forktest: forktest.o start.o
+	$(LD) $(LDFLAGS) start.o forktest.o -o forktest.coff
+	../bin/coff2noff forktest.coff forktest
 clean:
 	rm -f *.o *.coff
