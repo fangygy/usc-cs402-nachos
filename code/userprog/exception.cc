@@ -393,7 +393,7 @@ void Release_Syscall(int index) {
 
 }
 
-int CreateCondition_Syscall(int vaddr) {
+int CreateCondition_Syscall() {
   //copied from CreateLock, IS OK???
   // Return position in kernel structure array
   int size = 16;
@@ -411,10 +411,10 @@ int CreateCondition_Syscall(int vaddr) {
   condName[size] = '\0';
 
   //NO creating any part of the condition outside the alloted space
-  if(vaddr < 0 || (vaddr+size) >= addressSpaceSize) {
+  /*if(vaddr < 0 || (vaddr+size) >= addressSpaceSize) {
     DEBUG('q',"OUT OF BOUNDS\n");
     return -1;
-  }
+    }*/
 
   KernelCondTableLock->Acquire();
 
@@ -426,10 +426,10 @@ int CreateCondition_Syscall(int vaddr) {
     return -1;
   }
 
-  copyin(vaddr,size+1,condName);
+  /*copyin(vaddr,size+1,condName);*/
 
   //initialize important vars
-  osConds[nextCondIndex].condition = new Condition(condName);
+  osConds[nextCondIndex].condition = new Condition("");
   osConds[nextCondIndex].as = currentThread->space;
   //initialize condition to not in use
   osConds[nextCondIndex].usageCounter = 0;
@@ -667,6 +667,8 @@ void Exit_Syscall(int status) {
 
   currentThread->Finish();
   
+  /*DEBUG('x',"Exit syscall with status=%d\n",status);*/
+
   int i, spaceId_f;
   // get the space id for this new thread
   /*
@@ -773,7 +775,7 @@ void ExceptionHandler(ExceptionType which) {
 		break;
 	    case SC_CreateCondition:
 	        DEBUG('a', "CreateCondition syscall.\n");
-	        rv = CreateCondition_Syscall(machine->ReadRegister(4));
+	        rv = CreateCondition_Syscall();
 		break;
 	    case SC_DestroyCondition:
 	        DEBUG('a', "DestroyCondition syscall.\n");
@@ -796,7 +798,7 @@ void ExceptionHandler(ExceptionType which) {
 		Yield_Syscall();
 		break;
 	    case SC_Exit:
-	        DEBUG('a', "Exit syscall.\n");
+	        DEBUG('x', "Exit syscall with status = %d\n",machine->ReadRegister(4));
 		Exit_Syscall(machine->ReadRegister(4));
 		break;
 	    case SC_Fork:
