@@ -40,6 +40,7 @@ class AddrSpace {
     void NewPageTable();
     unsigned int NumPages();
     int id;
+    void DeAllocate(int stackLocation);
 
  private:
     TranslationEntry *pageTable;	// Assume linear page table translation

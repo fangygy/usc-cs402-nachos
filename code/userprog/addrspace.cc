@@ -341,6 +341,21 @@ void AddrSpace::NewPageTable() {
     PageTableLock->Release();      
 }
 
+void AddrSpace::DeAllocate(int stackLocation){
+  PageTableLock->Acquire();
+  /*
+    Need to fix this
+  for(int i=0; i < numPages; i++) {
+    pageTable[stackLocation+i].physicalPage = NULL;
+    pageTable[stackLocation+i].valid        = TRUE; 
+    pageTable[stackLocation+i].use          = FALSE;
+    pageTable[stackLocation+i].dirty        = FALSE;
+    pageTable[stackLocation+i].readOnly     = FALSE;
+  }
+  */
+  PageTableLock->Release();
+}
+
 ProcessTable::ProcessTable() {
   
 }

@@ -350,7 +350,7 @@ void Acquire_Syscall(int index) {
   }
   //ensure that lock isn't destroyed while in use
   curLock.usageCounter++; 
-
+  DEBUG('q',"ACQUIRING LOCK\n");
   //has to go above acquire to avoid deadlock
   KernelLockTableLock->Release();
     // FINALLY...Acquire the lock
@@ -383,7 +383,7 @@ void Release_Syscall(int index) {
     return;
   }
   //ensure that lock isn't destroyed while in use
-
+  DEBUG('q',"RELEASING LOCK\n");
 
   //has to go above acquire to avoid deadlock
   KernelLockTableLock->Release();
@@ -465,7 +465,7 @@ void DestroyCondition_Syscall(int index) {
     osConds[index].toBeDestroyed = TRUE;
     //effectively destroy lock
     osConds[index].condition = NULL;
-    DEBUG('q',"DESTROYING CONDITION");
+    DEBUG('q',"DESTROYING CONDITION\n");
     KernelCondTableLock->Release();
     return;
   }
@@ -524,7 +524,7 @@ void Wait_Syscall(int index, int lock_id) {
   }
   //ensure that lock isn't destroyed while in use
   curLock.usageCounter++;
-  DEBUG('q',"CONDITION WAITING");
+  DEBUG('q',"CONDITION WAITING\n");
   //has to go above acquire to avoid deadlock
   KernelLockTableLock->Release();
   // FINALLY...use wait on the lock
@@ -583,7 +583,7 @@ void Signal_Syscall(int index, int lock_id) {
   }
   //ensure that lock isn't destroyed while in use
   curLock.usageCounter--;
-  DEBUG('q',"CONDITION SIGNAL");
+  DEBUG('q',"CONDITION SIGNAL\n");
   //has to go above acquire to avoid deadlock
   KernelLockTableLock->Release();
   // FINALLY...use signal on the lock
@@ -648,7 +648,7 @@ void Broadcast_Syscall(int index, int lock_id) {
   }else{
     curLock.usageCounter = 0;
   }
-  DEBUG('q',"CONDITION BROADCAST");
+  DEBUG('q',"CONDITION BROADCAST\n");
   //has to go above acquire to avoid deadlock
   KernelLockTableLock->Release();
   // FINALLY...use broadcast on the lock
@@ -799,7 +799,11 @@ void ExceptionHandler(ExceptionType which) {
 		break;
 	    case SC_Exit:
 	        DEBUG('x', "Exit syscall with status = %d\n",machine->ReadRegister(4));
-		Exit_Syscall(machine->ReadRegister(4));
+		int spaceid_ex;
+		spaceid_ex = currentThread->space->id;
+		currentThread->space->DeAllocate(currentThread->stackLoc);
+		processTable[spaceid_ex].as;
+		currentThread->Finish();
 		break;
 	    case SC_Fork:
 	        DEBUG('a', "Fork syscall.\n");
@@ -809,7 +813,11 @@ void ExceptionHandler(ExceptionType which) {
 		int i, spaceId_f;
 		// get the space id for this new thread
 		spaceId_f = currentThread->space->id;
-		
+		char *buff = new char[16+1];	// Kernel buffer to put the name in
+		if( copyin(virtualAddress,16,buff) == -1 ) {
+		  DEBUG('a',"Bad pointer passed to Open\n");
+		  delete[] buff;
+		}
 		DEBUG('g',"fork: space id : %d\n", spaceId_f);
 		Thread *kernelThread = new Thread("kernelThread");
 		// this is the same as the currentThread->space b/c this thread
