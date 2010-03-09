@@ -27,7 +27,7 @@ int main() {
   //acquire valid lock(SUCCESS)*/
   Acquire(lock1);
   /*/destroy lock(FAIL)*/
-  DestroyLock(lock1);
+  DestroyLock(lock1-1);
   /*/release lock(SUCCESS)*/
   Release(lock1);
   /*/destroy lock(SUCCESS)*/
@@ -41,9 +41,9 @@ int main() {
   /*/Test: aquire/release bogus lock(FAILx2)*/
   Acquire(bogus);
   Release(bogus);
-  /*/Test: aquire/release destroyed lock(FAILx2)*/
+  /*/Test: aquire/release destroyed lock(FAILx2)(((already done...)))
   Acquire("\0");
-  Release("\0");
+  Release("\0");*/
   /*/Test: out of bounds...
   //Test: belongs to another process...*/
 }
