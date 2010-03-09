@@ -1,0 +1,41 @@
+#!/bin/bash
+
+choice=0
+
+echo "1. Entire Airport Simulation"
+echo "2. Airport Liason"
+echo "3. Check-in Staff"
+echo "4. Screening Officer"
+echo "5. Security Inspector"
+echo -n "Choose a test [1, 2, 3, 4, or 5]: "
+
+while [ $choice -eq 0 ]; do
+
+  read choice
+  if [ $choice -eq 1 ]; then
+    #echo "chose test 1"
+    ../userprog/nachos -x ../test/testfiles
+  else
+    if [ $choice -eq 2 ]; then
+      ../userprog/nachos -x ../test/testfiles | grep -i "airport liason"
+    else
+      if [ $choice -eq 3 ]; then
+        ../userprog/nachos -x ../test/testfiles | grep -i "airline check-in staff"
+      else
+        if [ $choice -eq 4 ]; then
+          #4
+	  ../userprog/nachos -x ../test/testfiles | grep -i "screening officer"
+        else
+          if [ $choice -eq 5 ]; then
+            #5
+            ../userprog/nachos -x ../test/testfiles | grep -i "security inspector"
+          else
+            echo "Invalid Choice. Try again."
+          fi
+        fi
+        
+      fi
+    fi
+  fi
+
+done
