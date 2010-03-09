@@ -156,7 +156,7 @@ void Release(int index);
  *
  */
 
-int CreateCondition(int vaddr);
+int CreateCondition();
 
 void DestroyCondition(int index);
 
