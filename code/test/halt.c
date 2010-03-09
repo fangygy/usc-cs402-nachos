@@ -434,10 +434,7 @@ void SecurityInspector() {
       /*waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);*/
       Signal(waitingForTicket_SI_C[myNumber], siLock[myNumber]);
 
-      /*begin temp*/
-      if(siPassenger[myNumber]==9)
-	Print("PASSENGER 9!!! (in SI)",0,0,0);
-      /*end temp*/
+
 
       /*
       if(randomNum < probabilityPassingSI) {
@@ -1131,37 +1128,22 @@ void Passenger() {
   
   myLineNumber = 0; /*passengerGoToSI[myNumber];*/
 
-  /*begin temp*/
-      if(myNumber==9)
-	Print("Passenger 9 - myLineNumber=%d\n",myLineNumber,0,0);
-  /*end temp*/
+
 
   /*waitingSI_C[myLineNumber]->Signal(&siLineLock);*/
   Signal(waitingSI_C[myLineNumber], siLineLock);
 
-  /*begin temp*/
-      if(myNumber==9)
-	Print("Passenger 9 - after Signal waitingSI_C\n",0,0,0);
-  /*end temp*/
 
   /* soPassenger[myLineNumber] = myNumber; */
   siLineLengths[myLineNumber]++;
 
-  /*begin temp*/
-  if(myNumber==9) {
-	Print("Passenger 9 - myLineNumber=%d, siLineLengths[myLineNumber]=%d\n",myLineNumber,siLineLengths[myLineNumber],0);
 
-  }
-  /*end temp*/
   
   /* waitingForSO_C[myLineNumber]->Signal(&soLineLock); */
   /* waitingForSI_C[myLineNumber]->Wait(&siLineLock); */
   Wait(waitingForSI_C[myLineNumber], siLineLock);
 
-  /*begin temp*/
-      if(myNumber==9)
-	Print("Passenger 9 - after Wait waitingForSI_C\n",0,0,0);
-  /*end temp*/
+
   
   siLineLengths[myLineNumber]--;
   /* siLineLock.Release(); */
