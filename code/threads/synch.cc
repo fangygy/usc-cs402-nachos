@@ -159,12 +159,13 @@ void Lock::Acquire() {
   if(FREE) {
     // printf("%s is acquiring the lock\n", currentThread->getName());
 
-    DEBUG('e',"LOCK IS BEING ACQUIRED");
+    DEBUG('e',"LOCK %s IS BEING ACQUIRED\n", name);
     BUSY   = true; // The lock state becomes busy
     thread = currentThread; // The owner of the lock is the currentThread
     FREE   = false; // The lock state is not free (busy)  
 
   } else { // If the lock is not free, then we must attach the currentThread to the wait queue 
+    DEBUG('e',"Lock is not available\n");
     wait_queue->Append(currentThread);
     currentThread->Sleep();
   }
@@ -197,7 +198,7 @@ void Lock::Release() {
   if(!isHeldByCurrentThread()) { // If the currentThread does not own this lock
                                  // then it cannot release it. In that case, we will 
                                  // "ignore" this request and return. 
-    DEBUG('e',"This thread does not own the lock");
+    DEBUG('e',"This thread does not own the lock\n");
     interrupt->SetLevel(old);
     return;
   }
@@ -240,13 +241,14 @@ void Condition::Wait(Lock* conditionLock) {
 
   // Disable interrupts
   IntStatus old = interrupt->SetLevel(IntOff);
+  DEBUG('e',"Wait func called\n");
 
   lock = conditionLock; // Associate the lock with the conditionLock, so we can keep track 
                         // of which Condition Variable goes with which Lock (essentially)
   
   if(conditionLock == NULL) {   // If a NULL lock is passed through
                                 // then we simply ignore it and return
-    DEBUG('e',"Condition Lock is NULL");
+    DEBUG('e',"Condition Lock is NULL\n");
     interrupt->SetLevel(old);
     return;
   }
@@ -256,6 +258,7 @@ void Condition::Wait(Lock* conditionLock) {
   // gets a fair amount of time, and that no one thread can hog a lock. 
 
   conditionLock->Release();
+  DEBUG('e',"Releasing lock\n");
   wait_queue->Append(currentThread); // add the currentThread to the wait queue, so that we can 
                                      // Signal() it later 
   currentThread->Sleep();            // Sleep the Thread

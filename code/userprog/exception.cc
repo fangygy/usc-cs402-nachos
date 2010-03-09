@@ -314,11 +314,12 @@ void Acquire_Syscall(int index) {
   }
   //ensure that lock isn't destroyed while in use
   curLock.usageCounter++; 
-  
+
   //has to go above acquire to avoid deadlock
   KernelLockTableLock->Release();
-  // FINALLY...Acquire the lock
+    // FINALLY...Acquire the lock
   curLock.lock->Acquire();
+
 }
 
 void Release_Syscall(int index) {
@@ -347,11 +348,12 @@ void Release_Syscall(int index) {
   }
   //ensure that lock isn't destroyed while in use
   curLock.usageCounter++; 
-  
+
   //has to go above acquire to avoid deadlock
   KernelLockTableLock->Release();
-  // FINALLY...Release the lock
+    // FINALLY...Release the lock
   curLock.lock->Release();
+
 }
 
 int CreateCondition_Syscall() {
@@ -400,8 +402,9 @@ void Wait_Syscall(int index, int lock_id) {
   
   KernelLock curLock = osLocks[lock_id];
 
-  curCond.condition->Wait(curLock.lock); // may get an error here due to pointer usage
   KernelCondTableLock->Release();
+  curCond.condition->Wait(curLock.lock); // may get an error here due to pointer usage
+
 }
 
 void Signal_Syscall(int index, int lock_id) {
@@ -419,8 +422,8 @@ void Signal_Syscall(int index, int lock_id) {
   
   KernelLock curLock = osLocks[lock_id];
 
-  curCond.condition->Signal(curLock.lock); // may get an error here due to pointer usage
   KernelCondTableLock->Release();
+  curCond.condition->Signal(curLock.lock); // may get an error here due to pointer usage
 
 
 }
@@ -503,7 +506,7 @@ void kernelFunc(int vaddr) {
   // write to stack register, the starting position of the stack
   DEBUG('g', "kernel func: space id: %d \n",spaceId);
   DEBUG('h',"current Thread space size %d",currentThread->space->NumPages());
-  machine->WriteRegister(StackReg,processTable[spaceId].stackLocation);
+  machine->WriteRegister(StackReg,currentThread->stackLoc);
   //printf("stack location: %d\n", processTable[spaceId].stackLocation);
 
   machine->Run();
@@ -606,6 +609,8 @@ void ExceptionHandler(ExceptionType which) {
 
 		// Create a new page table with 8 pages more of stack
 		kernelThread->space->NewPageTable();
+		kernelThread->stackLoc = (kernelThread->space->NumPages()*PageSize)-16;
+
 		if(processTable[spaceId_f].as == currentThread->space) {
 		  //printf("process table address space pointer is equal to current thread\n");
 		}
