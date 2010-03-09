@@ -265,6 +265,7 @@ V. Testing:  (For each test case, you must show)
 
 				nachos -d x -x ../test/exittest - tests Exit
 				nachos -d x -x ../test/exectest - tests Exec
+				nachos -d x -x ../test/forktest - tests Fork
 
 			-in the code/test/ directory, type the following to execute the airport tests
 
@@ -305,6 +306,9 @@ V. Testing:  (For each test case, you must show)
 				Exec's ExitTest (see above) and sets result to its Exit status code.
 				Exits with status = result.
 				There should be two exit calls, one with status=1 and one with status=10 (from ExitTest).
+
+			ForkTest:
+				Prints out "hello", then "world" 20 times.
 
 
 			Airport Tests (see above for instructions on how to execute these tests):
