@@ -154,19 +154,25 @@ g = 0;
 
 int consoleLock;
 
+
 void AirportManager() {
   int myNumber;
+
   Write("Forking to Airport Manager\n",27,ConsoleOutput);
   myNumber = 1;
   if(current_test > 0) {
     /*currentThread->Finish();*/
     Exit(0);
   }
+  
   while(1) {
+    
     /* if all passengers are accounted for
        issue broadcast */
     int airlineCounter = 0;
     int tempCount = 0;
+
+
 
     /*conveyorBelt_Lock.Acquire();*/
     Acquire(conveyorBelt_Lock);
@@ -203,6 +209,9 @@ void AirportManager() {
           printf("[%d, %d]",g,conveyorBelt[g].number_of_bags);
         }
         printf("\n"); */
+	
+
+
         for(secAirlineCounter = 0; secAirlineCounter < numberOfAirlines; secAirlineCounter++) {
           
           /*printf("----------------Statistics--------------\n");*/
@@ -218,6 +227,7 @@ void AirportManager() {
         Wait(goToSleep, airlineLock[airlineCounter]);
       }
       /*printf("flight %d count %d , cisflightcount %d\n",i,flightCount[i],cisFlightCount[i]); */
+
       Print("Airline %d \n",airlineCounter,0,0);
       Print("cargoHandler baggage count: %d\n",cargoHandlerBaggageCount[airlineCounter],0,0);
       Print("al baggage count: %d\n",al_baggage_buffer[airlineCounter],0,0);
@@ -232,6 +242,7 @@ void AirportManager() {
       } else {
         
       }
+
       /*airlineLock[airlineCounter]->Release();*/
       Release(airlineLock[airlineCounter]);
     }
@@ -415,12 +426,18 @@ void SecurityInspector() {
       Signal(waitingForSI_C[myNumber], siLineLock);
      /* siLock[myNumber]->Acquire(); */
       Acquire(siLock[myNumber]);
+
       /* siLineLock.Release(); */
       Release(siLineLock);
       /*waitingForTicket_SI_C[myNumber]->Wait(siLock[myNumber]);*/
       Wait(waitingForTicket_SI_C[myNumber], siLock[myNumber]);
       /*waitingForTicket_SI_C[myNumber]->Signal(siLock[myNumber]);*/
       Signal(waitingForTicket_SI_C[myNumber], siLock[myNumber]);
+
+      /*begin temp*/
+      if(siPassenger[myNumber]==9)
+	Print("PASSENGER 9!!! (in SI)",0,0,0);
+      /*end temp*/
 
       /*
       if(randomNum < probabilityPassingSI) {
@@ -542,7 +559,11 @@ void SecurityOfficer() {
        with the shortest line */
       passenger_line = findShortestLine(siLineLengths,7);
       siLineLengths[passenger_line]++;
+
+      
       passengerGoToSI[ soPassenger[myNumber] ] = passenger_line;
+     
+
 
       /* waitingForTicket_SO_C[myNumber]->Wait(soLock[myNumber]);
          waitingForTicket_SO_C[myNumber]->Signal(soLock[myNumber]); */
@@ -1107,16 +1128,40 @@ void Passenger() {
   if(myNumber ==9) {
     Print("\n\nPassenger 9 acquiring si line lock \n\n",0,0,0);
   }  
-  myLineNumber = passengerGoToSI[myNumber];
+  
+  myLineNumber = 0; /*passengerGoToSI[myNumber];*/
+
+  /*begin temp*/
+      if(myNumber==9)
+	Print("Passenger 9 - myLineNumber=%d\n",myLineNumber,0,0);
+  /*end temp*/
 
   /*waitingSI_C[myLineNumber]->Signal(&siLineLock);*/
   Signal(waitingSI_C[myLineNumber], siLineLock);
+
+  /*begin temp*/
+      if(myNumber==9)
+	Print("Passenger 9 - after Signal waitingSI_C\n",0,0,0);
+  /*end temp*/
+
   /* soPassenger[myLineNumber] = myNumber; */
   siLineLengths[myLineNumber]++;
+
+  /*begin temp*/
+  if(myNumber==9) {
+	Print("Passenger 9 - myLineNumber=%d, siLineLengths[myLineNumber]=%d\n",myLineNumber,siLineLengths[myLineNumber],0);
+
+  }
+  /*end temp*/
   
   /* waitingForSO_C[myLineNumber]->Signal(&soLineLock); */
   /* waitingForSI_C[myLineNumber]->Wait(&siLineLock); */
   Wait(waitingForSI_C[myLineNumber], siLineLock);
+
+  /*begin temp*/
+      if(myNumber==9)
+	Print("Passenger 9 - after Wait waitingForSI_C\n",0,0,0);
+  /*end temp*/
   
   siLineLengths[myLineNumber]--;
   /* siLineLock.Release(); */
@@ -1476,6 +1521,9 @@ int main () {
     airlineLock[i] = CreateLock(1);
   }
 
+
+
+
   /* -------------------------------------------------
 
    -------------------------------------------------
@@ -1649,7 +1697,7 @@ int main () {
     t = new Thread(name);
   */
 
-  /*Fork(AirportManager);*/
+  Fork(AirportManager);
   
   if(current_test == 0) {
     /*
