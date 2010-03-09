@@ -22,13 +22,13 @@ int main() {
 
   /*/create valid lock*/
   int bogus;
-  lock1 = CreateLock("abc");
+  lock1 = CreateLock(1);
   /*/create valid condition*/
-  cond1 = CreateCondition("abs");
+  cond1 = CreateCondition(1);
 
   /*/Test: too many conditions created*/
   while(1){
-    int cond = CreateCondition("a");
+    int cond = CreateCondition(1);
     if(cond == -1)
       break;
   }
@@ -36,20 +36,20 @@ int main() {
   /*/Test: destroy condition in use/
   //wait valid lock(SUCCESS)*/
   Fork(waitFunction);
-  /*/destroy condition(FAIL)*/
+  /*/destroy condition(FAIL)
   DestroyCondition(cond1);
-  /*/destroy lock(FAIL)*/
-  DestroyLock(lock1);
-  /*/wait lock twice more*/
+  /*destroy lock(FAIL)
+  DestroyLock(lock1-1);
+  /*wait lock twice more*/
   Fork(waitFunction);
   Fork(waitFunction);
   /*/signal lock(SUCCESS)*/
   Signal(cond1,lock1);
-  /*/destroy condition(FAIL)*/
+  /*/destroy condition(FAIL)
   DestroyCondition(cond1);
-  /*/destroy lock(FAIL)*/
+  /*destroy lock(FAIL)
   DestroyLock(lock1);
-  /*/broadcast lock(SUCCESS)*/
+  /*broadcast lock(SUCCESS)*/
   Broadcast(cond1,lock1);
   /*/destroy condition(SUCCESS)*/
   DestroyCondition(cond1);
@@ -61,18 +61,18 @@ int main() {
   Wait(bogus,lock1);
   Signal(bogus,lock1);
   Broadcast(bogus,lock1);
-  /*/Test: wait/signal/broadcast destroyed condition(FAIL)*/
+  /*/Test: wait/signal/broadcast destroyed condition(FAIL)
   Wait("\0",lock1);
   Signal("\0",lock1);
   Broadcast("\0",lock1);
-  /*8/Test: wait/signal/broadcast bogus lock(FAIL)*/
+  /*Test: wait/signal/broadcast bogus lock(FAIL)*/
   Wait(cond1,bogus);
   Signal(cond1,bogus);
   Broadcast(cond1,bogus);
-  /*/Test: wait/signal/broadcast using destroyed lock(FAIL)*/
+  /*/Test: wait/signal/broadcast using destroyed lock(FAIL)
   Wait(cond1,"\0");
   Signal(cond1,"\0");
   Broadcast(cond1,"\0");
-  /*/Test: out of bounds...
+  /*Test: out of bounds...
   //Test: belongs to another process...*/
 }
