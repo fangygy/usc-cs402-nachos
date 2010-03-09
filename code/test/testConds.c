@@ -24,11 +24,11 @@ int main() {
   int bogus;
   lock1 = CreateLock(1);
   /*/create valid condition*/
-  cond1 = CreateCondition(1);
+  cond1 = CreateCondition();
 
   /*/Test: too many conditions created*/
   while(1){
-    int cond = CreateCondition(1);
+    int cond = CreateCondition();
     if(cond == -1)
       break;
   }
