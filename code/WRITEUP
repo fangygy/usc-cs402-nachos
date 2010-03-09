@@ -187,16 +187,20 @@ III. Design:
 IV. Implementation:
 
             + Files Modified:
-			threadtest.cc
-			main.cc
-			synch.h
-			synch.cc
+			exception.cc
+			syscall.h
+			system.h - externs/structs
+			addrspace.h/.cc
+			progtest.h/.cc
+			syscall.h
+			
+			synch.h/.cc
             
 	    + Files added
-			threadtest.cc
+			halt.c
 			
             + Data Structures added, and the file they were added to.
-		the following to threadtest.cc:
+		the following to halt.c:
 			baggageticketbuffer
 			passengerticketbuffer
 			liaisonlines			
@@ -215,24 +219,39 @@ IV. Implementation:
 			soLineLock
 			siLineLock
 			alLineLock
-			
+		the following to system.h
+			PageTableLock
+			KernelLockTableLock
+			KernelLock
+			osLocks
+			KernelCondTableLock
+			KernelCond
+			osConds
+			processTable
+		the following to addrspace.h
+			ProcessTable
 			
             + Data Structures modified, and the file they were added to.
-			Lock				~synch.cc/.h
-
-			Condition Class			~synch.cc/.h
+			N/A
 			
             + Functions added and in which file.
-			All functions from threadtest.cc
-			FindShortestLine()		~functions.h	
+			N/A	
 
             + Functions modified and in which file.
-			Wait() 				~synch.cc/.h
-			Signal()			~synch.cc/.h
-			Broadcast()			~synch.cc/.h
-			isHeldByCurrentThread()		~synch.cc/.h
-			Acquire()			~synch.cc/.h
-			Release()			~synch.cc/.h
+		the following to exception.cc
+			CreateLock
+			DestroyLock
+			CreateCondition
+			DestroyCondition
+			Yield
+			Exit
+			Exec
+			Fork
+			Wait() 				
+			Signal()			
+			Broadcast()				
+			Acquire()			
+			Release()			
 			
 			
 V. Testing:  (For each test case, you must show)
@@ -241,10 +260,16 @@ V. Testing:  (For each test case, you must show)
 			
 			-in the code/userprog/ directory, type the following to execute tests
 
-			nachos -d q -x ../test/testLocks - tests Locks (create/destroy/acquire/release)
-			nachos -d q -x ../test/testConds - tests Conditions(create/destroy/wait/signal/broadcast)
+				nachos -d q -x ../test/testLocks - tests Locks (create/destroy/acquire/release)
+				nachos -d q -x ../test/testConds - tests Conditions(create/destroy/wait/signal/broadcast)
 
-			nachos -x ../test/testfiles	
+				nachos -d x -x ../test/exittest - tests Exit
+				nachos -d x -x ../test/exectest - tests Exec
+
+			-in the code/test/ directory, type the following to execute the airport tests
+
+				./airportTest - (You will be prompted to run several different tests)
+				
 
             + Test Output
 
@@ -271,6 +296,24 @@ V. Testing:  (For each test case, you must show)
 			/*/Test: wait/signal/broadcast with destroyed condition(FAILx3)*/
 
 			
+			ExitTest:
+				Exits with status = 10.
+				There should only be 1 Exit call. If there is an Exit call with status = 9, the first Exit call did not work.
+
+			ExecTest:
+				Sets an integer (result) to 1.
+				Exec's ExitTest (see above) and sets result to its Exit status code.
+				Exits with status = result.
+				There should be two exit calls, one with status=1 and one with status=10 (from ExitTest).
+
+
+			Airport Tests (see above for instructions on how to execute these tests):
+				Enter a test number (1-5).
+				Test #1 runs the entire airport simulation.
+				Test #2 tests the Airport Liason.
+				Test #3 tests the Check-in Staff
+				Test #4 tests the Screening Officers
+				Test #5 tests the Security Inspectors
 
 
 			* Note: all output is derived from the same guidelines as specified in the assignment requirements
