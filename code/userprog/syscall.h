@@ -144,7 +144,7 @@ void Yield();
  *
  */
 
-int CreateLock();
+int CreateLock(int vaddr);
 
 void DestroyLock(int index);
 
@@ -156,9 +156,9 @@ void Release(int index);
  *
  */
 
-int CreateCondition();
+int CreateCondition(int vaddr);
 
-void DestroyCondition(int index, int lock_index);
+void DestroyCondition(int index);
 
 void Wait(int index, int lock_index);
 

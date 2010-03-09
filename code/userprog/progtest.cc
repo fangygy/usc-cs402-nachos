@@ -49,7 +49,7 @@ StartProcess(char *filename)
 	break;
       }
     }
-
+    currentThread->space->id = spaceId;
     delete executable;			// close file
 
     space->InitRegisters();		// set the initial register values

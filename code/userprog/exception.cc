@@ -30,8 +30,6 @@
 
 using namespace std;
 
-#define MAX_CHARS 100;
-
 int copyin(unsigned int vaddr, int len, char *buf) {
     // Copy len bytes from the current thread's virtual address vaddr.
     // Return the number of bytes so read, or -1 if an error occors.
@@ -239,24 +237,41 @@ void Close_Syscall(int fd) {
  *
  */
 
-int CreateLock_Syscall(int name, int size) {
- 
+int CreateLock_Syscall(int vaddr) {
+ //IS OK???
+  // Return position in kernel structure array
+  int size = 16;
+  int max_chars = 20;
+
+  //limit size of lock name
+  if((size < 1) || (size > max_chars)) {
+    DEBUG('q',"TOO MANY CHARS\n");
+    return -1;
+  }
+  
+  int addressSpaceSize = currentThread->space->NumPages() * PageSize;
+  //in the clear to create the lock
+  char *lockName = new char[size+1];
+  lockName[size] = '\0';
+
+  //make sure we aren't creating any part of the lock outside the alloted space
+  if(vaddr < 0 || (vaddr+size) >= addressSpaceSize) {
+    DEBUG('q',"OUT OF BOUNDS\n");
+    return -1;
+  }
+
   KernelLockTableLock->Acquire();
 
   // Make sure the table is not full 
   if(nextLockIndex >= MAX_LOCKS) {
     //The table is full of locks 
     KernelLockTableLock->Release();
-    DEBUG('a',"LOCK TABLE FULL");
+    DEBUG('q',"LOCK TABLE FULL\n");
     return -1;
   }
 
-  //in the clear to create the lock
-  char *lockName = new char[size+1];
-  lockName[size] = '\0';
-  //copy into
-  // copyin(lockName, name, size);
- 
+  copyin(vaddr,size+1,lockName);
+
   //initialize important vars
   osLocks[nextLockIndex].lock = new Lock(lockName);
   osLocks[nextLockIndex].as = currentThread->space;
@@ -267,19 +282,40 @@ int CreateLock_Syscall(int name, int size) {
   //report number of locks to user first...
   //increment number of locks
   nextLockIndex++;
-  int lockid;
-  lockid = nextLockIndex-1;
   KernelLockTableLock->Release();
-  return lockid; // this may prove to have some problems if
-                        // we are context switched out before nextLockIndex is
-                        // returned
-
-
- 
+  return nextLockIndex-1;//-1 to get current lock index?
+  // this may prove to have some problems if
+  // we are context switched out before nextLockIndex is
+  // returned
 }
 
-void DestroyLock_Syscall(int index) {
+void DestroyLock_Syscall(int value) {
   // Delete from kernel structure array the lock object at position index
+  int index = value;
+  // Delete from kernel structure array the lock object at position index
+
+  //First, acquire kernallocktablelock
+  KernelLockTableLock->Acquire();
+  
+  //if the lock is in use, mark for destruction
+  if(osLocks[index].usageCounter > 0){
+    DEBUG('q',"CANNOT DESTROY LOCK IN USE\n");
+    osLocks[index].toBeDestroyed = TRUE;
+    KernelLockTableLock->Release();
+    return;
+  }
+  
+  //if the lock is already destined to be destroyed, return
+  if((osLocks[index].usageCounter == 0) || (osLocks[index].toBeDestroyed == TRUE)){
+    //destroy lock
+    osLocks[index].toBeDestroyed = TRUE;
+    //effectively destroy lock
+    osLocks[index].lock = NULL;
+    DEBUG('q',"DESTROYING LOCK\n");
+    KernelLockTableLock->Release();
+    return;
+  }
+
 }
 
 void Acquire_Syscall(int index) {
@@ -293,14 +329,14 @@ void Acquire_Syscall(int index) {
   //make sure the lock exists
   if(value < 0 || value >= nextLockIndex) {
     // This is a bad value
-    DEBUG('a',"BAD VALUE\n");
+    DEBUG('q',"BAD VALUE\n");
     return;
   }
 
   KernelLock curLock = osLocks[value];
   if(curLock.lock == NULL) {
     // The lock has been destroyed 
-    DEBUG('a',"LOCK HAS BEEN DESTROYED\n");
+    DEBUG('q',"LOCK HAS BEEN DESTROYED\n");
     return;
   }
   // The lock has not been destroyed
@@ -309,7 +345,7 @@ void Acquire_Syscall(int index) {
     // this lock belongs to a different process
     // since the address space of the lock does not match the 
     // current thread's address space
-    DEBUG('a',"LOCK BELONGS TO DIFFERENT PROCESS");
+    DEBUG('q',"LOCK BELONGS TO DIFFERENT PROCESS");
     return;
   }
   //ensure that lock isn't destroyed while in use
@@ -329,13 +365,13 @@ void Release_Syscall(int index) {
   //make sure the lock exists
   if(value < 0 || value >= nextLockIndex) {
     // This is a bad value
-    DEBUG('a',"BAD VALUE\n");
+    DEBUG('q',"BAD VALUE\n");
     return;
   }
   KernelLock curLock = osLocks[index];
   if(curLock.lock == NULL) {
     // The lock has been destroyed 
-    DEBUG('a',"LOCK HAS BEEN DESTROYED\n");
+    DEBUG('q',"LOCK HAS BEEN DESTROYED\n");
     return;
   }
   
@@ -343,108 +379,280 @@ void Release_Syscall(int index) {
     // this lock belongs to a different process
     // since the address space of the lock does not match the 
     // current thread's address space    
-    DEBUG('a',"LOCK BELONGS TO DIFFERENT PROCESS");
+    DEBUG('q',"LOCK BELONGS TO DIFFERENT PROCESS");
     return;
   }
   //ensure that lock isn't destroyed while in use
-  curLock.usageCounter++; 
+
 
   //has to go above acquire to avoid deadlock
   KernelLockTableLock->Release();
     // FINALLY...Release the lock
   curLock.lock->Release();
+  curLock.usageCounter--;
 
 }
 
-int CreateCondition_Syscall() {
-  
-  /* Fix this
-    if(name < 0 || (name+size) >= addressSpaceSize) {
+int CreateCondition_Syscall(int vaddr) {
+  //copied from CreateLock, IS OK???
+  // Return position in kernel structure array
+  int size = 16;
+  int max_chars = 20;
 
-    }
-  
-    char *condName = new char[size+1];
-    condName[size] = '\0';
-    copyin(condName, name, size);
-    
-  */
-  int condid;
-  KernelCondTableLock->Acquire();
-  if(nextCondIndex >= MAX_CONDS) {
-    DEBUG('a', "OUT OF BOUNDS ERROR\n"); 
+  //limit size of condition name
+  if((size < 1) || (size > max_chars)) {
+    DEBUG('q',"TOO MANY CHARS\n");
+    return -1;
   }
-  osConds[nextCondIndex].condition = new Condition("some name");
-  osConds[nextCondIndex].as   = currentThread->space;
+  
+  int addressSpaceSize = currentThread->space->NumPages() * PageSize;
+  //in the clear to create the condition
+  char *condName = new char[size+1];
+  condName[size] = '\0';
+
+  //NO creating any part of the condition outside the alloted space
+  if(vaddr < 0 || (vaddr+size) >= addressSpaceSize) {
+    DEBUG('q',"OUT OF BOUNDS\n");
+    return -1;
+  }
+
+  KernelCondTableLock->Acquire();
+
+  // Make sure the table is not full 
+  if(nextCondIndex >= MAX_CONDS) {
+    //The table is full of locks 
+    KernelCondTableLock->Release();
+    DEBUG('q',"COND TABLE FULL\n");
+    return -1;
+  }
+
+  copyin(vaddr,size+1,condName);
+
+  //initialize important vars
+  osConds[nextCondIndex].condition = new Condition(condName);
+  osConds[nextCondIndex].as = currentThread->space;
+  //initialize condition to not in use
   osConds[nextCondIndex].usageCounter = 0;
+  //no one wants to destroy the lock right now
   osConds[nextCondIndex].toBeDestroyed = FALSE;
-  condid = nextCondIndex;
+  //report number of locks to user first...
+  //increment number of locks
   nextCondIndex++;
   KernelCondTableLock->Release();
-  return condid; 
+  return nextCondIndex-1;//-1 to get current condition index?
+  // this may prove to have some problems if
+  // we are context switched out before nextCondIndex is
+  // returned 
 }
 
 void DestroyCondition_Syscall(int index) {
   // Delete from kernel structure array the condition object at position index 
+// Delete from kernel structure array the condition object at position index 
+  //First, acquire kernalcondtablelock
+  KernelCondTableLock->Acquire();
+  
+  //if the condition is in use, mark for destruction
+  if(osConds[index].usageCounter > 0){
+    DEBUG('q',"CANNOT DESTROY CONDITION IN USE\n");
+    osLocks[index].toBeDestroyed = TRUE;
+    KernelCondTableLock->Release();
+    return;
+  }
+  
+  //if the lock is already destined to be destroyed, return
+  if((osConds[index].usageCounter == 0) || (osConds[index].toBeDestroyed == TRUE)){
+    //destroy condition
+    osConds[index].toBeDestroyed = TRUE;
+    //effectively destroy lock
+    osConds[index].condition = NULL;
+    DEBUG('q',"DESTROYING CONDITION");
+    KernelCondTableLock->Release();
+    return;
+  }
 
 }
 
 void Wait_Syscall(int index, int lock_id) {
   KernelCondTableLock->Acquire();
-  /*
-    Check bounds, check lock is valid 
-    
-  */
-  
+  //VALIDATE CONDITION
+  //make sure the condition exists
+  if(index < 0 || index >= nextCondIndex) {
+    // This is a bad value
+    DEBUG('q',"BAD VALUE\n");
+    return;
+  }
   KernelCond curCond = osConds[index];
-	if(curCond.as != currentThread->space) {
-     // return and print a message
-	}
-  
-  KernelLock curLock = osLocks[lock_id];
-
+  if(curCond.condition == NULL) {
+    // The condition has been destroyed 
+    DEBUG('q',"COND HAS BEEN DESTROYED\n");
+    return;
+  }
+  // The condition has not been destroyed
+  if(curCond.as != currentThread->space) {
+    // this condition belongs to a different process
+    // since the address space of the condition does not match the 
+    // current thread's address space
+    DEBUG('q',"CONDITION BELONGS TO DIFFERENT PROCESS\n");
+    return;
+  }
+  //ensure that condition isn't destroyed while in use
+  curCond.usageCounter++; 
   KernelCondTableLock->Release();
-  curCond.condition->Wait(curLock.lock); // may get an error here due to pointer usage
+  KernelLockTableLock->Acquire();
+  //VALIDATE LOCK
+  //make sure the lock exists
+  if(lock_id < 0 || lock_id >= nextLockIndex) {
+    // This is a bad value
+    DEBUG('q',"BAD VALUE\n");
+    return;
+  }
 
+  KernelLock curLock = osLocks[lock_id];
+  if(curLock.lock == NULL) {
+    // The lock has been destroyed 
+    DEBUG('q',"LOCK HAS BEEN DESTROYED\n");
+    return;
+  }
+  // The lock has not been destroyed
+  
+  if(curLock.as != currentThread->space) {
+    // this lock belongs to a different process
+    // since the address space of the lock does not match the 
+    // current thread's address space
+    DEBUG('q',"LOCK BELONGS TO DIFFERENT PROCESS\n");
+    return;
+  }
+  //ensure that lock isn't destroyed while in use
+  curLock.usageCounter++;
+  DEBUG('q',"CONDITION WAITING");
+  //has to go above acquire to avoid deadlock
+  KernelLockTableLock->Release();
+  // FINALLY...use wait on the lock
+  curCond.condition->Wait(curLock.lock);
 }
 
 void Signal_Syscall(int index, int lock_id) {
   KernelCondTableLock->Acquire();
-  /*
-    Check bounds, check lock is valid 
-    
-  */
-  
-  KernelCond curCond = osConds[index];
-  // check address space
-  if(curCond.as != currentThread->space) {
-     // return and print a message
+  //VALIDATE CONDITION
+  //make sure the condition exists
+  if(index < 0 || index >= nextCondIndex) {
+    // This is a bad value
+    DEBUG('q',"BAD VALUE\n");
+    return;
   }
-  
-  KernelLock curLock = osLocks[lock_id];
-
+  KernelCond curCond = osConds[index];
+  if(curCond.condition == NULL) {
+    // The condition has been destroyed 
+    DEBUG('q',"COND HAS BEEN DESTROYED\n");
+    return;
+  }
+  // The condition has not been destroyed
+  if(curCond.as != currentThread->space) {
+    // this condition belongs to a different process
+    // since the address space of the condition does not match the 
+    // current thread's address space
+    DEBUG('q',"CONDITION BELONGS TO DIFFERENT PROCESS\n");
+    return;
+  }
+  //ensure that condition isn't destroyed while in use
+  curCond.usageCounter--; 
   KernelCondTableLock->Release();
-  curCond.condition->Signal(curLock.lock); // may get an error here due to pointer usage
+  KernelLockTableLock->Acquire();
+  //VALIDATE LOCK
+  //make sure the lock exists
+  if(lock_id < 0 || lock_id >= nextLockIndex) {
+    // This is a bad value
+    DEBUG('q',"BAD VALUE\n");
+    return;
+  }
 
+  KernelLock curLock = osLocks[lock_id];
+  if(curLock.lock == NULL) {
+    // The lock has been destroyed 
+    DEBUG('q',"LOCK HAS BEEN DESTROYED\n");
+    return;
+  }
+  // The lock has not been destroyed
+  
+  if(curLock.as != currentThread->space) {
+    // this lock belongs to a different process
+    // since the address space of the lock does not match the 
+    // current thread's address space
+    DEBUG('q',"LOCK BELONGS TO DIFFERENT PROCESS\n");
+    return;
+  }
+  //ensure that lock isn't destroyed while in use
+  curLock.usageCounter--;
+  DEBUG('q',"CONDITION SIGNAL");
+  //has to go above acquire to avoid deadlock
+  KernelLockTableLock->Release();
+  // FINALLY...use signal on the lock
+  curCond.condition->Signal(curLock.lock);
 
 }
 
 void Broadcast_Syscall(int index, int lock_id) {
-
   KernelCondTableLock->Acquire();
-  /*
-    Check bounds, check lock is valid 
-    
-  */
-  
+  //VALIDATE CONDITION
+  //make sure the condition exists
+  if(index < 0 || index >= nextCondIndex) {
+    // This is a bad value
+    DEBUG('q',"BAD VALUE\n");
+    return;
+  }
   KernelCond curCond = osConds[index];
-	if(curCond.as != currentThread->space) {
-		
-	}
-  
-  KernelLock curLock = osLocks[lock_id];
-
-  curCond.condition->Broadcast(curLock.lock); // may get an error here due to pointer usage
+  if(curCond.condition == NULL) {
+    // The condition has been destroyed 
+    DEBUG('q',"COND HAS BEEN DESTROYED\n");
+    return;
+  }
+  // The condition has not been destroyed
+  if(curCond.as != currentThread->space) {
+    // this condition belongs to a different process
+    // since the address space of the condition does not match the 
+    // current thread's address space
+    DEBUG('q',"CONDITION BELONGS TO DIFFERENT PROCESS\n");
+    return;
+  }
+  //ensure that condition isn't destroyed while in use
+  int temp = curCond.usageCounter;
+  curCond.usageCounter--; 
   KernelCondTableLock->Release();
+  KernelLockTableLock->Acquire();
+  //VALIDATE LOCK
+  //make sure the lock exists
+  if(lock_id < 0 || lock_id >= nextLockIndex) {
+    // This is a bad value
+    DEBUG('q',"BAD VALUE\n");
+    return;
+  }
+
+  KernelLock curLock = osLocks[lock_id];
+  if(curLock.lock == NULL) {
+    // The lock has been destroyed 
+    DEBUG('q',"LOCK HAS BEEN DESTROYED\n");
+    return;
+  }
+  // The lock has not been destroyed
+  
+  if(curLock.as != currentThread->space) {
+    // this lock belongs to a different process
+    // since the address space of the lock does not match the 
+    // current thread's address space
+    DEBUG('q',"LOCK BELONGS TO DIFFERENT PROCESS\n");
+    return;
+  }
+  //ensure that lock isn't destroyed while in use
+  if(curLock.usageCounter - temp >= 0){
+    curLock.usageCounter = curLock.usageCounter - temp;
+  }else{
+    curLock.usageCounter = 0;
+  }
+  DEBUG('q',"CONDITION BROADCAST");
+  //has to go above acquire to avoid deadlock
+  KernelLockTableLock->Release();
+  // FINALLY...use broadcast on the lock
+  curCond.condition->Broadcast(curLock.lock);
 }
 
 void Yield_Syscall() {
@@ -549,7 +757,7 @@ void ExceptionHandler(ExceptionType which) {
 		break;
 	    case SC_CreateLock:
 	        DEBUG('a', "CreateLock syscall.\n");
-	        rv = CreateLock_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
+	        rv = CreateLock_Syscall(machine->ReadRegister(4));
 		break;
 	    case SC_DestroyLock:
 	        DEBUG('a', "DestroyLock syscall.\n");
@@ -565,7 +773,7 @@ void ExceptionHandler(ExceptionType which) {
 		break;
 	    case SC_CreateCondition:
 	        DEBUG('a', "CreateCondition syscall.\n");
-	        rv = CreateCondition_Syscall();
+	        rv = CreateCondition_Syscall(machine->ReadRegister(4));
 		break;
 	    case SC_DestroyCondition:
 	        DEBUG('a', "DestroyCondition syscall.\n");
