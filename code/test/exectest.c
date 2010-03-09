@@ -5,7 +5,7 @@
 */
 
 #include "syscall.h"
-#include "myitoa.c"
+
 
 int main() {
   int result;
