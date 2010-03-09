@@ -45,6 +45,7 @@ StartProcess(char *filename)
 	// Set the appropriate address space
 	processTable[spaceId].as = space;
 	processTable[spaceId].stackLocation = (space->NumPages()*PageSize) - 16;
+	processTable[spaceId].inUse = TRUE;
 	break;
       }
     }

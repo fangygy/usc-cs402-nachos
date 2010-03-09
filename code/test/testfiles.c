@@ -42,5 +42,4 @@ int main() {
   Exec("../test/halt");
   
   Write("tests finished\n", 15, ConsoleOutput);
->>>>>>> .r453
 }

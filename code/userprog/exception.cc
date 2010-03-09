@@ -267,8 +267,10 @@ int CreateLock_Syscall(int name, int size) {
   //report number of locks to user first...
   //increment number of locks
   nextLockIndex++;
+  int lockid;
+  lockid = nextLockIndex-1;
   KernelLockTableLock->Release();
-  return nextLockIndex-1; // this may prove to have some problems if
+  return lockid; // this may prove to have some problems if
                         // we are context switched out before nextLockIndex is
                         // returned
 
@@ -364,6 +366,7 @@ int CreateCondition_Syscall() {
     copyin(condName, name, size);
     
   */
+  int condid;
   KernelCondTableLock->Acquire();
   if(nextCondIndex >= MAX_CONDS) {
     DEBUG('a', "OUT OF BOUNDS ERROR\n"); 
@@ -372,9 +375,10 @@ int CreateCondition_Syscall() {
   osConds[nextCondIndex].as   = currentThread->space;
   osConds[nextCondIndex].usageCounter = 0;
   osConds[nextCondIndex].toBeDestroyed = FALSE;
+  condid = nextCondIndex;
   nextCondIndex++;
   KernelCondTableLock->Release();
-  return nextCondIndex-1; 
+  return condid; 
 }
 
 void DestroyCondition_Syscall(int index) {
@@ -487,15 +491,8 @@ void execThread() {
 }
 
 void kernelFunc(int vaddr) {
-  int i, spaceId;
-  for(i = 0; i < 64; i++) {
-    if(currentThread->space == processTable[i].as) {
-      spaceId = i;
-      break;
-    } else {
-
-    }
-  }
+  int i, spaceId;  
+  spaceId = currentThread->space->id;
   // write to register PCReg the virtual address
   machine->WriteRegister(PCReg, vaddr);
   
@@ -504,9 +501,11 @@ void kernelFunc(int vaddr) {
   // call RestoreState function
   currentThread->space->RestoreState();
   // write to stack register, the starting position of the stack
+  DEBUG('g', "kernel func: space id: %d \n",spaceId);
+  DEBUG('h',"current Thread space size %d",currentThread->space->NumPages());
   machine->WriteRegister(StackReg,processTable[spaceId].stackLocation);
-		
-  currentThread->setStack((int *)processTable[spaceId].stackLocation);
+  //printf("stack location: %d\n", processTable[spaceId].stackLocation);
+
   machine->Run();
 }
 
@@ -596,26 +595,26 @@ void ExceptionHandler(ExceptionType which) {
 		virtualAddress = machine->ReadRegister(4);
 		int i, spaceId_f;
 		// get the space id for this new thread
-		for(i=0; i<64; i++) {
-		  if(processTable[i].as == currentThread->space) {
-		    spaceId_f = i;
-		    break;
-		  } else { 
-		    // Trying to fork a thread without an existing address space
-		    DEBUG('a', "Trying to fork a thread without an existing address space\n");
-		  }
-		}
+		spaceId_f = currentThread->space->id;
 		
-		
+		DEBUG('g',"fork: space id : %d\n", spaceId_f);
 		Thread *kernelThread = new Thread("kernelThread");
 		// this is the same as the currentThread->space b/c this thread
 		// is a child of the currentThread
-		kernelThread->space = currentThread->space;
+		//printf("address space num pages %d \n", currentThread->space->NumPages());
+		kernelThread->space = processTable[spaceId_f].as;
+
 		// Create a new page table with 8 pages more of stack
 		kernelThread->space->NewPageTable();
-
+		if(processTable[spaceId_f].as == currentThread->space) {
+		  //printf("process table address space pointer is equal to current thread\n");
+		}
 		// Update process table
+		// DEBUG('g',"address space address: %d \n",&(processTable[spaceId_f].as));
 		processTable[spaceId_f].stackLocation = (kernelThread->space->NumPages()*PageSize)-16;
+		//printf("address space num pages %d \n", currentThread->space->NumPages());
+
+		//printf("stack location: %d\n", processTable[spaceId_f].stackLocation);
 		processTable[spaceId_f].numChildProcess++;
 		kernelThread->Fork(kernelFunc,virtualAddress);
 		
@@ -671,10 +670,12 @@ void ExceptionHandler(ExceptionType which) {
 		      // Set the appropriate address space
 		      processTable[spaceId].as = space;
 		      processTable[spaceId].stackLocation = (space->NumPages()*PageSize) - 16;
+		      processTable[spaceId].inUse = TRUE;
 		      break;
 		    }
 		  }
-		  printf("stack id: %d \n",spaceId);
+		  space->id = spaceId; 
+		  DEBUG('g',"space id: %d \n",spaceId);
 		  
 		  DEBUG('a',"Updated the process table with new process\n");
 		  

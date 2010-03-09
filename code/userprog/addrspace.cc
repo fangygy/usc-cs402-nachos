@@ -124,7 +124,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
     // Don't allocate the input or output to disk files
     fileTable.Put(0);
     fileTable.Put(0);
-
+    id = -1;
     DEBUG('a', "Reading in the executable\n");
 
     executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
@@ -173,28 +173,10 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
                                           // a separate page, we could set its
                                           // pages to be read-only 
       
-      
-      if(numCodePages > 0) {
-	DEBUG('c',"Initializing code page, at 0x%x, size %d\n",
-	      index, PageSize);
-	DEBUG('c',"Num code pages %d, Num data pages %d, Num pages %d memory address: %d\n",numCodePages,numInitPages,numPages, index);
-	executable->ReadAt(&(machine->mainMemory[index*PageSize]),PageSize,
-			   (i*PageSize)+noffH.code.inFileAddr);
-	numCodePages--;
-      } else if (numInitPages > 0) {
-	// We are done reading in the pages for the code data
-	// Now read in the initData pages 
-	g = 0;
-	DEBUG('c',"Initializing data page, at 0x%x, size %d\n",
-	      index,PageSize);
-	DEBUG('c',"Num code pages %d, Num data pages %d, Num pages %d memory address: %d\n",numCodePages,numInitPages,numPages, index);
-	executable->ReadAt(&(machine->mainMemory[index*PageSize]),PageSize,
-		   (g*PageSize)+noffH.initData.inFileAddr);
-	numInitPages--;
-	g++;
-      } else {
-	DEBUG('c',"STACK\n");
-      }
+    
+      executable->ReadAt(&(machine->mainMemory[index*PageSize]),PageSize,
+			 (i*PageSize)+noffH.code.inFileAddr);
+
       
       
     }
@@ -355,6 +337,7 @@ void AddrSpace::NewPageTable() {
 
     // Increase the number of pages by the number of new pages allocated to stack
     numPages = numPages+8;
+
     PageTableLock->Release();      
 }
 
