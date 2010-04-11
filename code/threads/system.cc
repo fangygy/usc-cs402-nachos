@@ -25,15 +25,22 @@ Lock *PageTableLock;
 BitMap *bitmap;
 ProcessTable *processTable;
 
-
+int tlbCounter = 0;
+int fifoCounter = 0;
 int nextLockIndex = 0;
 int MAX_LOCKS = 1000;
 
 int nextCondIndex = 0;
 int MAX_CONDS = 1000; 
 
+int numProcesses = 0;
+int swapCounter = 0;
 KernelLock osLocks[1000];
 KernelCond osConds[1000];
+
+int fifo[NumPhysPages];
+ 
+OpenFile* swapFile;
 
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
@@ -110,7 +117,9 @@ Initialize(int argc, char **argv)
       processTable[g].stackLocation = 0;
     }
 
-
+    // Create the file 
+    fileSystem->Create("SwapFile",3000);
+    swapFile = fileSystem->Open("SwapFile");
 
     bitmap = new BitMap(NumPhysPages); // this needs to equal NumPhysPages in machine.h
     

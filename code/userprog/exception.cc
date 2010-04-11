@@ -70,7 +70,10 @@ int copyout(unsigned int vaddr, int len, char *buf) {
     while ( n >= 0 && n < len) {
       // Note that we check every byte's address
       result = machine->WriteMem( vaddr, 1, (int)(buf[n++]) );
-
+      while(!result)
+	{
+	  result = machine->WriteMem(vaddr,1,(int)(buf[n++]));
+	}
       if ( !result ) {
 	//translation failed
 	return -1;
@@ -725,6 +728,177 @@ void kernelFunc(int vaddr) {
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2); // Which syscall?
     int rv = 0;
+    if( which == PageFaultException) {
+      DEBUG('c',"Page Fault Exception\n");
+      int vaddress;
+      vaddress = machine->ReadRegister(39);
+      printf("virtual address:0x%x\n",vaddress);
+      int vpnumber = vaddress / PageSize; 
+      unsigned int index;
+      printf("vpn is %d \n",vpnumber);
+  
+      // Check to see if the page is in the IPT
+      int i;
+      for(i = 0; i < NumPhysPages; i++) {
+	// If the processId in the IPT is the same as the current thread's address space id
+	// we know they are from the same process 
+	// printf("process id is: %d, currentThread space id is: %d\n",machine->ipt[i].processId,currentThread->space->id);
+
+	if(machine->ipt[i].processId == currentThread->space->id) {
+	  
+      	  // If the virtual page is the same as the current thread's address space's virtual page 
+	  // then we know we found the right page
+	  if(machine->ipt[i].virtualPage == vpnumber) {
+	    // THIS IS AN IPT HIT
+	    // We have the virtual page 
+	    // UPDATE THE TLB CODE
+	    DEBUG('c',"ipt virtual page and vpn is the same\n");
+
+	    for(int z = 0; z < NumPhysPages; z++) {
+	      if(machine->tlb[tlbCounter].virtualPage == machine->ipt[z].virtualPage) {
+		if(machine->tlb[tlbCounter].dirty == TRUE) {
+		  machine->ipt[z].dirty = TRUE;
+		}
+	      }
+	    }
+	    
+	    machine->tlb[tlbCounter].physicalPage = machine->ipt[i].physicalPage;
+	    machine->tlb[tlbCounter].virtualPage  = machine->ipt[i].virtualPage;
+	    machine->tlb[tlbCounter].valid        = machine->ipt[i].valid;
+	    machine->tlb[tlbCounter].use          = machine->ipt[i].use;
+	    machine->tlb[tlbCounter].dirty        = machine->ipt[i].dirty;
+	    break;
+	  } 
+	  // If we get here, the page we are looking for is not in memory, so we have to load 
+	  // from the executable or perhaps the swap file 
+	}
+	if(i == NumPhysPages-1) {
+	  // This is an IPT Miss 
+	  index = bitmap->Find();
+
+	  // Main memory is full, as is the IPT
+	  if(index == -1) {
+	    DEBUG('c',"Main memory is full\n");
+	    int evictPage;
+	    // The page to be evicted is the first one in FIFO data structure
+	    evictPage = fifo[0];
+	    DEBUG('c',"evicting page %d\n",evictPage);
+	    // Check if this page has an entry in the TLB
+	    for(i = 0; i < TLBSize; i++) {
+	      if(evictPage == machine->tlb[i].physicalPage) {
+		// Rewrite it
+		machine->tlb[i].valid = FALSE;
+	      }
+	    }
+	    
+	    // Save the page being evicted, but only if it is dirty
+	    if(machine->ipt[evictPage].dirty == TRUE) {
+	      DEBUG('g',"page %d is dirty\n", evictPage);
+	      // Write it to the swap file
+	      swapFile->WriteAt(&(machine->mainMemory[evictPage*PageSize]),PageSize,swapCounter*PageSize);
+	      currentThread->space->pageTable[machine->ipt[evictPage].virtualPage].location = 1;
+	      currentThread->space->pageTable[machine->ipt[evictPage].virtualPage].swapLoc = swapCounter;
+	      swapCounter++;	
+	    }
+	    
+	    // Shift the entire fifo array
+	    for(i = 1; i < NumPhysPages; i++) {
+	      fifo[i-1] = fifo[i];
+	    }
+	    DEBUG('c',"fifocounter is: %d \n",fifoCounter);
+	    fifo[fifoCounter] = evictPage;
+	    
+	    for(i = 0; i < NumPhysPages; i++) {
+	      DEBUG('f',"fifo %d: %d\n",i,fifo[i]);
+	    }
+
+	    // If this page is inside the swap file	    
+	    if(currentThread->space->pageTable[vpnumber].location == 1){
+	      DEBUG('c',"Page %d is in the swap file\n",evictPage);
+	      //Load from swap file to main memory
+	      swapFile->ReadAt(&(machine->mainMemory[evictPage*PageSize]),PageSize,currentThread->space->pageTable[vpnumber].swapLoc*PageSize);
+	    } else {
+	      // Load the new page from executable into memory
+	      DEBUG('c',"load from executable into memory\n");
+	      currentThread->space->memoryLoad(vpnumber, evictPage);
+	    }	    
+
+	    // Evict this page and put in the new page
+	    machine->ipt[evictPage].physicalPage = evictPage;
+	    machine->ipt[evictPage].virtualPage  = vpnumber;
+	    machine->ipt[evictPage].valid        = TRUE;
+	    machine->ipt[evictPage].use          = FALSE;
+	    machine->ipt[evictPage].dirty        = FALSE;
+	    machine->ipt[evictPage].readOnly     = FALSE;
+	    machine->ipt[evictPage].processId    = currentThread->space->id;
+	    
+	    for(int z = 0; z < NumPhysPages; z++) {
+	      if(machine->tlb[tlbCounter].virtualPage == machine->ipt[z].virtualPage) {
+		if(machine->tlb[tlbCounter].dirty == TRUE) {
+		  machine->ipt[z].dirty = TRUE;
+		}
+	      }
+	    }
+
+	    // UPDATE THE TLB CODE
+	    machine->tlb[tlbCounter].physicalPage = evictPage;
+	    machine->tlb[tlbCounter].virtualPage  = vpnumber;
+	    machine->tlb[tlbCounter].valid        = TRUE;
+	    machine->tlb[tlbCounter].use          = currentThread->space->pageTable[vpnumber].use;
+	    machine->tlb[tlbCounter].dirty        = currentThread->space->pageTable[vpnumber].dirty;	   
+
+
+	  } else {
+	    // Main memory has space
+	    // Update the IPT CODE
+	    DEBUG('c',"the page is not inside the ipt\n");
+	    machine->ipt[index].physicalPage = index;
+	    machine->ipt[index].virtualPage  = vpnumber;
+	    machine->ipt[index].valid        = TRUE;
+	    machine->ipt[index].use          = FALSE;
+	    machine->ipt[index].dirty        = FALSE;
+	    machine->ipt[index].readOnly     = FALSE;
+	    machine->ipt[index].processId    = currentThread->space->id;
+	    
+	    fifo[fifoCounter] = index;
+	    if(fifoCounter < NumPhysPages-1) {
+	      fifoCounter++;
+	    }
+	    if(fifoCounter >= NumPhysPages) {
+	      DEBUG('c',"fifo counter is larger than numphyspages\n");
+	    }
+	    currentThread->space->pageTable[vpnumber].physicalPage = index;
+
+	    for(int z = 0; z < NumPhysPages; z++) {
+	      if(machine->tlb[tlbCounter].virtualPage == machine->ipt[z].virtualPage) {
+		if(machine->tlb[tlbCounter].dirty == TRUE) {
+		  machine->ipt[z].dirty = TRUE;
+		}
+	      }
+	    }
+	    
+	    // UPDATE THE TLB CODE
+	    machine->tlb[tlbCounter].physicalPage = currentThread->space->pageTable[vpnumber].physicalPage;
+	    machine->tlb[tlbCounter].virtualPage  = currentThread->space->pageTable[vpnumber].virtualPage;
+	    machine->tlb[tlbCounter].valid        = currentThread->space->pageTable[vpnumber].valid;
+	    machine->tlb[tlbCounter].use          = currentThread->space->pageTable[vpnumber].use;
+	    machine->tlb[tlbCounter].dirty        = currentThread->space->pageTable[vpnumber].dirty;	    
+	    
+	    // Load it into memory
+	    currentThread->space->memoryLoad(vpnumber, index);
+	  }
+	}   
+      }   
+      
+      if(tlbCounter == TLBSize-1) {
+	tlbCounter = 0;
+      } else {
+	tlbCounter++;
+      }
+
+      return;
+    }
+    
     if ( which == SyscallException ) {
 	switch (type) {
 	    default:
@@ -866,11 +1040,11 @@ void ExceptionHandler(ExceptionType which) {
 		buf[16]='\0';
 
 		// Print out filename
-		// printf("%s\n",buf);
+		printf("%s\n",buf);
 
 		f = fileSystem->Open(buf);
 		if(f == NULL) {
-		  printf("%s","unable to open file\n");
+		  printf("%s","Unable to open file\n");
 		  
 		} else {
 

@@ -31,8 +31,9 @@ main()
 
     for (i = 0; i < Dim; i++)		/* then multiply them together */
 	for (j = 0; j < Dim; j++)
-            for (k = 0; k < Dim; k++)
-		 C[i][j] += A[i][k] * B[k][j];
-
+	  for (k = 0; k < Dim; k++) {
+	    C[i][j] += A[i][k] * B[k][j];
+	  }
+    Print("Final Value: %d\n",C[Dim-1][Dim-1],0,0);
     Exit(C[Dim-1][Dim-1]);		/* and then we're done */
 }

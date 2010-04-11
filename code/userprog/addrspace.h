@@ -41,9 +41,12 @@ class AddrSpace {
     unsigned int NumPages();
     int id;
     void DeAllocate(int stackLocation);
+    TranslationEntry *pageTable;	// Assume linear page table translation
+    OpenFile* asExecutable;
+
+    void memoryLoad(int vpnumber, int index);
 
  private:
-    TranslationEntry *pageTable;	// Assume linear page table translation
 					// for now!
     unsigned int numPages;		// Number of pages in the virtual 
 					// address space

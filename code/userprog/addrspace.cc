@@ -124,8 +124,9 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
     // Don't allocate the input or output to disk files
     fileTable.Put(0);
     fileTable.Put(0);
-    id = -1;
     DEBUG('a', "Reading in the executable\n");
+
+    asExecutable = executable;
 
     executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
     DEBUG('a', "After reading in the executable\n");
@@ -143,7 +144,9 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
     numCodePages = divRoundUp(noffH.code.size, PageSize);
     numInitPages = divRoundUp(noffH.initData.size, PageSize);
 
-    ASSERT(numPages <= NumPhysPages);		// check we're not trying
+    // Virtual memory is implemented so numPages can be greater
+    // ASSERT(numPages <= NumPhysPages);		
+    // check we're not trying
 						// to run anything too big --
 						// at least until we have
 						// virtual memory
@@ -157,7 +160,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
     pageTable = new TranslationEntry[numPages];
     //bzero(machine->mainMemory, size);
     for (i = 0; i < numPages; i++) {
-      index = bitmap->Find();
+      // index = bitmap->Find();
       if(index == -1) {
 	// If index is -1, then the bitmap is full
 	// and there are no available pages in physical page table
@@ -165,7 +168,11 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
 	break;
       }
       pageTable[i].virtualPage  = i; // virtual page always starts at i 
-      pageTable[i].physicalPage = index; // index will give us the position in main memory
+      
+      // pageTable[i].physicalPage = index; // index will give us the position in main memory
+      
+      pageTable[i].location     = 2;
+      pageTable[i].swapLoc      = NULL;
       pageTable[i].valid        = TRUE;
       pageTable[i].use          = FALSE;
       pageTable[i].dirty        = FALSE;
@@ -174,10 +181,19 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
                                           // pages to be read-only 
       
     
-      executable->ReadAt(&(machine->mainMemory[index*PageSize]),PageSize,
+      /*executable->ReadAt(&(machine->mainMemory[index*PageSize]),PageSize,
 			 (i*PageSize)+noffH.code.inFileAddr);
-
-      
+      */
+      // copy this page into the IPT
+      /*
+      machine->ipt[index].processId    = id;
+      machine->ipt[index].physicalPage = index;
+      machine->ipt[index].virtualPage  = i;
+      machine->ipt[index].valid        = TRUE;
+      machine->ipt[index].use          = FALSE;
+      machine->ipt[index].dirty        = FALSE;
+      machine->ipt[index].readOnly     = FALSE;
+      */
       
     }
     /*
@@ -223,6 +239,16 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
 
 }
 
+void AddrSpace::memoryLoad(int vpnumber, int index) {
+  NoffHeader noffH;
+	    	      
+  asExecutable->ReadAt((char *)&noffH, sizeof(noffH), 0);
+  // Read this into memory
+  asExecutable->ReadAt(&(machine->mainMemory[index*PageSize]),PageSize,
+					     (vpnumber*PageSize)+noffH.code.inFileAddr);
+
+}
+
 //----------------------------------------------------------------------
 // AddrSpace::~AddrSpace
 //
@@ -248,7 +274,7 @@ AddrSpace::~AddrSpace()
 void
 AddrSpace::InitRegisters()
 {
-    int i;
+    unsigned int i;
 
     for (i = 0; i < NumTotalRegs; i++)
 	machine->WriteRegister(i, 0);

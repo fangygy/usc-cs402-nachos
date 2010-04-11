@@ -34,9 +34,9 @@ using namespace std;
 					// the disk sector size, for
 					// simplicity
 
-#define NumPhysPages    1024 // need to change this value
+#define NumPhysPages    32 // need to change this value
 #define MemorySize 	(NumPhysPages * PageSize)
-#define TLBSize		4		// if there is a TLB, make it small
+#define TLBSize		8		// if there is a TLB, make it small
 
 enum ExceptionType { NoException,           // Everything ok!
 		     SyscallException,      // A program executed a system call.
@@ -182,6 +182,7 @@ class Machine {
 					// "read-only" to Nachos kernel code
 
     TranslationEntry *pageTable;
+    TranslationEntry *ipt; 
     unsigned int pageTableSize;
 
    int getTimeUsed( int pageNo );

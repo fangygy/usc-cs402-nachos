@@ -36,6 +36,16 @@ extern int nextLockIndex;
 extern Lock *KernelLockTableLock;
 extern int MAX_LOCKS;
 
+extern int tlbCounter;
+extern OpenFile* swapFile;  
+
+extern int numProcesses;
+// FIFO code
+extern int fifo[];
+extern int fifoCounter;
+
+extern int swapCounter;
+
 struct KernelLock {
   Lock* lock;
   AddrSpace* as;

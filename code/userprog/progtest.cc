@@ -28,14 +28,18 @@ StartProcess(char *filename)
     OpenFile *executable = fileSystem->Open(filename);
     AddrSpace *space;
 
+    numProcesses++;
+
     if (executable == NULL) {
 	printf("Unable to open file %s\n", filename);
 	return;
     }
-   
+
     space = new AddrSpace(executable);
 
     currentThread->space = space;
+    currentThread->space->id = numProcesses;
+
 
     // Update process table
     int g, spaceId;
@@ -49,8 +53,7 @@ StartProcess(char *filename)
 	break;
       }
     }
-    currentThread->space->id = spaceId;
-    delete executable;			// close file
+    // delete executable;			// close file
 
     space->InitRegisters();		// set the initial register values
     space->RestoreState();		// load page table register
