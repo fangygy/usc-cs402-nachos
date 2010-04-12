@@ -788,7 +788,10 @@ void ExceptionHandler(ExceptionType which) {
 	    for(i = 0; i < TLBSize; i++) {
 	      if(evictPage == machine->tlb[i].physicalPage) {
 		// Rewrite it
+		IntStatus oldLevel = interrupt->SetLevel(IntOff); // Disable Interrupts
 		machine->tlb[i].valid = FALSE;
+		oldLevel = interrupt->SetLevel(oldLevel); // Disable Interrupts
+
 	      }
 	    }
 	    
@@ -981,7 +984,9 @@ void ExceptionHandler(ExceptionType which) {
 		spaceid_ex = currentThread->space->id;
 		for(int i = 0; i < TLBSize; i++) {
 		  // invalidate the tlb 
+		  IntStatus oldLevel = interrupt->SetLevel(IntOff); // Disable Interrupts
 		  machine->tlb[i].valid = FALSE;
+		  interrupt->SetLevel(oldLevel); // Disable Interrupts
 		}
 		currentThread->Finish();
 		break;
