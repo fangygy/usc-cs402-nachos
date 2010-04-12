@@ -157,7 +157,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
 
     // first, set up the translation 
 
-    pageTable = new TranslationEntry[numPages];
+    pageTable = new NewTranslationEntry[numPages];
     //bzero(machine->mainMemory, size);
     for (i = 0; i < numPages; i++) {
       // index = bitmap->Find();
@@ -317,8 +317,10 @@ void AddrSpace::SaveState()
 
 void AddrSpace::RestoreState() 
 {
-    machine->pageTable = pageTable;
-    machine->pageTableSize = numPages;
+  // DONT NEED THIS SINCE WE ARE USING TLB 
+  // PROJECT 3
+  // machine->pageTable = pageTable;
+  // machine->pageTableSize = numPages;
 }
 unsigned int AddrSpace::NumPages() {
     return numPages;
@@ -327,8 +329,8 @@ void AddrSpace::NewPageTable() {
   
     PageTableLock->Acquire();
     int i, index;
-    TranslationEntry *newPageTable;
-    newPageTable = new TranslationEntry[numPages+8];
+    NewTranslationEntry *newPageTable;
+    newPageTable = new NewTranslationEntry[numPages+8];
 
     for (i = 0; i < numPages; i++) {
       newPageTable[i].virtualPage = pageTable[i].virtualPage; 
@@ -358,8 +360,8 @@ void AddrSpace::NewPageTable() {
     }
     // delete old page table
     delete[] pageTable;
-    pageTable = newPageTable;
-    machine->pageTable = pageTable;
+    // pageTable = newPageTable;
+    // machine->pageTable = pageTable;
 
     // Increase the number of pages by the number of new pages allocated to stack
     numPages = numPages+8;

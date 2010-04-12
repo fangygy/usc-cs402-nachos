@@ -46,6 +46,8 @@ extern int fifoCounter;
 
 extern int swapCounter;
 
+extern NewTranslationEntry *ipt;
+
 struct KernelLock {
   Lock* lock;
   AddrSpace* as;

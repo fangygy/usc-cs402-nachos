@@ -698,9 +698,8 @@ void Print_Syscall() {
 }
 
 void execThread() {
-  DEBUG('f',"running the thread 1\n");
+  DEBUG('f',"running the thread %d\n", currentThread->space->id);
   currentThread->space->InitRegisters();
-  DEBUG('f',"running the thread 2 \n");
   currentThread->space->RestoreState();
   machine->Run();
   DEBUG('f',"running the thread\n");
@@ -729,7 +728,7 @@ void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2); // Which syscall?
     int rv = 0;
     if( which == PageFaultException) {
-      DEBUG('c',"Page Fault Exception\n");
+      DEBUG('f',"Page Fault Exception\n");
       int vaddress;
       vaddress = machine->ReadRegister(39);
       printf("virtual address:0x%x\n",vaddress);
@@ -739,34 +738,36 @@ void ExceptionHandler(ExceptionType which) {
   
       // Check to see if the page is in the IPT
       int i;
+     
+      
       for(i = 0; i < NumPhysPages; i++) {
 	// If the processId in the IPT is the same as the current thread's address space id
 	// we know they are from the same process 
 	// printf("process id is: %d, currentThread space id is: %d\n",machine->ipt[i].processId,currentThread->space->id);
-
-	if(machine->ipt[i].processId == currentThread->space->id) {
+	
+	if(ipt[i].processId == currentThread->space->id) {
 	  
       	  // If the virtual page is the same as the current thread's address space's virtual page 
 	  // then we know we found the right page
-	  if(machine->ipt[i].virtualPage == vpnumber) {
+	  if(ipt[i].virtualPage == vpnumber) {
 	    // THIS IS AN IPT HIT
 	    // We have the virtual page 
 	    // UPDATE THE TLB CODE
 	    DEBUG('c',"ipt virtual page and vpn is the same\n");
 
 	    for(int z = 0; z < NumPhysPages; z++) {
-	      if(machine->tlb[tlbCounter].virtualPage == machine->ipt[z].virtualPage) {
+	      if(machine->tlb[tlbCounter].virtualPage == ipt[z].virtualPage) {
 		if(machine->tlb[tlbCounter].dirty == TRUE) {
-		  machine->ipt[z].dirty = TRUE;
+		  ipt[z].dirty = TRUE;
 		}
 	      }
 	    }
 	    
-	    machine->tlb[tlbCounter].physicalPage = machine->ipt[i].physicalPage;
-	    machine->tlb[tlbCounter].virtualPage  = machine->ipt[i].virtualPage;
-	    machine->tlb[tlbCounter].valid        = machine->ipt[i].valid;
-	    machine->tlb[tlbCounter].use          = machine->ipt[i].use;
-	    machine->tlb[tlbCounter].dirty        = machine->ipt[i].dirty;
+	    machine->tlb[tlbCounter].physicalPage = ipt[i].physicalPage;
+	    machine->tlb[tlbCounter].virtualPage  = ipt[i].virtualPage;
+	    machine->tlb[tlbCounter].valid        = ipt[i].valid;
+	    machine->tlb[tlbCounter].use          = ipt[i].use;
+	    machine->tlb[tlbCounter].dirty        = ipt[i].dirty;
 	    break;
 	  } 
 	  // If we get here, the page we are looking for is not in memory, so we have to load 
@@ -792,13 +793,15 @@ void ExceptionHandler(ExceptionType which) {
 	    }
 	    
 	    // Save the page being evicted, but only if it is dirty
-	    if(machine->ipt[evictPage].dirty == TRUE) {
+	    if(ipt[evictPage].dirty == TRUE) {
 	      DEBUG('g',"page %d is dirty\n", evictPage);
 	      // Write it to the swap file
+	      IntStatus oldLevel = interrupt->SetLevel(IntOff); // Disable Interrupts
 	      swapFile->WriteAt(&(machine->mainMemory[evictPage*PageSize]),PageSize,swapCounter*PageSize);
-	      currentThread->space->pageTable[machine->ipt[evictPage].virtualPage].location = 1;
-	      currentThread->space->pageTable[machine->ipt[evictPage].virtualPage].swapLoc = swapCounter;
+	      currentThread->space->pageTable[ipt[evictPage].virtualPage].location = 1;
+	      currentThread->space->pageTable[ipt[evictPage].virtualPage].swapLoc = swapCounter;
 	      swapCounter++;	
+	      interrupt->SetLevel(oldLevel); // Re-Enable Interrupts
 	    }
 	    
 	    // Shift the entire fifo array
@@ -816,7 +819,10 @@ void ExceptionHandler(ExceptionType which) {
 	    if(currentThread->space->pageTable[vpnumber].location == 1){
 	      DEBUG('c',"Page %d is in the swap file\n",evictPage);
 	      //Load from swap file to main memory
+	      IntStatus oldLevel = interrupt->SetLevel(IntOff); // Disable Interrupts
+
 	      swapFile->ReadAt(&(machine->mainMemory[evictPage*PageSize]),PageSize,currentThread->space->pageTable[vpnumber].swapLoc*PageSize);
+	      interrupt->SetLevel(oldLevel); // Re-Enable Interrupts
 	    } else {
 	      // Load the new page from executable into memory
 	      DEBUG('c',"load from executable into memory\n");
@@ -824,18 +830,18 @@ void ExceptionHandler(ExceptionType which) {
 	    }	    
 
 	    // Evict this page and put in the new page
-	    machine->ipt[evictPage].physicalPage = evictPage;
-	    machine->ipt[evictPage].virtualPage  = vpnumber;
-	    machine->ipt[evictPage].valid        = TRUE;
-	    machine->ipt[evictPage].use          = FALSE;
-	    machine->ipt[evictPage].dirty        = FALSE;
-	    machine->ipt[evictPage].readOnly     = FALSE;
-	    machine->ipt[evictPage].processId    = currentThread->space->id;
+	    ipt[evictPage].physicalPage = evictPage;
+	    ipt[evictPage].virtualPage  = vpnumber;
+	    ipt[evictPage].valid        = TRUE;
+	    ipt[evictPage].use          = FALSE;
+	    ipt[evictPage].dirty        = FALSE;
+	    ipt[evictPage].readOnly     = FALSE;
+	    ipt[evictPage].processId    = currentThread->space->id;
 	    
 	    for(int z = 0; z < NumPhysPages; z++) {
-	      if(machine->tlb[tlbCounter].virtualPage == machine->ipt[z].virtualPage) {
+	      if(machine->tlb[tlbCounter].virtualPage == ipt[z].virtualPage) {
 		if(machine->tlb[tlbCounter].dirty == TRUE) {
-		  machine->ipt[z].dirty = TRUE;
+		  ipt[z].dirty = TRUE;
 		}
 	      }
 	    }
@@ -847,18 +853,17 @@ void ExceptionHandler(ExceptionType which) {
 	    machine->tlb[tlbCounter].use          = currentThread->space->pageTable[vpnumber].use;
 	    machine->tlb[tlbCounter].dirty        = currentThread->space->pageTable[vpnumber].dirty;	   
 
-
 	  } else {
 	    // Main memory has space
 	    // Update the IPT CODE
 	    DEBUG('c',"the page is not inside the ipt\n");
-	    machine->ipt[index].physicalPage = index;
-	    machine->ipt[index].virtualPage  = vpnumber;
-	    machine->ipt[index].valid        = TRUE;
-	    machine->ipt[index].use          = FALSE;
-	    machine->ipt[index].dirty        = FALSE;
-	    machine->ipt[index].readOnly     = FALSE;
-	    machine->ipt[index].processId    = currentThread->space->id;
+	    ipt[index].physicalPage = index;
+	    ipt[index].virtualPage  = vpnumber;
+	    ipt[index].valid        = TRUE;
+	    ipt[index].use          = FALSE;
+	    ipt[index].dirty        = FALSE;
+	    ipt[index].readOnly     = FALSE;
+	    ipt[index].processId    = currentThread->space->id;
 	    
 	    fifo[fifoCounter] = index;
 	    if(fifoCounter < NumPhysPages-1) {
@@ -870,9 +875,9 @@ void ExceptionHandler(ExceptionType which) {
 	    currentThread->space->pageTable[vpnumber].physicalPage = index;
 
 	    for(int z = 0; z < NumPhysPages; z++) {
-	      if(machine->tlb[tlbCounter].virtualPage == machine->ipt[z].virtualPage) {
+	      if(machine->tlb[tlbCounter].virtualPage == ipt[z].virtualPage) {
 		if(machine->tlb[tlbCounter].dirty == TRUE) {
-		  machine->ipt[z].dirty = TRUE;
+		  ipt[z].dirty = TRUE;
 		}
 	      }
 	    }
@@ -895,7 +900,6 @@ void ExceptionHandler(ExceptionType which) {
       } else {
 	tlbCounter++;
       }
-
       return;
     }
     
@@ -975,8 +979,10 @@ void ExceptionHandler(ExceptionType which) {
 	        DEBUG('x', "Exit syscall with status = %d\n",machine->ReadRegister(4));
 		int spaceid_ex;
 		spaceid_ex = currentThread->space->id;
-		currentThread->space->DeAllocate(currentThread->stackLoc);
-		processTable[spaceid_ex].as;
+		for(int i = 0; i < TLBSize; i++) {
+		  // invalidate the tlb 
+		  machine->tlb[i].valid = FALSE;
+		}
 		currentThread->Finish();
 		break;
 	    case SC_Fork:
@@ -1017,23 +1023,24 @@ void ExceptionHandler(ExceptionType which) {
 		
 		break;
 	    case SC_Exec:
-	        DEBUG('a',"Exec syscall. \n");
+	        DEBUG('d',"Exec syscall. \n");
 		
 		int virtualAddress_e, physicalAddress_e; 
 		char* filename;
 		// Get the virtual address for the name of the process
+		// virtualAddress_e = machine->ReadRegister(4);
 		virtualAddress_e = machine->ReadRegister(4);
 		char *buf = new char[16+1];	// Kernel buffer to put the name in
 		OpenFile *f;			// The new open file
 		int id;				// The openfile id
 		
 		if (!buf) {
-		  DEBUG('a',"Can't allocate kernel buffer in Open\n");
+		  DEBUG('d',"Can't allocate kernel buffer in Open\n");
 		 
 		}
 		
 		if( copyin(virtualAddress_e,16,buf) == -1 ) {
-		  DEBUG('a',"Bad pointer passed to Open\n");
+		  DEBUG('d',"Bad pointer passed to Open\n");
 		  delete[] buf;
 		}
 		
@@ -1049,35 +1056,22 @@ void ExceptionHandler(ExceptionType which) {
 		} else {
 
 		  AddrSpace *space;
-		  DEBUG('a',"Got the file open\n");
+		  DEBUG('d',"Got the file open\n");
 		  
 		  // create a new address space for this executable file
 		  space = new AddrSpace(f);
 		  Thread *executionThread = new Thread("executionThread");
 		  // Allocate the address space to this thread
+		  
+		  DEBUG('d',"allocated the address space\n");
+		  numProcesses++;
+		  space->id = numProcesses;
 		  executionThread->space = space;
-		  
-		  DEBUG('a',"allocated the address space\n");
-		  
-		  // Update process table
-		  int g, spaceId;
-		  for(g = 0; g < 64; g++) {
-		    if(!processTable[g].inUse) {
-		      spaceId = g;
-		      // Set the appropriate address space
-		      processTable[spaceId].as = space;
-		      processTable[spaceId].stackLocation = (space->NumPages()*PageSize) - 16;
-		      processTable[spaceId].inUse = TRUE;
-		      break;
-		    }
-		  }
-		  space->id = spaceId; 
-		  DEBUG('g',"space id: %d \n",spaceId);
-		  
-		  DEBUG('a',"Updated the process table with new process\n");
-		  
+ 
+		  DEBUG('g',"space id: %d \n",executionThread->space->id);
+
 		  // Write the space id to register 2
-		  rv = spaceId;
+		  rv = space->id;
 		  // Fork the thread
 		  executionThread->Fork((VoidFunctionPtr)execThread,0);
 		}

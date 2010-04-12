@@ -70,13 +70,10 @@ Machine::Machine(bool debug)
 
 #ifdef USE_TLB
     tlb = new TranslationEntry[TLBSize];
-    ipt = new TranslationEntry[NumPhysPages];
     for (i = 0; i < TLBSize; i++)
 	tlb[i].valid = FALSE;
     pageTable = NULL;
-    for( i = 0; i < NumPhysPages; i++) {
-      ipt[i].valid = FALSE;
-    }
+
 #else	// use linear page table
     tlb = NULL;
     pageTable = NULL;

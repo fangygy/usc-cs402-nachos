@@ -42,6 +42,8 @@ int fifo[NumPhysPages];
  
 OpenFile* swapFile;
 
+NewTranslationEntry *ipt;
+
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
 #endif
@@ -109,6 +111,8 @@ Initialize(int argc, char **argv)
     KernelCondTableLock = new Lock("KernelCondLock");
     // Create a process table capable of creating up to 64 processes
     processTable        = new ProcessTable[64];
+
+    ipt                 = new NewTranslationEntry[NumPhysPages];
     for(g = 0; g < 64; g++) {
       processTable[g].as = NULL;
       processTable[g].numChildProcess = 0;
@@ -117,6 +121,11 @@ Initialize(int argc, char **argv)
       processTable[g].stackLocation = 0;
     }
 
+    // Create the Inverted Page Table
+    for(g = 0; g < NumPhysPages; g++) {
+      ipt[g].valid = FALSE;
+    }
+    
     // Create the file 
     fileSystem->Create("SwapFile",3000);
     swapFile = fileSystem->Open("SwapFile");

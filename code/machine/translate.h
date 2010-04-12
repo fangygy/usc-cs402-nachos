@@ -32,11 +32,6 @@ class TranslationEntry {
     int virtualPage;  	// The page number in virtual memory.
     int physicalPage;  	// The page number in real memory (relative to the
 			//  start of "mainMemory"
-    int location;       // 0 - In main memory
-                        // 1 - In swap file
-                        // 2 - In executable
-    int processId;      // The id of the process 
-    int swapLoc;
     bool valid;         // If this bit is set, the translation is ignored.
 			// (In other words, the entry hasn't been initialized.)
     bool readOnly;	// If this bit is set, the user program is not allowed
