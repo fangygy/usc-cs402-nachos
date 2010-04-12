@@ -38,6 +38,7 @@
 //    -n sets the network reliability
 //    -m sets this machine's host id (needed for the network)
 //    -o runs a simple test of the Nachos network software
+//    -server starts the Project 3 Part 3 Server
 //
 //  NOTE -- flags are ignored until the relevant assignment.
 //  Some of the flags are interpreted here; some in system.cc.
@@ -73,6 +74,7 @@ extern void Test8(void);
 extern void Test9(void);
 extern void Test10(void);
 extern void Main(void);
+extern void StartProject3Server(void), TestProject3(void);
 
 //----------------------------------------------------------------------
 // main
@@ -167,17 +169,25 @@ main(int argc, char **argv)
             fileSystem->Print();
 	} else if (!strcmp(*argv, "-t")) {	// performance test
             PerformanceTest();
-	}
+	} 
 #endif // FILESYS
 #ifdef NETWORK
         if (!strcmp(*argv, "-o")) {
 	    ASSERT(argc > 1);
-            Delay(2); 				// delay for 2 seconds
+            Delay(10); 				// delay for 10 seconds
 						// to give the user time to 
 						// start up another nachos
             MailTest(atoi(*(argv + 1)));
             argCount = 2;
-        }
+        } else if (!strcmp(*argv, "-server")) {  // project 3 part 3 server
+	  //ASSERT(argc > 1);
+	  StartProject3Server();
+	  argCount = 2;
+	} else if (!strcmp(*argv, "-part3test")) { // temp project3 test
+	  
+	  Delay(10);
+	  TestProject3();
+	}
 #endif // NETWORK
     }
 
