@@ -75,6 +75,12 @@ III. Design:
 		8. Update the TLB
 	D. Increment the TLB Counter
 	D. Restart the User Instruction, without incrementing the PC Register
+
+	// Design for Part 3
+	A. A server runs continuously waiting for client requests sent over the network.
+	B. Clients send lock and CV requests to the server (create lock, acquire, release, create CV, wait, signal, broadcast).
+	C. Server tracks all locks and CVs requested by the clients.
+	D. Clients wait until a response is received from the server after certain requests (acquire and wait) before continuing.
    		
 		
 IV. Implementation:
@@ -88,9 +94,14 @@ IV. Implementation:
 			matmult.c
 			system.cc
 			system.h
+			Makefile.common
+			network/Makefile
 			            
 	    + Files added
 			NewTranslationEntry.h
+			Project3Server.cc
+			ServerLock.h/.cc
+			ServerCond.h/.cc
 			
             + Data Structures added, and the file they were added to.
 		the following to system.cc / h
@@ -98,6 +109,9 @@ IV. Implementation:
 			fifoCounter
 			fifo
 			tlbCounter
+		the following to Project3Server.cc
+			serverLockTable
+			serverCondTable
 			
 			
             + Data Structures modified, and the file they were added to.
@@ -117,7 +131,13 @@ V. Testing:  (For each test case, you must show)
 			
 			-in the code/vm/ directory, type the following to execute tests
 
-				"run" - a shell script that calls exectest which tests 2 instances of the user program matmult				
+				"run" - a shell script that calls exectest which tests 2 instances of the user program matmult	
+
+			-in the code/network/ directory, do the following (in order) to execute a test.
+				
+				In one terminal: nachos -m 0 -server  --> this starts the server on machine 0.
+				In another terminal: nachos -m 1 -x ../test/lockTest1 --> this tests locks and CVs.
+				In another terminal: nachos -m 2 -x ../test/lockTest2 --> this completes the above test.
 				
 
             + Test Output
@@ -132,6 +152,19 @@ V. Testing:  (For each test case, you must show)
 			Each matmult runs about 50,000+ ticks, so a combined number of ticks > 100,000 means that both matmults have run,
 			and that they have run to completion.
 
+			lockTest1:
+				This test will create two locks (lock0 and lock1) and one CV (cv0).
+				It will then acquire lock0 and lock1.
+				Then, it will send a Wait request with cv0 and lock0.  At this point, the program should be waiting.
+				After Waiting, this test will release lock0 and lock1.
+
+			lockTest2:
+				This test will acquire lock0, which should be released when lockTest1 sent the Wait request.
+				This test will then send a Signal request with cv0 and lock0.  
+				Then it will release lock0.  This should wake up lockTest1.
+				Then it will acquire lock1.  Lock1 will be available once lockTest1 wakes up and releases it.
+				Then it will release lock1.
+
 
 VI. Discussion:
 
@@ -143,12 +176,17 @@ VI. Discussion:
 			its value before, when the system is still outputing virtual addresses. It will be impossible to notice this since 
 			the console prints out the value at such rapidity.
 
+			lockTest1/2:
+			This set of tests should show that lock/CV requests are passed between the clients and the server.  It should also show that locks and CVs can be shared between multiple clients.
+
 
             + Experiment result.  (What actually happens.)
 		
 			Exectest:
 			Correct output.
 			
+			lockTest1/2:
+			Correct output.
 
 
             + Explanation
