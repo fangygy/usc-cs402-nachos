@@ -1,6 +1,6 @@
 Title:  Writeup for Project 1, Spring 2010
 
- Date:  03/08/2010
+ Date:  04/12/2010
 
  Group Num 03 :        Name            USC Email        Student ID
 
@@ -9,227 +9,96 @@ Title:  Writeup for Project 1, Spring 2010
 		       Tim Zimmer      tzimmer 		4814912664
 
 *********************************************
-**Project 2 Test Documentation see part V.**
+**Project 3 Test Documentation see part V.**
 *********************************************
 
 I. Requirements:
 
-	create 7 different types of threads: Passengers, Airport Liaisons, Airline Check-In Staff, 
-		Cargo Handlers, Screening Officers, Security Inspectors, and an Airport Manager.
+	For this project, we have 3 different, distinct requirements.
 		
-	Each thread type has different responsibilities
-		I. Passengers:
-			+ There must be at least 20 passengers
-			+ two types: Executive and Economy
-			+ Each carries 2-3 pieces baggage and a ticket
-			
-			+ Passengers are created
-			+ Passenger waits in shortest line of Airline Liaisons
-            + When Passenger is called, gives AL ticket
-			+ Passenger either waits in executive or shortes economy line of the Check-In Staff of the airline 
-				specified by the AL depending on their type
-			+ When called, Passenger gives ticket and baggage to CIS
-			+ Passenger waits in shortest Screening Officer line
-			+ If necessary, Passenger will undergo questioning before continuing
-			+ If Security Inspector gives ok, Passenger gives boarding pass
-			+ Passenger proceeds to boarding area and waits for the boarding announcement
-		II. Airport Liaison:
-			+ There can be 5 to 7 Airport Liaisons
-			
-			+ AL calls one passenger at a time
-			+ When AL recieves ticket from Passenger, will direct Passenger to correct Airline
-			+ AL records the amount of baggage and which Airline it goes to 
-		III. Airline Check-In Staff:
-			+ There must be 3 to 5 Check-in Staff per Airline
-			+ one line per CIS plus one executive passenger line per airline
-			
-			+ Each CIS calls one Passenger at a time (executive line has priority over their own line)
-			+ CIS takes asks for Passenger ticket and baggage
-			+ CIS gives Passenger boarding pass with seat number assignment (no duplicates per airline)
-			+ CIS tags Passenger baggage with airline code and weight
-			+ CIS puts baggage on conveyor belt (shared by all airlines)
-			+ CIS dismisses Passenger (?)
-			+ CIS records number of passengers to check in and their baggage count
-			
-			+ CIS can go on break if economy AND their line are both empty
-			+ When all Passengers check in, close check-in kiosk (all go on break?)
+		I. Implementation of the TLB (Translation Lookaside Buffer)
+			+ The TLB resides in the machine directory, and is already initialized by existing machine code
+			+ The TLB's function is to act as a fast cache that provides a direct pipeline from the CPU to main Memory
+			+ There must be software management for the TLB, which will be used on TLB misses. 
+			+ Dirty bits must be taken care of in the algorithm, ensuring that TLB state is set correctly			
+			+ User Programs must run to completion
+
+		II. Implementaion of Virtual Memory (Swap Files w/ FIFO and RAND, Inverted Page Table, and TLB):
+			+ Virtual Memory gives user programs the illusion of large contiguous chunks of memory
+			+ Virtual Memory is constructed via Swap Files, and IPT, and a TLB
+			+ The IPT, or Inverted Page Table, is an operating system data structure that maps physical addresses into main Memory
+			+ There is only one IPT in the entire instance of Nachos
+			+ The IPT is invisible to the system
+			+ The Swap File is a file that resides on disk, which contains data for evicted pages
+			+ The Swap File is read from and also written to, using existing Kernel calls.
+			+ 2 Page Replacement Algorithms, FIFO and Random, must be implemented to evict pages
+			+ 2 or more user programs LARGER than memory must run to completion
+			+ Also, memory is no longer pre-loaded. 
+
+		III. Implementation of Remote Procedural Calls 
+			+ Basic networking is set up in Nachos. 
+			+ Nachos makes use of existing classes, like postOffice, to relay messages between servers and clients
+			+ Lock and CV elements need to be rewritten to conform to the new networking protocols
          
-		IV. Cargo Handler
-			+ There can be between 6 to 10 Cargo Handlers
-			
-			+ CH will pick up baggage from conveyor, read airline code, and drop off at appropriate aircraft.
-            + CH record number of baggage loaded into each aircraft
-			
-			+ CH can go on break when conveyor is empty
-            + CH all on break or at work at the same time (all or none)
-		V. Screening Officer:
-			+ SO handles one Passenger at a time from their line
-			+ SO generates Pass/Fail report on Passenger (percentage chance of fail)
-			+ SO sends Passenger and report to first available Security Inspector
-		VI. Security Inspector:
-			+ There must be the same number of SI's as SO's
-			
-			+ SI handles one Passenger at a time
-			+ SI creates their own PASS/FAIL report
-			+ If either SO or SI security reports are FAIL, SI sends Passenger to be questioned
-			+ SI must handle their own Passenger returning from questioning before another Passenger from any SO
-			+ SI verifies that each cleared Passenger holds a valid boarding pass
-			+ SI records number of Passengers cleared per airline 
-		VII. Airport Manager:
-			+ There is only one airport manager
-			
-			+ AM checks reports (passenger or baggage) at random intervals to ensure no race conditions
-            + AM signals back to work if there is baggage and CH's are on break
-            + When all Passengers and baggage have reached the airline, AM makes boarding announcement
-			
-			+ AM never goes on break
-
-    There must be at least 3 airlines 
-
+	
 II. Assumptions:
-	+ The 2-3 baggage items handled by the check-in staff per passenger does not include their carry-on baggage
-	+ One aircraft/flight per airline
-	+ Any number of Screening Officers/Security Inspectors allowable as long as their relationship remains 1 to 1
-	+ Screening Officers have lines exactly like Airport Liaisons
-	+ SO's hold their current Passenger until sending them to available SI
-	+ Passengers, Airport Liaisons, Screening Officers, and Security Inspectors never go on break
-	+ All Passenger baggage checked takes up one "slot" on the conveyor (is treated as a single item)
-	+ SI have lines... the only passengers to get in those lines are those returning from questioning
-	+ Passengers place their bags down all at the same time.
-	+ Check-in staff and cargo handlers pick up a customer's bags all at once.
+	+ Matmult is the user program that is used in testing
+	+ It is impossible to test Part 1 of this Project, since Part 1 is the groundwork for Part 2. In order to test Part 1 solely, Part 2 can not exist.
+		+ Based on what we know above, the success of the test for Part 2 is deemed sufficient evidence for the feasibility of Part 1. 
+	+ 
 
 III. Design:
-
-	Airport Manager: on continual loop
-		+ grab conveyor lock and wake up CH's if (onBreak_CH && #bags > 0)
-			+ check baggage statistics, then release
-		+ grab airlineLock[airline#] and wake up CIS's if (onbreak && PassLeft > 0)
-			+ check statistics, then release
-		+ check AL statistics
-		+ check SO/SI statistics
-		+ if (allPassArrived[airline#] && allBagsArrived[airline#]) call for Boarding[airline#]
-		+ thread yield for awhile, then do it all again
-		
-		+ when all flights are off, gather all statistics and compare?
-	Cargo Handlers: on continual loop
-		+ grab conveyor lock
-			+ if onBreakCH, go on break as well (release)
-			+ else check for bags
-				+ if no bags, signal onBreakCH and go on break
-				+ else remove first bags sighted [and record statistics]
-					then release lock, and take to appropriate airline
-	Security Inspector: on continual loop
-		+ set busy status to false and whether next passenger has undergone questioning to false
-		+ grab SILine lock
-			+ if (Passenger in line)-passengers returning from questioning only- signal them
-			+ else wait for SO to give a Passenger and signal them
-				then set busy to true, grab SI lock, and release SILine lock
-		+ if Passenger was questioned, pass them onward [and record statistics]
-		+ else probability-pass/fail Passenger
-			+ if (SOFail || SIFail) then send to questioning, set busy to false, release SI lock
-			+ else pass Passenger onward [and record statistics], set busy to false, release SI lock
-	Screening Officer: on continual loop
-		+ grab SOLine lock
-			+ if (Passenger in line) signal them
-			+ else wait for Passenger to get in line
-		+ grab SO lock, release SOLine lock
-		+ probability-pass/fail Passenger
-		+ grab SILine lock
-			+ if (any SI = NoLine && NotBusy) send Passenger and SOPass/Fail report
-			+ else wait for available SI
-		+ when Passenger sent on, release SILine and SO locks
-	Airport Liaison: on continual loop
-		+ grab ALLine lock
-			+ if (Passenger waiting) then signal them
-			+ else wait for Passenger
-		+ grab AL lock, release ALLine lock
-		+ count number of bags they have, get Passenger ticket, [and record statistics]
-			then point them to correct airline
-		+ release AL lock
-	CheckIn Staff: on continual loop
-		+ Set which airline they are in
-		+ if (execLineEmpty && ownLineEmpty) go on break
-		+ else if (execLineLength > 0) grab execLine lock
-			+ signal Passenger, grab CIS lock, release execLine lock
-			+ get ticket, give boarding pass with unique seat #
-			+ grab conveyor lock
-			+ take baggage, mark it with airline number, put it in 'empty' slot on conveyor
-			+ [and record statistics]
-			+ release conveyor lock, release CIS lock
-		+ else if (ownLineLength > 0) grab CISLine lock
-			+ signal Passenger, grab CIS lock, release CISLine lock
-			+ grab conveyor lock
-			+ take baggage, mark it with airline number, put it in 'empty' slot on conveyor
-			+ [and record statistics]
-			+ release conveyor lock, release CIS lock
-	Passenger
-		+ look at ticket to find executive/or-not status
-		+ grab ALLine lock
-			+ get in shortest line, release ALLine lock
-			+ when signaled, grab AL lock (approach desk)
-			+ give ticket
-			+ when signaled, release AL lock
-		+ at appropriate airline:
-			+ if (exec) grab execLine lock, wait in line, release execLine lock
-			+ else grab CISLine lock, wait in shortest line, release CISLine lock
-			+ when signaled by CIS, grab CIS lock (approach desk)
-			+ give ticket, give baggage, recieve boarding pass, release CIS lock
-		+ grab SOLine lock
-			+ wait in shortest line, release SOLine lock
-			+ when signaled, grab SO lock (approach desk)
-		+ if assigned SI by SO, release SO lock, grab that SI lock (approach them)
-			+ go to questioning OR go to boarding area (pass/fail from SI), release SI lock
-		+ if returning from questioning, grab own SI's SILine lock, wait in line, release SILine lock
-			+ grab SI lock (approach them)
-			+ go to boarding area, release SI lock
-		+ when recieve boarding call, board plane
+	
+	// Design for Parts 1 and 2
+	// General Description of the Algorithm
+	A. Get the virtual page required.
+   		1. Ensure that the page is within a legal range.
+	B. Check to see whether the needed page is in the IPT.
+		1. Iterate through the IPT, and match the process id of the IPT to that of the current thread's address space.
+			a. If they are the same, then proceed to 2.
+			b. If iterated through the entire array, then this is a miss. Go to step C.  
+		2. Check to see if the virtual page in the IPT is the same as the virtual page obtained in step A.
+			a. If so, then we have an IPT hit. 
+			b. Update the TLB 
+	C. This is an IPT miss.
+		1. Find a place in main memory that is open. 
+			a. If it is full, go to step 2.
+			b. If not, go to step 6b. 
+		2. Using FIFO / Rand, select a page to evict
+		3. Set the valid bits in the TLB to false
+		4. Save the page if it is dirty, to a swap file
+		5. Evict the page, by shifting the FIFO array
+		6. Check to see if the new page is inside the swap file
+			a. If it is, read it.
+			b. If not, then simply load the page into main memory
+		7. Update the Inverted Page Table
+		8. Update the TLB
+	D. Increment the TLB Counter
+	D. Restart the User Instruction, without incrementing the PC Register
+   		
 		
 IV. Implementation:
 
             + Files Modified:
 			exception.cc
-			syscall.h
 			system.h - externs/structs
 			addrspace.h/.cc
 			progtest.h/.cc
-			syscall.h
-			
-			synch.h/.cc
-            
+			exectest.c
+			matmult.c
+			system.cc
+			system.h
+			            
 	    + Files added
-			halt.c
+			NewTranslationEntry.h
 			
             + Data Structures added, and the file they were added to.
-		the following to halt.c:
-			baggageticketbuffer
-			passengerticketbuffer
-			liaisonlines			
-			checkinstafflines
-			conveyerbelt
-			boardingpassbuffer
-			siPassenger
-			soPassenger
-			cisPassenger
-			waitingForTicket_CIS
-			waitingForSO
-			waitingForSI
-			waitingForTicket_SI
-			waitingForAL
-			cisLIneLock
-			soLineLock
-			siLineLock
-			alLineLock
-		the following to system.h
-			PageTableLock
-			KernelLockTableLock
-			KernelLock
-			osLocks
-			KernelCondTableLock
-			KernelCond
-			osConds
-			processTable
-		the following to addrspace.h
-			ProcessTable
+		the following to system.cc / h
+			ipt
+			fifoCounter
+			fifo
+			tlbCounter
+			
 			
             + Data Structures modified, and the file they were added to.
 			N/A
@@ -239,157 +108,52 @@ IV. Implementation:
 
             + Functions modified and in which file.
 		the following to exception.cc
-			CreateLock
-			DestroyLock
-			CreateCondition
-			DestroyCondition
-			Yield
-			Exit
-			Exec
-			Fork
-			Wait() 				
-			Signal()			
-			Broadcast()				
-			Acquire()			
-			Release()			
+						
 			
 			
 V. Testing:  (For each test case, you must show)
 
             + How to test
 			
-			-in the code/userprog/ directory, type the following to execute tests
+			-in the code/vm/ directory, type the following to execute tests
 
-				nachos -d q -x ../test/testLocks - tests Locks (create/destroy/acquire/release)
-				nachos -d q -x ../test/testConds - tests Conditions(create/destroy/wait/signal/broadcast)
-
-				nachos -d x -x ../test/exittest - tests Exit
-				nachos -d x -x ../test/exectest - tests Exec
-				nachos -d x -x ../test/forktest - tests Fork
-
-			-in the code/test/ directory, type the following to execute the airport tests
-
-				./airportTest - (You will be prompted to run several different tests)
+				"run" - a shell script that calls exectest which tests 2 instances of the user program matmult				
 				
 
             + Test Output
 
-			LockTest: 
-			 /*/Test: too many locks created(FAIL)*/
-			/*/Test: destroy lock in use
- 			 //acquire valid lock(SUCCESS)*/
-			  /*/destroy lock(FAIL)*/
-			  /*/release lock(SUCCESS)*/
-			  /*/destroy lock(SUCCESS)*/
-			  /*/Test: acquire destroyed lock(FAIL)*/
-			  /*/Test: release destroyed lock(FAIL)*/
-			  /*/Test: aquire/release bogus lock(FAILx2)*/
-
-			ConditionTest:
-			/*/Test: too many conditions created(FAIL)*/
- 			 //wait valid lock*/
-			  /*wait lock twice more*/
-			  /*/signal lock(SUCCESS)*/
-			  /*broadcast lock(SUCCESS)*/
-			  /*/destroy condition(SUCCESS)*/
-			  /*/destroy lock(SUCCESS)*/
-			  /*/Test: wait/signal/broadcast with bogus condition(FAILx3)*/
-			/*/Test: wait/signal/broadcast with destroyed condition(FAILx3)*/
-
-			
-			ExitTest:
-				Exits with status = 10.
-				There should only be 1 Exit call. If there is an Exit call with status = 9, the first Exit call did not work.
-
 			ExecTest:
-				Sets an integer (result) to 1.
-				Exec's ExitTest (see above) and sets result to its Exit status code.
-				Exits with status = result.
-				There should be two exit calls, one with status=1 and one with status=10 (from ExitTest).
-
-			ForkTest:
-				Prints out "hello", then "world" 20 times.
-
-
-			Airport Tests (see above for instructions on how to execute these tests):
-				Enter a test number (1-5).
-				Test #1 runs the entire airport simulation.
-				Test #2 tests the Airport Liason.
-				Test #3 tests the Check-in Staff
-				Test #4 tests the Screening Officers
-				Test #5 tests the Security Inspectors
-
-
-			* Note: all output is derived from the same guidelines as specified in the assignment requirements
-
-			Test 1: Passengers are initialized, and they  go to the shortest line for the Airport Liaison
-			Test 2: Liaison looks at the passengers ticket and directs the passenger to the correct counter
-			Test 3: While going to check in staff, economy passengers select the shortest line and the executives go to their own line 
-			Test 4: Executives are cleared before passengers, given the check in staff is not currently working with anyone 
-			Test 5: Screening officer looks for an available security inspector, and then tells the passenger to go there.If there are no inspectors
-				available, the screening officer will tell the passenger to go to shortest wait. The passenger will wait until the inspector is ready.
-			Test 6: Cargo handlers remove bags from conveyor belt and then go on break if no bags
-				This test only has cargo handlers and a conveyor belt.
-			Test 7:	Interaction between passenger and screening officer
-			Test 8: Passenger returns to the same security inspector after they go for further questioning
-			Test 9: Baggage weights should match the tallies reported by cargo handlers 
-			Test 10: Handing over of boarding pass to security inspector
-		
+				Aside from the printing of the default virtual address information, it should print out the final
+				value of 7220. 
+			*Important note: Exectest runs two instances of matmult (each 50+ pages > Memory), however only the final print
+			statement for the second matmult will print out. This is because the first one prints out earlier, but it is
+			impossible to see given the fact that the virtual addresses are constantly being printed out (the output will
+			get lost amongst the print of VAs). The one way we know that is running is by looking at the amount of ticks.
+			Each matmult runs about 50,000+ ticks, so a combined number of ticks > 100,000 means that both matmults have run,
+			and that they have run to completion.
 
 
 VI. Discussion:
 
             + Experiment expectation.  (What you hope will happen.)
 			
-			Test 1: Passenger selects the shortest line
-			Test 2: Passenger is directed by Liaison to correct counters
-			Test 3:	Economy class passengers enter the shortest line while Executives enter their correct line
-			Test 4: Executives are given priority
-			Test 5: Screening officer chooses an available security inspector each time a passenger comes in
-			Test 6: Cargo Handlers choose bags from the conveyor system each time and go on a break if no bags
-			Test 7: Handing over of the hand luggage by the passenger to the screening officer
-			Test 8: Passenger returns to the same security inspector after further questioning
-			Test 9: Baggage weights of all the passengers of a particular airline should match the weights of the bag
-				reported by the cargo handlers 
-			Test 10: Handing over of boarding pass by the passenger to the security inspector
+			Exectest:
+			The test should output 7220, which is the final result after the extensive multiplication / addition of the 
+			two matrices. As mentioned before, however, there will only be one output, since the other userprogram will output
+			its value before, when the system is still outputing virtual addresses. It will be impossible to notice this since 
+			the console prints out the value at such rapidity.
 
 
             + Experiment result.  (What actually happens.)
-
-			Test 1: Passenger selects the shortest line
-			Test 2: Passenger is directed by Liaison to correct counters
-			Test 3:	Economy class passengers enter the shortest line while Executives enter their correct line
-			Test 4: Executives are given priority
-			Test 5: Screening officer chooses an available security inspector each time a passenger comes in.
-				However, this often times is security inspector 0. 
-			Test 6: Cargo Handlers choose bags from the conveyor system each time and go on a break if no bags.
-				Some cargo handlers do not go on break, since they are already asleep. 
-			Test 7: Handing over of the hand luggage by the passenger to the screening officer
-			Test 8: Passenger returns to the same security inspector after further questioning
-			Test 9: Baggage weights of all the passengers of a particular airline should match the weights of the bag
-				reported by the cargo handlers 
-			Test 10: Handing over of boarding pass by the passenger to the security inspector
+		
+			Exectest:
+			Correct output.
+			
 
 
             + Explanation
 
-                        - Explain your experiment result.
-
-			Test 1: Works correctly
-			Test 2: Works correctly
-			Test 3:	Works correctly
-			Test 4: Works correctly
-			Test 5: However, this often times is security inspector 0. The reason for this is because the screening officer does not 
-				increment the value of the security inspector's "line". So, other screening officers will see that security inspector 0 is 
-				free, and send their passengers there. In real life, this could be explained a screening officer not seeing anyone 
-				that the security inspector is working with and sending their passenger there. All screening officers could do this 
-				at the same time, since to them, the security inspector looks free (the passenger from other screening officers has not arrived 
-				yet).  
-			Test 6: Some cargo handlers do not go on break, since they are already asleep. 
-			Test 7: Works correctly
-			Test 8: Works correctly
-			Test 9: Works correctly 
-			Test 10: Works correctly 
+                    	The page fault exception is handled correctly, through the use of a swap file, tlb, and ipt. 
 
 			
 VII. Miscellaneous:

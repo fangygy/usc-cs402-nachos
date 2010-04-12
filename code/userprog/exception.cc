@@ -1089,6 +1089,9 @@ void ExceptionHandler(ExceptionType which) {
       vaddress = machine->ReadRegister(39);
       printf("virtual address:0x%x\n",vaddress);
       int vpnumber = vaddress / PageSize; 
+      if(vpnumber > PageSize*NumPhysPages) {
+	printf("VPN is OUT OF BOUNDS\n");
+      }
       unsigned int index;
       printf("vpn is %d \n",vpnumber);
   
