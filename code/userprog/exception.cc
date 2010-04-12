@@ -27,6 +27,7 @@
 #include "synch.h"
 #include <stdio.h>
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -241,6 +242,7 @@ void Close_Syscall(int fd) {
  */
 
 int CreateLock_Syscall(int vaddr) {
+#ifndef NETWORK
  //IS OK???
   // Return position in kernel structure array
   int size = 16;
@@ -290,9 +292,52 @@ int CreateLock_Syscall(int vaddr) {
   // this may prove to have some problems if
   // we are context switched out before nextLockIndex is
   // returned
+#else
+  stringstream ss;
+
+  PacketHeader outPktHdr, inPktHdr;
+  MailHeader outMailHdr, inMailHdr;
+  char buffer[MaxMailSize];
+
+  int size = 16;
+  char *lockName = new char[size];
+  copyin(vaddr,size,lockName);
+
+  ss.clear();
+  ss<<"L "<<lockName;
+  ss>>buffer;
+  
+  outPktHdr.to = 0;
+  outMailHdr.to = 0;
+  outMailHdr.from = 1;
+  outMailHdr.length = strlen(buffer)+1;
+
+  bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+
+  if(!success) {
+    printf("The postOffice Send failed.\n");
+    interrupt->Halt();
+  }
+
+  postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
+  printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+  fflush(stdout);
+  
+  ss.clear();
+  ss.str(buffer);
+  int lockID_rec;
+  ss>>lockID_rec;
+
+  return lockID_rec; //will be -1 if lock table is full
+  
+  
+
+#endif
+
 }
 
 void DestroyLock_Syscall(int value) {
+#ifndef NETWORK
   // Delete from kernel structure array the lock object at position index
   int index = value;
   // Delete from kernel structure array the lock object at position index
@@ -319,9 +364,58 @@ void DestroyLock_Syscall(int value) {
     return;
   }
 
+#else
+
+  stringstream ss;
+
+  PacketHeader outPktHdr, inPktHdr;
+  MailHeader outMailHdr, inMailHdr;
+  char buffer[MaxMailSize];
+
+  //int size = 16;
+  //char *lockName = new char[size];
+  //copyin(vaddr,size,lockName);
+
+  //ss.clear();
+  //ss<<"D "<<lockName;
+  //ss>>buffer;
+
+  sprintf(buffer, "D %d", value);
+  
+  outPktHdr.to = 0;
+  outMailHdr.to = 0;
+  outMailHdr.from = 1;
+  outMailHdr.length = strlen(buffer)+1;
+
+  bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+
+  if(!success) {
+    printf("The postOffice Send failed.\n");
+    interrupt->Halt();
+  }
+
+  postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
+  printf("Got \"%d\" from %d, box %d\n",buffer,inPktHdr.from,inPktHdr.from);
+  fflush(stdout);
+
+  ss.str(buffer);
+  int lockID_rec;
+  ss>>lockID_rec;
+
+  if(lockID_rec < 0) {
+    //there was an error destroying the lock
+    DEBUG('q',"Error destroying lock\n");
+  } else {
+    //lock destroyed successfully (received confirmation from server)
+    //do nothing
+  }
+
+#endif
+
 }
 
 void Acquire_Syscall(int index) {
+#ifndef NETWORK
   int value = index; // this is the value read by machine->readregister(4)
   KernelLockTableLock->Acquire();
   DEBUG('a',"ACQUIRING LOCK\n\n\n\n\n");
@@ -359,9 +453,60 @@ void Acquire_Syscall(int index) {
     // FINALLY...Acquire the lock
   curLock.lock->Acquire();
 
+#else
+
+  stringstream ss;
+
+  PacketHeader outPktHdr, inPktHdr;
+  MailHeader outMailHdr, inMailHdr;
+  char buffer[MaxMailSize];
+
+  //int size = 16;
+  //char *lockName = new char[size];
+  //copyin(vaddr,size,lockName);
+
+  //ss.clear();
+  //ss<<"D "<<lockName;
+  //ss>>buffer;
+
+  sprintf(buffer, "A %d", index);
+  
+  outPktHdr.to = 0;
+  outMailHdr.to = 0;
+  outMailHdr.from = 1;
+  outMailHdr.length = strlen(buffer)+1;
+
+  bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+
+  if(!success) {
+    printf("The postOffice Send failed.\n");
+    interrupt->Halt();
+  }
+
+  postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
+  printf("Got \"%d\" from %d, box %d\n",buffer,inPktHdr.from,inPktHdr.from);
+  fflush(stdout);
+
+  ss.str(buffer);
+  int lockID_rec;
+  ss>>lockID_rec;
+
+  //printf("ACQUIRE: Server Response:%d.\n",lockID_rec);
+
+  if(lockID_rec < 0) {
+    //there was an error acquiring the lock
+    DEBUG('q',"Error acquiring lock\n");
+  } else {
+    //lock acquired successfully (received confirmation from server)
+    //do nothing
+  }
+
+#endif
+
 }
 
 void Release_Syscall(int index) {
+#ifndef NETWORK
   //NOTE: I just made this the same checks as Acquire for now....
   int value = index;
   KernelLockTableLock->Acquire();
@@ -394,9 +539,51 @@ void Release_Syscall(int index) {
   curLock.lock->Release();
   curLock.usageCounter--;
 
+#else
+  
+  stringstream ss;
+
+  PacketHeader outPktHdr, inPktHdr;
+  MailHeader outMailHdr, inMailHdr;
+  char buffer[MaxMailSize];
+
+
+  sprintf(buffer, "R %d", index);
+  
+  outPktHdr.to = 0;
+  outMailHdr.to = 0;
+  outMailHdr.from = 1;
+  outMailHdr.length = strlen(buffer)+1;
+
+  bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+
+  if(!success) {
+    printf("The postOffice Send failed.\n");
+    interrupt->Halt();
+  }
+
+  postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
+  printf("Got \"%d\" from %d, box %d\n",buffer,inPktHdr.from,inPktHdr.from);
+  fflush(stdout);
+
+  ss.str(buffer);
+  int lockID_rec;
+  ss>>lockID_rec;
+
+  if(lockID_rec < 0) {
+    //there was an error releasing the lock
+    DEBUG('q',"Error releasing lock\n");
+  } else {
+    //lock released successfully (received confirmation from server)
+    //do nothing
+  }
+
+#endif
+
 }
 
 int CreateCondition_Syscall() {
+#ifndef NETWORK
   //copied from CreateLock, IS OK???
   // Return position in kernel structure array
   int size = 16;
@@ -446,9 +633,54 @@ int CreateCondition_Syscall() {
   // this may prove to have some problems if
   // we are context switched out before nextCondIndex is
   // returned 
+
+#else
+
+  stringstream ss;
+
+  PacketHeader outPktHdr, inPktHdr;
+  MailHeader outMailHdr, inMailHdr;
+  char buffer[MaxMailSize];
+
+  //int size = 16;
+  //char *cvName = new char[size];
+  //copyin(vaddr,size,cvName);
+
+  char *cvName = " ";
+
+  ss.clear();
+  ss<<"C "<<cvName;
+  ss>>buffer;
+  
+  outPktHdr.to = 0;
+  outMailHdr.to = 0;
+  outMailHdr.from = 1;
+  outMailHdr.length = strlen(buffer)+1;
+
+  bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+
+  if(!success) {
+    printf("The postOffice Send failed.\n");
+    interrupt->Halt();
+  }
+
+  postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
+  printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+  fflush(stdout);
+  
+  ss.clear();
+  ss.str(buffer);
+  int condID_rec;
+  ss>>condID_rec;
+
+  return condID_rec; //will be -1 if condition table is full
+
+#endif
+
 }
 
 void DestroyCondition_Syscall(int index) {
+#ifndef NETWORK
   // Delete from kernel structure array the condition object at position index 
 // Delete from kernel structure array the condition object at position index 
   //First, acquire kernalcondtablelock
@@ -472,10 +704,15 @@ void DestroyCondition_Syscall(int index) {
     KernelCondTableLock->Release();
     return;
   }
+#else
 
+  // do nothing?
+
+#endif
 }
 
 void Wait_Syscall(int index, int lock_id) {
+#ifndef NETWORK
   KernelCondTableLock->Acquire();
   //VALIDATE CONDITION
   //make sure the condition exists
@@ -532,9 +769,49 @@ void Wait_Syscall(int index, int lock_id) {
   KernelLockTableLock->Release();
   // FINALLY...use wait on the lock
   curCond.condition->Wait(curLock.lock);
+
+#else
+
+  //stringstream ss;
+
+  PacketHeader outPktHdr, inPktHdr;
+  MailHeader outMailHdr, inMailHdr;
+  char buffer[MaxMailSize];
+
+  //int size = 16;
+  //char *cvName = new char[size];
+  //copyin(vaddr,size,cvName);
+
+  //ss.clear();
+  //ss<<"C "<<cvName;
+  //ss>>buffer;
+
+  sprintf(buffer, "W %d %d", index, lock_id);
+  
+  outPktHdr.to = 0;
+  outMailHdr.to = 0;
+  outMailHdr.from = 1;
+  outMailHdr.length = strlen(buffer)+1;
+
+  bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+
+  if(!success) {
+    printf("The postOffice Send failed.\n");
+    interrupt->Halt();
+  }
+
+
+
+  postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
+  printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+  fflush(stdout);
+ 
+
+#endif
 }
 
 void Signal_Syscall(int index, int lock_id) {
+#ifndef NETWORK
   KernelCondTableLock->Acquire();
   //VALIDATE CONDITION
   //make sure the condition exists
@@ -592,9 +869,48 @@ void Signal_Syscall(int index, int lock_id) {
   // FINALLY...use signal on the lock
   curCond.condition->Signal(curLock.lock);
 
+#else
+
+  //stringstream ss;
+
+  PacketHeader outPktHdr, inPktHdr;
+  MailHeader outMailHdr, inMailHdr;
+  char buffer[MaxMailSize];
+
+  //int size = 16;
+  //char *cvName = new char[size];
+  //copyin(vaddr,size,cvName);
+
+  //ss.clear();
+  //ss<<"C "<<cvName;
+  //ss>>buffer;
+
+  sprintf(buffer, "S %d %d", index, lock_id);
+  
+  outPktHdr.to = 0;
+  outMailHdr.to = 0;
+  outMailHdr.from = 1;
+  outMailHdr.length = strlen(buffer)+1;
+
+  bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+
+  if(!success) {
+    printf("The postOffice Send failed.\n");
+    interrupt->Halt();
+  }
+
+  // Signal does not expect any response message
+
+  //postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
+  //printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+  //fflush(stdout);
+
+#endif
+
 }
 
 void Broadcast_Syscall(int index, int lock_id) {
+#ifndef NETWORK
   KernelCondTableLock->Acquire();
   //VALIDATE CONDITION
   //make sure the condition exists
@@ -656,6 +972,46 @@ void Broadcast_Syscall(int index, int lock_id) {
   KernelLockTableLock->Release();
   // FINALLY...use broadcast on the lock
   curCond.condition->Broadcast(curLock.lock);
+
+
+#else
+
+  //stringstream ss;
+
+  PacketHeader outPktHdr, inPktHdr;
+  MailHeader outMailHdr, inMailHdr;
+  char buffer[MaxMailSize];
+
+  //int size = 16;
+  //char *cvName = new char[size];
+  //copyin(vaddr,size,cvName);
+
+  //ss.clear();
+  //ss<<"C "<<cvName;
+  //ss>>buffer;
+
+  sprintf(buffer, "B %d %d", index, lock_id);
+  
+  outPktHdr.to = 0;
+  outMailHdr.to = 0;
+  outMailHdr.from = 1;
+  outMailHdr.length = strlen(buffer)+1;
+
+  bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+
+  if(!success) {
+    printf("The postOffice Send failed.\n");
+    interrupt->Halt();
+  }
+
+  // Broadcast does not expect any response message
+
+  //postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
+  //printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+  //fflush(stdout);
+
+#endif
+
 }
 
 void Yield_Syscall() {
