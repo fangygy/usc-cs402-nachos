@@ -11,7 +11,7 @@
 #include "ServerLock.cc"
 #include "ServerCond.cc"
 
-enum RequestType { UNKNOWN, CREATE_LOCK, ACQUIRE, RELEASE, DESTROY_LOCK, CREATE_CONDITION, WAIT, SIGNAL, BROADCAST };
+enum RequestType { UNKNOWN, CREATE_LOCK, ACQUIRE, RELEASE, DESTROY_LOCK, CREATE_CONDITION, WAIT, SIGNAL, BROADCAST, JOIN };
 
 RequestType getRequestType(char* req);
 
@@ -20,6 +20,14 @@ ServerCond *serverCondTable[1000];
 
 int numServerLocks;
 int numServerConds;
+int numMembers;
+int maxNumMembers;
+
+struct Member {
+  int machineNum;
+  int mailboxNum;
+};
+Member members[1000];
 
 int TestCreateLock();
 void TestAcquireLock(int theLockID);
@@ -29,9 +37,11 @@ int TestCreateCondition();
 void TestWait(int theCondID, int theLockID);
 void TestSignal(int theCondID, int theLockID);
 void TestBroadcast(int theCondID, int theLockID);
+void TestRegister();
 
-void StartProject3Server() {
+void StartProject3Server(int numberOfMembers) {
 
+  maxNumMembers = numberOfMembers;
   
 
   stringstream ss;
@@ -51,8 +61,12 @@ void StartProject3Server() {
   Lock *ServerCondTableLock = new Lock("Server Cond Table Lock");
   numServerConds = 0;
 
+  Lock *MemberTableLock = new Lock("Member Table Lock");
+
+  printf("Starting Server. Waiting for %d members.\n", maxNumMembers);
+
   while(true) {
-    printf("Starting Server\n");
+    //printf("Starting Server\n");
 
     postOffice->Receive(0, &inPktHdr, &inMailHdr, buffer);
     printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
@@ -532,6 +546,49 @@ void StartProject3Server() {
       
       break;
 
+    case JOIN:
+      printf("Server received a registration message (join) request from machine %d, box %d.\n", inMailHdr.from, inPktHdr.from);
+      
+      //TODO - add the member's info to a list or something
+      
+      MemberTableLock->Acquire();
+
+      members[numMembers].machineNum = inPktHdr.from;
+      members[numMembers].mailboxNum = inMailHdr.from;
+
+      numMembers++;
+      if(numMembers == maxNumMembers) {
+	printf("Reached the desired number of members (%d).\n", maxNumMembers);
+	//Send message to each member containing a list of the other members.
+	string memberListStr = "";
+	ss.clear();
+	for(int i = 0; i < numMembers; i++) {
+	  ss << "(" << members[i].machineNum << "," << members[i].mailboxNum << ")";
+	}
+	ss>>memberListStr;
+	cout<<"member list: "<<memberListStr<<endl;
+
+	char* memberListToSend = new char[memberListStr.size() + 1];
+	strcpy(memberListToSend, memberListStr.c_str());
+
+	outMailHdr.length = sizeof(memberListToSend) + 1;
+
+	for(int i = 0; i < numMembers; i++) {
+	  outPktHdr.to = members[i].machineNum;
+	  outMailHdr.to = members[i].mailboxNum;
+
+	  bool success = postOffice->Send(outPktHdr, outMailHdr, memberListToSend);
+	  if(!success) {
+	    //sending response to client failed
+	    printf("The postOffice Send failed. Terminating Nachos.\n");
+	    interrupt->Halt();
+	  }
+	}
+      }
+      MemberTableLock->Release();
+
+      break;
+      
     case UNKNOWN:
       printf("Server received an Unknown request.\n");
       break;
@@ -572,12 +629,14 @@ void StartProject3Server() {
 
 void TestProject3() {
 
-  printf("creating lock\n");
-  int createLockID = TestCreateLock();
+  TestRegister();
+
+  //printf("creating lock\n");
+  //int createLockID = TestCreateLock();
   //int createLockID2 = TestCreateLock();
 
-  printf("acquiring lock #%d\n",createLockID);
-  TestAcquireLock(createLockID);
+  //printf("acquiring lock #%d\n",createLockID);
+  //TestAcquireLock(createLockID);
   //printf("trying to acquire same lock again\n");
   //TestAcquireLock(createLockID);
 
@@ -585,17 +644,56 @@ void TestProject3() {
 
   //TestDestroyLock(createLockID);
 
-  printf("creating condition\n");
-  int createCondID = TestCreateCondition();
+  //printf("creating condition\n");
+  //int createCondID = TestCreateCondition();
 
-  printf("waiting on CV #%d with Lock #%d\n", createCondID, createLockID);
-  TestWait(createCondID, createLockID);
+  //printf("waiting on CV #%d with Lock #%d\n", createCondID, createLockID);
+  //TestWait(createCondID, createLockID);
 
   //printf("signaling CV #%d with Lock #%d\n", createCondID, createLockID);
   //TestSignal(createCondID, createLockID);
 
-  printf("broadcasting CV #%d with Lock #%d\n", createCondID, createLockID);
-  TestBroadcast(createCondID, createLockID);
+  //printf("broadcasting CV #%d with Lock #%d\n", createCondID, createLockID);
+  //TestBroadcast(createCondID, createLockID);
+
+}
+
+void TestRegister() {
+
+  stringstream ss;
+
+  int myClientNum = 1;
+
+  PacketHeader outPktHdr, inPktHdr;
+  MailHeader outMailHdr, inMailHdr;
+  char buffer[MaxMailSize];
+  char *data = "J";
+
+
+
+  outPktHdr.to = 0; //hard coded to 0 for testing
+  outMailHdr.to = 0;
+  outMailHdr.from = 1;
+  outMailHdr.length = strlen(data) + 1;
+
+  bool success = postOffice->Send(outPktHdr, outMailHdr, data);
+
+  if(!success) {
+    printf("The postOffice Send failed.\n");
+    interrupt->Halt();
+  }
+
+  
+  postOffice->Receive(myClientNum, &inPktHdr, &inMailHdr, buffer);
+  printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+  fflush(stdout);
+  /*
+  ss.str(buffer);
+  int lockID_rec;
+  ss>>lockID_rec;
+
+  return lockID_rec;
+  */
 
 }
 
@@ -957,6 +1055,8 @@ RequestType getRequestType(char* req) {
     return SIGNAL;
   } else if (strcmp(req, "B")==0) {
     return BROADCAST;
+  } else if (strcmp(req, "J")==0) {
+    return JOIN;
   } else {
     return UNKNOWN;
   }
