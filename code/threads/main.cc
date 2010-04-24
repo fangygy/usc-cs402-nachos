@@ -74,7 +74,7 @@ extern void Test8(void);
 extern void Test9(void);
 extern void Test10(void);
 extern void Main(void);
-extern void StartProject3Server(void), TestProject3(void);
+extern void StartProject3Server(int numberOfMembers), TestProject3(void);
 
 //----------------------------------------------------------------------
 // main
@@ -180,8 +180,8 @@ main(int argc, char **argv)
             MailTest(atoi(*(argv + 1)));
             argCount = 2;
         } else if (!strcmp(*argv, "-server")) {  // project 3 part 3 server
-	  //ASSERT(argc > 1);
-	  StartProject3Server();
+	  ASSERT(argc > 1);
+	  StartProject3Server(atoi(*(argv + 1)));
 	  argCount = 2;
 	} else if (!strcmp(*argv, "-part3test")) { // temp project3 test
 	  
