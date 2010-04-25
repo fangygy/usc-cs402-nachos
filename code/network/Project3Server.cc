@@ -562,14 +562,24 @@ void StartProject3Server(int numberOfMembers) {
 	//Send message to each member containing a list of the other members.
 	string memberListStr = "";
 	ss.clear();
+	//ss << ".";
 	for(int i = 0; i < numMembers; i++) {
-	  ss << "(" << members[i].machineNum << "," << members[i].mailboxNum << ")";
+	  char tempBuf[10];
+	  sprintf(tempBuf,"%d",members[i].machineNum);
+	  memberListStr.append(tempBuf);
+	  memberListStr.append(",");
+	  sprintf(tempBuf,"%d",members[i].mailboxNum);
+	  memberListStr.append(tempBuf);
+	  memberListStr.append(" ");
+	  //ss << members[i].machineNum << "," << members[i].mailboxNum << " ";
 	}
-	ss>>memberListStr;
+	//ss>>memberListStr;
 	cout<<"member list: "<<memberListStr<<endl;
 
 	char* memberListToSend = new char[memberListStr.size() + 1];
 	strcpy(memberListToSend, memberListStr.c_str());
+
+	cout<<"member list to send: "<<memberListToSend<<endl;
 
 	outMailHdr.length = sizeof(memberListToSend) + 1;
 
@@ -683,17 +693,32 @@ void TestRegister() {
     interrupt->Halt();
   }
 
+  cout<<"buffer: "<<buffer<<endl;
   
   postOffice->Receive(myClientNum, &inPktHdr, &inMailHdr, buffer);
   printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+  cout<<buffer<<endl;
   fflush(stdout);
-  /*
+  
+  ss.clear();
   ss.str(buffer);
+  /*
   int lockID_rec;
   ss>>lockID_rec;
 
   return lockID_rec;
   */
+  string currentClient;
+  while( getline(ss, currentClient, ' ')) {
+    int firstCommaPos = currentClient.find_first_of(",");
+    int lastPeriodPos = currentClient.find_last_of(".");
+    string machineNumStr = currentClient.substr(0,firstCommaPos);
+    string mailboxNumStr = currentClient.substr(firstCommaPos+1, lastPeriodPos);
+    //cout<<"machine num: "<<machineNumStr<<" mailbox num: "<<mailboxNumStr<<endl;
+    int machineNum = atoi(machineNumStr.c_str());
+    int mailboxNum = atoi(mailboxNumStr.c_str());
+    cout<<"machine num: "<<machineNum<<" mailbox num: "<<mailboxNum<<endl;
+  }
 
 }
 
