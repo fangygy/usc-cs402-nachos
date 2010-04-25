@@ -46,13 +46,13 @@ class AddrSpace {
     OpenFile* asExecutable;
 
     void memoryLoad(int vpnumber, int index);
-
+    void setMailbox(int mbox) { mailbox = mbox; }
  private:
 					// for now!
     unsigned int numPages;		// Number of pages in the virtual 
 					// address space
     int numCodePages, numInitPages;
-
+    int mailbox;
 };
 
 class ChildProcess {
