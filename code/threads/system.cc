@@ -30,6 +30,9 @@ int fifoCounter = 0;
 int nextLockIndex = 0;
 int MAX_LOCKS = 1000;
 
+Lock *mailboxLock;
+int nextMailbox = 0;
+
 int nextCondIndex = 0;
 int MAX_CONDS = 1000; 
 
@@ -106,6 +109,7 @@ Initialize(int argc, char **argv)
     int g;
     char* debugArgs = "";
     bool randomYield = FALSE;
+    mailboxLock         = new Lock("MailboxLock");
     PageTableLock       = new Lock("PageTableLock");
     KernelLockTableLock = new Lock("KernelLockLock");
     KernelCondTableLock = new Lock("KernelCondLock");

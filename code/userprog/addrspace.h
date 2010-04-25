@@ -42,7 +42,7 @@ class AddrSpace {
     unsigned int NumPages();
     int id;
     void DeAllocate(int stackLocation);
-    NewTranslationEntry *pageTable;	// Assume linear page table translation
+    TranslationEntry *pageTable;	// Assume linear page table translation
     OpenFile* asExecutable;
 
     void memoryLoad(int vpnumber, int index);

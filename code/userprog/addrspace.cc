@@ -145,7 +145,7 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
     numInitPages = divRoundUp(noffH.initData.size, PageSize);
 
     // Virtual memory is implemented so numPages can be greater
-    // ASSERT(numPages <= NumPhysPages);		
+    ASSERT(numPages <= NumPhysPages);		
     // check we're not trying
 						// to run anything too big --
 						// at least until we have
@@ -157,10 +157,10 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
 
     // first, set up the translation 
 
-    pageTable = new NewTranslationEntry[numPages];
+    pageTable = new TranslationEntry[numPages];
     //bzero(machine->mainMemory, size);
     for (i = 0; i < numPages; i++) {
-      // index = bitmap->Find();
+      index = bitmap->Find();
       if(index == -1) {
 	// If index is -1, then the bitmap is full
 	// and there are no available pages in physical page table
@@ -169,10 +169,10 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
       }
       pageTable[i].virtualPage  = i; // virtual page always starts at i 
       
-      // pageTable[i].physicalPage = index; // index will give us the position in main memory
+      pageTable[i].physicalPage = index; // index will give us the position in main memory
       
-      pageTable[i].location     = 2;
-      pageTable[i].swapLoc      = NULL;
+      //pageTable[i].location     = 2;
+      //pageTable[i].swapLoc      = NULL;
       pageTable[i].valid        = TRUE;
       pageTable[i].use          = FALSE;
       pageTable[i].dirty        = FALSE;
@@ -181,39 +181,16 @@ AddrSpace::AddrSpace(OpenFile *executable) : fileTable(MaxOpenFiles) {
                                           // pages to be read-only 
       
     
-      /*executable->ReadAt(&(machine->mainMemory[index*PageSize]),PageSize,
+      executable->ReadAt(&(machine->mainMemory[index*PageSize]),PageSize,
 			 (i*PageSize)+noffH.code.inFileAddr);
-      */
-      // copy this page into the IPT
-      /*
-      machine->ipt[index].processId    = id;
-      machine->ipt[index].physicalPage = index;
-      machine->ipt[index].virtualPage  = i;
-      machine->ipt[index].valid        = TRUE;
-      machine->ipt[index].use          = FALSE;
-      machine->ipt[index].dirty        = FALSE;
-      machine->ipt[index].readOnly     = FALSE;
-      */
-      
     }
-    /*
-    bzero(machine->mainMemory,size);
-    for(i = 0; i < numCodePages; i++) {
-      executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]),
-			 PageSize, (i*PageSize)+noffH.code.inFileAddr);
-    }
-    for(i = 0; i < numInitPages; i++) {
-      executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]),
-			 PageSize, (i*PageSize)+noffH.initData.inFileAddr);
 
-    }
-    */
-// zero out the entire address space, to zero the uninitialized data segment 
-// and the stack segment
+    // zero out the entire address space, to zero the uninitialized data segment 
+    // and the stack segment
     DEBUG('c',"OUT\n");
     // bzero(machine->mainMemory, size);
 
-// then, copy in the code and data segments into memory
+    // then, copy in the code and data segments into memory
     /*
     bzero(machine->mainMemory,size);
     if (noffH.code.size > 0) {
@@ -275,7 +252,7 @@ void
 AddrSpace::InitRegisters()
 {
     unsigned int i;
-
+    DEBUG('r',"Init registers\n");
     for (i = 0; i < NumTotalRegs; i++)
 	machine->WriteRegister(i, 0);
 
@@ -305,7 +282,10 @@ AddrSpace::InitRegisters()
 //----------------------------------------------------------------------
 
 void AddrSpace::SaveState() 
-{}
+{
+  
+
+}
 
 //----------------------------------------------------------------------
 // AddrSpace::RestoreState
@@ -319,18 +299,24 @@ void AddrSpace::RestoreState()
 {
   // DONT NEED THIS SINCE WE ARE USING TLB 
   // PROJECT 3
-  // machine->pageTable = pageTable;
-  // machine->pageTableSize = numPages;
+  PageTableLock->Acquire();
+  machine->pageTable = pageTable;
+  machine->pageTableSize = numPages;
+  
+
+
+  PageTableLock->Release();
 }
 unsigned int AddrSpace::NumPages() {
     return numPages;
 }
 void AddrSpace::NewPageTable() {
   
+  IntStatus old = interrupt->SetLevel(IntOff);
     PageTableLock->Acquire();
     int i, index;
-    NewTranslationEntry *newPageTable;
-    newPageTable = new NewTranslationEntry[numPages+8];
+    TranslationEntry *newPageTable;
+    newPageTable = new TranslationEntry[numPages+8];
 
     for (i = 0; i < numPages; i++) {
       newPageTable[i].virtualPage = pageTable[i].virtualPage; 
@@ -340,8 +326,7 @@ void AddrSpace::NewPageTable() {
       newPageTable[i].dirty       = pageTable[i].dirty;
       newPageTable[i].readOnly    = pageTable[i].readOnly;  // if the code segment was entirely on 
                                                             // a separate page, we could set its
-                                                            // pages to be read-only 
-      
+                                                            // pages to be read-only   
     }
     // Allocate space for new stack in address
     for(i = numPages; i < (numPages+8); i++) {
@@ -351,7 +336,8 @@ void AddrSpace::NewPageTable() {
 	// and there are no available pages in physical page table
 	DEBUG('a',"Bitmap is full");
 	break;
-      }     
+      }
+      newPageTable[i].virtualPage  = i;
       newPageTable[i].physicalPage = index;
       newPageTable[i].valid        = TRUE; 
       newPageTable[i].use          = FALSE;
@@ -360,13 +346,17 @@ void AddrSpace::NewPageTable() {
     }
     // delete old page table
     delete[] pageTable;
-    // pageTable = newPageTable;
-    // machine->pageTable = pageTable;
+
+    // p4 may not need this 
+    pageTable = newPageTable;
+    machine->pageTable = pageTable;
 
     // Increase the number of pages by the number of new pages allocated to stack
     numPages = numPages+8;
+    machine->pageTableSize = numPages;
 
-    PageTableLock->Release();      
+    PageTableLock->Release();
+    interrupt->SetLevel(old);
 }
 
 void AddrSpace::DeAllocate(int stackLocation){

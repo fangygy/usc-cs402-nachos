@@ -298,8 +298,13 @@ Thread::StackAllocate (VoidFunctionPtr func, int arg)
 void
 Thread::SaveUserState()
 {
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+
+  DEBUG('t',"Context switch\n");
     for (int i = 0; i < NumTotalRegs; i++)
 	userRegisters[i] = machine->ReadRegister(i);
+
+    interrupt->SetLevel(oldLevel);
 }
 
 //----------------------------------------------------------------------
@@ -314,7 +319,12 @@ Thread::SaveUserState()
 void
 Thread::RestoreUserState()
 {
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+
+  DEBUG('t',"CONTEXT SWITCH \n");
     for (int i = 0; i < NumTotalRegs; i++)
 	machine->WriteRegister(i, userRegisters[i]);
+
+    interrupt->SetLevel(oldLevel);
 }
 #endif

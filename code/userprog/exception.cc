@@ -243,6 +243,7 @@ void Close_Syscall(int fd) {
 
 int CreateLock_Syscall(int vaddr) {
 #ifndef NETWORK
+  KernelLockTableLock->Acquire();
  //IS OK???
   // Return position in kernel structure array
   int size = 16;
@@ -265,8 +266,6 @@ int CreateLock_Syscall(int vaddr) {
     return -1;
   }
 
-  KernelLockTableLock->Acquire();
-
   // Make sure the table is not full 
   if(nextLockIndex >= MAX_LOCKS) {
     //The table is full of locks 
@@ -286,9 +285,11 @@ int CreateLock_Syscall(int vaddr) {
   osLocks[nextLockIndex].toBeDestroyed = FALSE;
   //report number of locks to user first...
   //increment number of locks
+  int lockindex;
+  lockindex = nextLockIndex;
   nextLockIndex++;
   KernelLockTableLock->Release();
-  return nextLockIndex-1;//-1 to get current lock index?
+  return lockindex;//-1 to get current lock index?
   // this may prove to have some problems if
   // we are context switched out before nextLockIndex is
   // returned
@@ -416,9 +417,10 @@ void DestroyLock_Syscall(int value) {
 
 void Acquire_Syscall(int index) {
 #ifndef NETWORK
-  int value = index; // this is the value read by machine->readregister(4)
   KernelLockTableLock->Acquire();
+  int value = index; // this is the value read by machine->readregister(4)
   DEBUG('a',"ACQUIRING LOCK\n\n\n\n\n");
+  DEBUG('q',"lock index is: %d\n",index);
   // perform series of checks on the lock
   // to make sure user program is not doing
   // anything crazy
@@ -430,7 +432,7 @@ void Acquire_Syscall(int index) {
     return;
   }
 
-  KernelLock curLock = osLocks[value];
+  KernelLock curLock = osLocks[index];
   if(curLock.lock == NULL) {
     // The lock has been destroyed 
     DEBUG('q',"LOCK HAS BEEN DESTROYED\n");
@@ -442,12 +444,13 @@ void Acquire_Syscall(int index) {
     // this lock belongs to a different process
     // since the address space of the lock does not match the 
     // current thread's address space
-    DEBUG('q',"LOCK BELONGS TO DIFFERENT PROCESS");
+    DEBUG('q',"%s : Acquire Syscall: LOCK %d BELONGS TO DIFFERENT PROCESS\n", currentThread->getName(), index);
+    KernelLockTableLock->Release();
     return;
   }
   //ensure that lock isn't destroyed while in use
   curLock.usageCounter++; 
-  DEBUG('q',"ACQUIRING LOCK\n");
+  DEBUG('q',"%s is ACQUIRING LOCK\n", currentThread->getName());
   //has to go above acquire to avoid deadlock
   KernelLockTableLock->Release();
     // FINALLY...Acquire the lock
@@ -508,8 +511,8 @@ void Acquire_Syscall(int index) {
 void Release_Syscall(int index) {
 #ifndef NETWORK
   //NOTE: I just made this the same checks as Acquire for now....
-  int value = index;
   KernelLockTableLock->Acquire();
+  int value = index;
   //make sure the lock exists
   if(value < 0 || value >= nextLockIndex) {
     // This is a bad value
@@ -527,7 +530,8 @@ void Release_Syscall(int index) {
     // this lock belongs to a different process
     // since the address space of the lock does not match the 
     // current thread's address space    
-    DEBUG('q',"LOCK BELONGS TO DIFFERENT PROCESS");
+    DEBUG('q',"Release Syscall: LOCK BELONGS TO DIFFERENT PROCESS\n");
+    KernelLockTableLock->Release();
     return;
   }
   //ensure that lock isn't destroyed while in use
@@ -584,6 +588,7 @@ void Release_Syscall(int index) {
 
 int CreateCondition_Syscall() {
 #ifndef NETWORK
+  KernelCondTableLock->Acquire();
   //copied from CreateLock, IS OK???
   // Return position in kernel structure array
   int size = 16;
@@ -606,8 +611,6 @@ int CreateCondition_Syscall() {
     return -1;
     }*/
 
-  KernelCondTableLock->Acquire();
-
   // Make sure the table is not full 
   if(nextCondIndex >= MAX_CONDS) {
     //The table is full of locks 
@@ -627,9 +630,10 @@ int CreateCondition_Syscall() {
   osConds[nextCondIndex].toBeDestroyed = FALSE;
   //report number of locks to user first...
   //increment number of locks
+  int condindex = nextCondIndex;
   nextCondIndex++;
   KernelCondTableLock->Release();
-  return nextCondIndex-1;//-1 to get current condition index?
+  return condindex;//-1 to get current condition index?
   // this may prove to have some problems if
   // we are context switched out before nextCondIndex is
   // returned 
@@ -732,7 +736,8 @@ void Wait_Syscall(int index, int lock_id) {
     // this condition belongs to a different process
     // since the address space of the condition does not match the 
     // current thread's address space
-    DEBUG('q',"CONDITION BELONGS TO DIFFERENT PROCESS\n");
+    DEBUG('q',"%s : Wait Syscall: CONDITION %d BELONGS TO DIFFERENT PROCESS\n", currentThread->getName(), index);
+    KernelCondTableLock->Release();
     return;
   }
   //ensure that condition isn't destroyed while in use
@@ -759,7 +764,8 @@ void Wait_Syscall(int index, int lock_id) {
     // this lock belongs to a different process
     // since the address space of the lock does not match the 
     // current thread's address space
-    DEBUG('q',"LOCK BELONGS TO DIFFERENT PROCESS\n");
+    DEBUG('q',"%s : Wait Syscall: LOCK %d BELONGS TO DIFFERENT PROCESS\n", currentThread->getName(), lock_id);
+    KernelLockTableLock->Release();
     return;
   }
   //ensure that lock isn't destroyed while in use
@@ -831,7 +837,8 @@ void Signal_Syscall(int index, int lock_id) {
     // this condition belongs to a different process
     // since the address space of the condition does not match the 
     // current thread's address space
-    DEBUG('q',"CONDITION BELONGS TO DIFFERENT PROCESS\n");
+    DEBUG('q',"%s: Signal Syscall: CONDITION %d BELONGS TO DIFFERENT PROCESS\n", currentThread->getName(), index);
+    KernelCondTableLock->Release();
     return;
   }
   //ensure that condition isn't destroyed while in use
@@ -858,7 +865,8 @@ void Signal_Syscall(int index, int lock_id) {
     // this lock belongs to a different process
     // since the address space of the lock does not match the 
     // current thread's address space
-    DEBUG('q',"LOCK BELONGS TO DIFFERENT PROCESS\n");
+    DEBUG('q',"%s: Signal Syscall: LOCK %d BELONGS TO DIFFERENT PROCESS\n", currentThread->getName(), index);
+    KernelLockTableLock->Release();
     return;
   }
   //ensure that lock isn't destroyed while in use
@@ -930,7 +938,8 @@ void Broadcast_Syscall(int index, int lock_id) {
     // this condition belongs to a different process
     // since the address space of the condition does not match the 
     // current thread's address space
-    DEBUG('q',"CONDITION BELONGS TO DIFFERENT PROCESS\n");
+    DEBUG('q',"Broadcast Syscall: CONDITION BELONGS TO DIFFERENT PROCESS\n");
+    KernelCondTableLock->Release();
     return;
   }
   //ensure that condition isn't destroyed while in use
@@ -958,7 +967,8 @@ void Broadcast_Syscall(int index, int lock_id) {
     // this lock belongs to a different process
     // since the address space of the lock does not match the 
     // current thread's address space
-    DEBUG('q',"LOCK BELONGS TO DIFFERENT PROCESS\n");
+    DEBUG('q',"Broadcast Syscall: LOCK %d BELONGS TO DIFFERENT PROCESS\n",lock_id);
+    KernelLockTableLock->Release();
     return;
   }
   //ensure that lock isn't destroyed while in use
@@ -1025,9 +1035,7 @@ void Exit_Syscall(int status) {
   //cout<<"id of current thread= "<<currentThread->getMyId()<<endl;
 
   currentThread->Finish();
-  
-  /*DEBUG('x',"Exit syscall with status=%d\n",status);*/
-
+ 
   int i, spaceId_f;
   // get the space id for this new thread
   /*
@@ -1053,6 +1061,42 @@ void Print_Syscall() {
 
 }
 
+void netThread() {
+  /*
+  while(true) {
+    switch(messageType) {
+    case 'C':
+      // If this is a create lock
+      // send message to server
+      postOffice->Send();
+      // Sends out the token id for every new message, even with OK message     
+      postOffice->Receive();
+      // Parse the message, and the token id
+      // which will be an integer
+      break;
+    case 'A':
+      // Acquire a lock
+      // Wait for right message
+      while(I do not have the right token) {
+	postOffice->Receive();
+	if(token is the right token)
+	  break;
+      }
+      // Send a message to the user program, which unblocks it
+      postOffice->Send( );     
+      break;
+    case 'R':
+      // On release, just send the token to the next UP
+      postOffice->Send( );
+      break;
+    case 'D':
+      // Destroy lock
+      break;
+    }
+  }
+  */
+}
+
 void execThread() {
   DEBUG('f',"running the thread %d\n", currentThread->space->id);
   currentThread->space->InitRegisters();
@@ -1063,6 +1107,7 @@ void execThread() {
 
 void kernelFunc(int vaddr) {
   int i, spaceId;  
+  IntStatus old = interrupt->SetLevel(IntOff);
   spaceId = currentThread->space->id;
   // write to register PCReg the virtual address
   machine->WriteRegister(PCReg, vaddr);
@@ -1070,30 +1115,264 @@ void kernelFunc(int vaddr) {
   // write virtual address + 4 in NextPCReg
   machine->WriteRegister(NextPCReg, (vaddr+4));
   // call RestoreState function
+  // restore state sets the machine->pageTable to the current address space's page table
   currentThread->space->RestoreState();
+
   // write to stack register, the starting position of the stack
   DEBUG('g', "kernel func: space id: %d \n",spaceId);
   DEBUG('h',"current Thread space size %d",currentThread->space->NumPages());
+
   machine->WriteRegister(StackReg,currentThread->stackLoc);
   //printf("stack location: %d\n", processTable[spaceId].stackLocation);
-
+  interrupt->SetLevel(old);
   machine->Run();
 }
 
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2); // Which syscall?
     int rv = 0;
-    if( which == PageFaultException) {
+    
+    if ( which == SyscallException ) {
+	switch (type) {
+	    default:
+		DEBUG('a', "Unknown syscall - shutting down.\n");
+	    case SC_Halt:
+		DEBUG('a', "Shutdown, initiated by user program.\n");
+		interrupt->Halt();
+		break;
+	    case SC_Create:
+		DEBUG('a', "Create syscall.\n");
+		Create_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
+		break;
+	    case SC_Open:
+		DEBUG('a', "Open syscall.\n");
+		rv = Open_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
+		break;
+	    case SC_Write:
+		DEBUG('a', "Write syscall.\n");
+		Write_Syscall(machine->ReadRegister(4),
+			      machine->ReadRegister(5),
+			      machine->ReadRegister(6));
+		break;
+	    case SC_Read:
+		DEBUG('a', "Read syscall.\n");
+		rv = Read_Syscall(machine->ReadRegister(4),
+			      machine->ReadRegister(5),
+			      machine->ReadRegister(6));
+		break;
+	    case SC_Close:
+		DEBUG('a', "Close syscall.\n");
+		Close_Syscall(machine->ReadRegister(4));
+		break;
+	    case SC_CreateLock:
+	        DEBUG('a', "CreateLock syscall.\n");
+	        rv = CreateLock_Syscall(machine->ReadRegister(4));
+		break;
+	    case SC_DestroyLock:
+	        DEBUG('a', "DestroyLock syscall.\n");
+	        DestroyLock_Syscall(machine->ReadRegister(4));
+		break;
+	    case SC_Acquire:
+		DEBUG('a', "Close syscall.\n");
+		Acquire_Syscall(machine->ReadRegister(4));
+		break;
+	    case SC_Release:
+		DEBUG('a', "Release syscall.\n");
+		Release_Syscall(machine->ReadRegister(4));
+		break;
+	    case SC_CreateCondition:
+	        DEBUG('a', "CreateCondition syscall.\n");
+	        rv = CreateCondition_Syscall();
+		break;
+	    case SC_DestroyCondition:
+	        DEBUG('a', "DestroyCondition syscall.\n");
+	        DestroyCondition_Syscall(machine->ReadRegister(4));
+		break;
+	    case SC_Wait:
+		DEBUG('a', "Wait syscall.\n");
+		Wait_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
+		break;
+	    case SC_Signal:
+		DEBUG('a', "Signal syscall.\n");
+		Signal_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
+		break;
+	    case SC_Broadcast:
+		DEBUG('a', "Broadcast syscall.\n");
+		Broadcast_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
+		break;
+	    case SC_Yield:
+	        DEBUG('a', "Yield syscall. \n");
+		Yield_Syscall();
+		break;
+	    case SC_Exit:
+		int spaceid_ex;
+		spaceid_ex = currentThread->space->id;
+		for(int i = 0; i < TLBSize; i++) {
+		  // invalidate the tlb 
+		  IntStatus oldLevel = interrupt->SetLevel(IntOff); // Disable Interrupts
+		  // machine->tlb[i].valid = FALSE;
+		  interrupt->SetLevel(oldLevel); // Disable Interrupts
+		}
+		currentThread->Finish();
+		break;
+	    case SC_Fork:
+	        DEBUG('a', "Fork syscall.\n");
+		// get the virtual address of function being forked
+		int virtualAddress;
+		int name;
+		virtualAddress = machine->ReadRegister(4);
+		name = machine->ReadRegister(5);
+		Thread *kernelThread;
+		int i, spaceId_f;
+		// get the space id for this new thread
+		spaceId_f = currentThread->space->id;
+		DEBUG('d',"space id: %d\n",spaceId_f);
+		char *buff = new char[16+1];	// Kernel buffer to put the name in
+		if( copyin(virtualAddress,16,buff) == -1 ) {
+		  DEBUG('a',"Bad pointer passed to Open\n");
+		  delete[] buff;
+		}
+		DEBUG('g',"fork: space id : %d\n", spaceId_f);
+		if(name == 1) {
+		  kernelThread = new Thread("Passenger");
+		} else if(name == 2) {
+		  kernelThread = new Thread("AirportLiaison");
+		} else if(name == 3) {
+		  kernelThread = new Thread("CheckInStaff");
+		} else if(name == 4) {
+		  kernelThread = new Thread("SecurityOfficer");
+		} else if(name == 5) {
+		  kernelThread = new Thread("SecurityInspector");
+		} else if(name == 6) {
+		  kernelThread = new Thread("CargoHandler");
+		} else if(name == 7) {
+		  kernelThread = new Thread("AirportManager");
+		} else {
+		  kernelThread = new Thread("kernelThread");
+		}
+		// this is the same as the currentThread->space b/c this thread
+		// is a child of the currentThread
+		//printf("address space num pages %d \n", currentThread->space->NumPages());
+		kernelThread->space = currentThread->space;
+
+		// Create a new page table with 8 pages more of stack
+		kernelThread->space->NewPageTable();
+		kernelThread->stackLoc = (kernelThread->space->NumPages()*PageSize)-16;
+		/*
+		if(processTable[spaceId_f].as == currentThread->space) {
+		  //printf("process table address space pointer is equal to current thread\n");
+		}
+		*/
+		// Update process table
+		// DEBUG('g',"address space address: %d \n",&(processTable[spaceId_f].as));
+		//processTable[spaceId_f].stackLocation = (kernelThread->space->NumPages()*PageSize)-16;
+		//printf("address space num pages %d \n", currentThread->space->NumPages());
+
+		//printf("stack location: %d\n", processTable[spaceId_f].stackLocation);
+		// processTable[spaceId_f].numChildProcess++;
+		kernelThread->Fork(kernelFunc,virtualAddress);
+		
+		break;
+	    case SC_Exec:
+	        DEBUG('d',"Exec syscall. \n");
+		
+		int virtualAddress_e, physicalAddress_e; 
+		char* filename;
+		// Get the virtual address for the name of the process
+		// virtualAddress_e = machine->ReadRegister(4);
+		virtualAddress_e = machine->ReadRegister(4);
+		char *buf = new char[16+1];	// Kernel buffer to put the name in
+		OpenFile *f;			// The new open file
+		int id;				// The openfile id
+		
+		if (!buf) {
+		  DEBUG('d',"Can't allocate kernel buffer in Open\n");
+		 
+		}
+		
+		if( copyin(virtualAddress_e,16,buf) == -1 ) {
+		  DEBUG('d',"Bad pointer passed to Open\n");
+		  delete[] buf;
+		}
+		
+		buf[16]='\0';
+
+		// Print out filename
+		printf("Opening %s\n",buf);
+
+		f = fileSystem->Open(buf);
+		if(f == NULL) {
+		  printf("%s","Unable to open file\n");
+		  
+		} else {
+
+		  AddrSpace *space;
+		  DEBUG('d',"Got the file open\n");
+		  
+		  // create a new address space for this executable file
+		  space = new AddrSpace(f);
+		  Thread *executionThread = new Thread("executionThread");
+		  // Allocate the address space to this thread
+		  
+		  mailboxLock->Acquire();
+		  executionThread->setMailbox(nextMailbox);
+		  nextMailbox++;
+		  Thread *networkThread = new Thread("networkThread");
+		  networkThread->setMailbox(nextMailbox);
+		  nextMailbox++;
+		  mailboxLock->Release();
+		  
+		  DEBUG('d',"allocated the address space\n");
+		  numProcesses++;
+		  space->id = numProcesses;
+		  executionThread->space = space;
+ 
+		  DEBUG('g',"space id: %d \n",executionThread->space->id);
+
+		  // Write the space id to register 2
+		  rv = space->id;
+		  // Fork the thread
+		  executionThread->Fork((VoidFunctionPtr)execThread,0);
+		  networkThread->Fork((VoidFunctionPtr)netThread,0);
+		}
+		break;
+	case SC_Print:
+	  int virtualAddress_p;
+	  int p1, p2, p3;
+	  char *buf_p = new char[168+1];
+	  
+	  virtualAddress_p = machine->ReadRegister(4);
+	  p1 = machine->ReadRegister(5);
+	  p2 = machine->ReadRegister(6);
+	  p3 = machine->ReadRegister(7);
+	  if(!buf) {
+	    DEBUG('a',"Can't allocate kernel buffer in Print\n");
+	  }
+	  
+	  if(copyin(virtualAddress_p, 128, buf_p)==-1) {
+	    DEBUG('a',"Bad pointer passed to Print\n");
+	    delete[] buf;
+	  }
+	  buf_p[128] = '\0';
+	  printf(buf_p,p1,p2,p3);
+	  break;
+	}
+
+	// Put in the return value and increment the PC
+	machine->WriteRegister(2,rv);
+	machine->WriteRegister(PrevPCReg,machine->ReadRegister(PCReg));
+	machine->WriteRegister(PCReg,machine->ReadRegister(NextPCReg));
+	machine->WriteRegister(NextPCReg,machine->ReadRegister(PCReg)+4);
+	return;
+    } else if( which == PageFaultException) {
       DEBUG('f',"Page Fault Exception\n");
       int vaddress;
       vaddress = machine->ReadRegister(39);
-      printf("virtual address:0x%x\n",vaddress);
       int vpnumber = vaddress / PageSize; 
       if(vpnumber > PageSize*NumPhysPages) {
 	printf("VPN is OUT OF BOUNDS\n");
       }
       unsigned int index;
-      printf("vpn is %d \n",vpnumber);
   
       // Check to see if the page is in the IPT
       int i;
@@ -1150,7 +1429,6 @@ void ExceptionHandler(ExceptionType which) {
 		IntStatus oldLevel = interrupt->SetLevel(IntOff); // Disable Interrupts
 		machine->tlb[i].valid = FALSE;
 		oldLevel = interrupt->SetLevel(oldLevel); // Disable Interrupts
-
 	      }
 	    }
 	    
@@ -1160,8 +1438,8 @@ void ExceptionHandler(ExceptionType which) {
 	      // Write it to the swap file
 	      IntStatus oldLevel = interrupt->SetLevel(IntOff); // Disable Interrupts
 	      swapFile->WriteAt(&(machine->mainMemory[evictPage*PageSize]),PageSize,swapCounter*PageSize);
-	      currentThread->space->pageTable[ipt[evictPage].virtualPage].location = 1;
-	      currentThread->space->pageTable[ipt[evictPage].virtualPage].swapLoc = swapCounter;
+	      //currentThread->space->pageTable[ipt[evictPage].virtualPage].location = 1;
+	      //currentThread->space->pageTable[ipt[evictPage].virtualPage].swapLoc = swapCounter;
 	      swapCounter++;	
 	      interrupt->SetLevel(oldLevel); // Re-Enable Interrupts
 	    }
@@ -1178,12 +1456,13 @@ void ExceptionHandler(ExceptionType which) {
 	    }
 
 	    // If this page is inside the swap file	    
-	    if(currentThread->space->pageTable[vpnumber].location == 1){
+	    // The code underneath is wrong, but its okay since we're not using the TLB
+	    if(currentThread->space->pageTable[vpnumber].physicalPage == 1){
 	      DEBUG('c',"Page %d is in the swap file\n",evictPage);
 	      //Load from swap file to main memory
 	      IntStatus oldLevel = interrupt->SetLevel(IntOff); // Disable Interrupts
 
-	      swapFile->ReadAt(&(machine->mainMemory[evictPage*PageSize]),PageSize,currentThread->space->pageTable[vpnumber].swapLoc*PageSize);
+	      //swapFile->ReadAt(&(machine->mainMemory[evictPage*PageSize]),PageSize,currentThread->space->pageTable[vpnumber].swapLoc*PageSize);
 	      interrupt->SetLevel(oldLevel); // Re-Enable Interrupts
 	    } else {
 	      // Load the new page from executable into memory
@@ -1263,211 +1542,6 @@ void ExceptionHandler(ExceptionType which) {
 	tlbCounter++;
       }
       return;
-    }
-    
-    if ( which == SyscallException ) {
-	switch (type) {
-	    default:
-		DEBUG('a', "Unknown syscall - shutting down.\n");
-	    case SC_Halt:
-		DEBUG('a', "Shutdown, initiated by user program.\n");
-		interrupt->Halt();
-		break;
-	    case SC_Create:
-		DEBUG('a', "Create syscall.\n");
-		Create_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
-		break;
-	    case SC_Open:
-		DEBUG('a', "Open syscall.\n");
-		rv = Open_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
-		break;
-	    case SC_Write:
-		DEBUG('a', "Write syscall.\n");
-		Write_Syscall(machine->ReadRegister(4),
-			      machine->ReadRegister(5),
-			      machine->ReadRegister(6));
-		break;
-	    case SC_Read:
-		DEBUG('a', "Read syscall.\n");
-		rv = Read_Syscall(machine->ReadRegister(4),
-			      machine->ReadRegister(5),
-			      machine->ReadRegister(6));
-		break;
-	    case SC_Close:
-		DEBUG('a', "Close syscall.\n");
-		Close_Syscall(machine->ReadRegister(4));
-		break;
-	    case SC_CreateLock:
-	        DEBUG('a', "CreateLock syscall.\n");
-	        rv = CreateLock_Syscall(machine->ReadRegister(4));
-		break;
-	    case SC_DestroyLock:
-	        DEBUG('a', "DestroyLock syscall.\n");
-	        DestroyLock_Syscall(machine->ReadRegister(4));
-		break;
-	    case SC_Acquire:
-		DEBUG('a', "Close syscall.\n");
-		Acquire_Syscall(machine->ReadRegister(4));
-		break;
-	    case SC_Release:
-		DEBUG('a', "Release syscall.\n");
-		Release_Syscall(machine->ReadRegister(4));
-		break;
-	    case SC_CreateCondition:
-	        DEBUG('a', "CreateCondition syscall.\n");
-	        rv = CreateCondition_Syscall();
-		break;
-	    case SC_DestroyCondition:
-	        DEBUG('a', "DestroyCondition syscall.\n");
-	        DestroyCondition_Syscall(machine->ReadRegister(4));
-		break;
-	    case SC_Wait:
-		DEBUG('a', "Wait syscall.\n");
-		Wait_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
-		break;
-	    case SC_Signal:
-		DEBUG('a', "Signal syscall.\n");
-		Signal_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
-		break;
-	    case SC_Broadcast:
-		DEBUG('a', "Broadcast syscall.\n");
-		Broadcast_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
-		break;
-	    case SC_Yield:
-	        DEBUG('a', "Yield syscall. \n");
-		Yield_Syscall();
-		break;
-	    case SC_Exit:
-	        DEBUG('x', "Exit syscall with status = %d\n",machine->ReadRegister(4));
-		int spaceid_ex;
-		spaceid_ex = currentThread->space->id;
-		for(int i = 0; i < TLBSize; i++) {
-		  // invalidate the tlb 
-		  IntStatus oldLevel = interrupt->SetLevel(IntOff); // Disable Interrupts
-		  machine->tlb[i].valid = FALSE;
-		  interrupt->SetLevel(oldLevel); // Disable Interrupts
-		}
-		currentThread->Finish();
-		break;
-	    case SC_Fork:
-	        DEBUG('a', "Fork syscall.\n");
-		// get the virtual address of function being forked
-		int virtualAddress;
-		virtualAddress = machine->ReadRegister(4);
-		int i, spaceId_f;
-		// get the space id for this new thread
-		spaceId_f = currentThread->space->id;
-		char *buff = new char[16+1];	// Kernel buffer to put the name in
-		if( copyin(virtualAddress,16,buff) == -1 ) {
-		  DEBUG('a',"Bad pointer passed to Open\n");
-		  delete[] buff;
-		}
-		DEBUG('g',"fork: space id : %d\n", spaceId_f);
-		Thread *kernelThread = new Thread("kernelThread");
-		// this is the same as the currentThread->space b/c this thread
-		// is a child of the currentThread
-		//printf("address space num pages %d \n", currentThread->space->NumPages());
-		kernelThread->space = processTable[spaceId_f].as;
-
-		// Create a new page table with 8 pages more of stack
-		kernelThread->space->NewPageTable();
-		kernelThread->stackLoc = (kernelThread->space->NumPages()*PageSize)-16;
-
-		if(processTable[spaceId_f].as == currentThread->space) {
-		  //printf("process table address space pointer is equal to current thread\n");
-		}
-		// Update process table
-		// DEBUG('g',"address space address: %d \n",&(processTable[spaceId_f].as));
-		processTable[spaceId_f].stackLocation = (kernelThread->space->NumPages()*PageSize)-16;
-		//printf("address space num pages %d \n", currentThread->space->NumPages());
-
-		//printf("stack location: %d\n", processTable[spaceId_f].stackLocation);
-		processTable[spaceId_f].numChildProcess++;
-		kernelThread->Fork(kernelFunc,virtualAddress);
-		
-		break;
-	    case SC_Exec:
-	        DEBUG('d',"Exec syscall. \n");
-		
-		int virtualAddress_e, physicalAddress_e; 
-		char* filename;
-		// Get the virtual address for the name of the process
-		// virtualAddress_e = machine->ReadRegister(4);
-		virtualAddress_e = machine->ReadRegister(4);
-		char *buf = new char[16+1];	// Kernel buffer to put the name in
-		OpenFile *f;			// The new open file
-		int id;				// The openfile id
-		
-		if (!buf) {
-		  DEBUG('d',"Can't allocate kernel buffer in Open\n");
-		 
-		}
-		
-		if( copyin(virtualAddress_e,16,buf) == -1 ) {
-		  DEBUG('d',"Bad pointer passed to Open\n");
-		  delete[] buf;
-		}
-		
-		buf[16]='\0';
-
-		// Print out filename
-		printf("%s\n",buf);
-
-		f = fileSystem->Open(buf);
-		if(f == NULL) {
-		  printf("%s","Unable to open file\n");
-		  
-		} else {
-
-		  AddrSpace *space;
-		  DEBUG('d',"Got the file open\n");
-		  
-		  // create a new address space for this executable file
-		  space = new AddrSpace(f);
-		  Thread *executionThread = new Thread("executionThread");
-		  // Allocate the address space to this thread
-		  
-		  DEBUG('d',"allocated the address space\n");
-		  numProcesses++;
-		  space->id = numProcesses;
-		  executionThread->space = space;
- 
-		  DEBUG('g',"space id: %d \n",executionThread->space->id);
-
-		  // Write the space id to register 2
-		  rv = space->id;
-		  // Fork the thread
-		  executionThread->Fork((VoidFunctionPtr)execThread,0);
-		}
-		break;
-	case SC_Print:
-	  int virtualAddress_p;
-	  int p1, p2, p3;
-	  char *buf_p = new char[168+1];
-	  
-	  virtualAddress_p = machine->ReadRegister(4);
-	  p1 = machine->ReadRegister(5);
-	  p2 = machine->ReadRegister(6);
-	  p3 = machine->ReadRegister(7);
-	  if(!buf) {
-	    DEBUG('a',"Can't allocate kernel buffer in Print\n");
-	  }
-	  
-	  if(copyin(virtualAddress_p, 128, buf_p)==-1) {
-	    DEBUG('a',"Bad pointer passed to Print\n");
-	    delete[] buf;
-	  }
-	  buf_p[128] = '\0';
-	  printf(buf_p,p1,p2,p3);
-	  break;
-	}
-
-	// Put in the return value and increment the PC
-	machine->WriteRegister(2,rv);
-	machine->WriteRegister(PrevPCReg,machine->ReadRegister(PCReg));
-	machine->WriteRegister(PCReg,machine->ReadRegister(NextPCReg));
-	machine->WriteRegister(NextPCReg,machine->ReadRegister(PCReg)+4);
-	return;
     } else {
       cout<<"Unexpected user mode exception - which:"<<which<<"  type:"<< type<<endl;
       interrupt->Halt();

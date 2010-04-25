@@ -46,6 +46,9 @@ extern int fifoCounter;
 
 extern int swapCounter;
 
+extern Lock *mailboxLock;
+extern int nextMailbox;
+
 extern NewTranslationEntry *ipt;
 
 struct KernelLock {

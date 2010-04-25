@@ -12,14 +12,14 @@
 # All rights reserved.  See copyright.h for copyright notice and limitation 
 # of liability and disclaimer of warranty provisions.
 
-DEFINES = -DUSER_PROGRAM  -DFILESYS_NEEDED -DFILESYS_STUB -DVM -DUSE_TLB
+DEFINES = -DUSER_PROGRAM  -DFILESYS_NEEDED -DFILESYS_STUB
 INCPATH = -I../filesys -I../bin -I../vm -I../userprog -I../threads -I../machine
 HFILES = $(THREAD_H) $(USERPROG_H) $(VM_H)
 CFILES = $(THREAD_C) $(USERPROG_C) $(VM_C)
 C_OFILES = $(THREAD_O) $(USERPROG_O) $(VM_O)
 
 # if file sys done first!
-# DEFINES = -DUSER_PROGRAM -DFILESYS_NEEDED -DFILESYS -DVM -DUSE_TLB
+# DEFINES = -DUSER_PROGRAM -DFILESYS_NEEDED -DFILESYS
 # INCPATH = -I../vm -I../bin -I../filesys -I../userprog -I../threads -I../machine
 # HFILES = $(THREAD_H) $(USERPROG_H) $(FILESYS_H) $(VM_H)
 # CFILES = $(THREAD_C) $(USERPROG_C) $(FILESYS_C) $(VM_C)

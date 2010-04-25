@@ -40,8 +40,8 @@ StartProcess(char *filename)
     currentThread->space = space;
     currentThread->space->id = numProcesses;
 
-
     // Update process table
+    /*
     int g, spaceId;
     for(g = 0; g < 64; g++) {
       if(!processTable[g].inUse) {
@@ -53,7 +53,8 @@ StartProcess(char *filename)
 	break;
       }
     }
-    // delete executable;			// close file
+    */
+    delete executable;			// close file
 
     space->InitRegisters();		// set the initial register values
     space->RestoreState();		// load page table register
