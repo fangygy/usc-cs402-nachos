@@ -39,7 +39,7 @@
 #define SC_Signal       18
 #define SC_Broadcast    19
 #define SC_Print        20
-
+#define SC_Register     21
 #define MAXFILENAME 256
 
 #ifndef IN_ASM
@@ -167,6 +167,8 @@ void Signal(int index, int lock_index);
 void Broadcast(int index, int lock_index);
 
 void Print(char* buf, int p1, int p2, int p3);
+
+void Register(int mailbox);
 
 #endif /* IN_ASM */
 

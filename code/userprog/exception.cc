@@ -1057,10 +1057,6 @@ void Exit_Syscall(int status) {
 
 }
 
-void Print_Syscall() {
-
-}
-
 void netThread() {
   /*
   while(true) {
@@ -1099,8 +1095,8 @@ void netThread() {
     fflush(stdout);
     
     ss.str(buffer);
-    int lockID_rec;
-    ss>>lockID_rec;
+    char messageType;
+    ss>>messageType;
     
     switch(messageType) {
     case 'C':
@@ -1112,7 +1108,7 @@ void netThread() {
       // Parse the message, and the token id
       // which will be an integer
       break;
-    case 'A':
+    case 'Acquire':
       // Acquire a lock
       // Wait for right message
       while(I do not have the right token) {
@@ -1123,12 +1119,17 @@ void netThread() {
       // Send a message to the user program, which unblocks it
       postOffice->Send( );     
       break;
-    case 'R':
+    case 'Release':
       // On release, just send the token to the next UP
       postOffice->Send( );
       break;
-    case 'D':
-      // Destroy lock
+    case 'Register':
+      break;
+    case 'Wait':
+      break;
+    case 'SignalReply':
+      break;
+    case 'RegistrationReply':
       break;
     }
   }
@@ -1393,6 +1394,14 @@ void ExceptionHandler(ExceptionType which) {
 	  }
 	  buf_p[128] = '\0';
 	  printf(buf_p,p1,p2,p3);
+	  break;
+	case SC_Register:
+	  // Send message to the networking thread
+	  // postOffice->Send()
+
+	  // Thread here is blocked, as we are waiting for the reply message from the network thread
+	  // User Program will not start without the reply message
+	  // postOffice->Receive()
 	  break;
 	}
 
