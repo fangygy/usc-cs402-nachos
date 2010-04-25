@@ -1064,6 +1064,44 @@ void Print_Syscall() {
 void netThread() {
   /*
   while(true) {
+    // get the message 
+    // determine what to do with the message
+    stringstream ss;
+
+    PacketHeader outPktHdr, inPktHdr;
+    MailHeader outMailHdr, inMailHdr;
+    char buffer[MaxMailSize];
+    
+    //int size = 16;
+    //char *lockName = new char[size];
+    //copyin(vaddr,size,lockName);
+    
+    //ss.clear();
+    //ss<<"D "<<lockName;
+    //ss>>buffer;
+    
+    sprintf(buffer, "A %d", index);
+    
+    outPktHdr.to = 0;
+    outMailHdr.to = 0;
+    outMailHdr.from = 1;
+    outMailHdr.length = strlen(buffer)+1;
+    
+    bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+    
+    if(!success) {
+    printf("The postOffice Send failed.\n");
+    interrupt->Halt();
+    }
+    
+    postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
+    printf("Got \"%d\" from %d, box %d\n",buffer,inPktHdr.from,inPktHdr.from);
+    fflush(stdout);
+    
+    ss.str(buffer);
+    int lockID_rec;
+    ss>>lockID_rec;
+    
     switch(messageType) {
     case 'C':
       // If this is a create lock
