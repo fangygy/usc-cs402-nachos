@@ -104,6 +104,7 @@ class Thread {
     void setStack(int* s) { stackTop = s; }
 
     void setMailbox(int boxNum) { mailbox = boxNum; } 
+    int getMailbox() { return mailbox; }
   private:
     // some of the private data for this class is listed above
     int mailbox;
