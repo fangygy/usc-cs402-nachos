@@ -47,6 +47,7 @@ class AddrSpace {
 
     void memoryLoad(int vpnumber, int index);
     void setMailbox(int mbox) { mailbox = mbox; }
+    int getMailbox() { return mailbox; }
  private:
 					// for now!
     unsigned int numPages;		// Number of pages in the virtual 
