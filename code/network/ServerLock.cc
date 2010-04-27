@@ -22,6 +22,9 @@ ServerLock::ServerLock(int theLockID) {
 
 void ServerLock::Acquire(LockOwner theOwner) {
 
+  
+
+  
   WaitQueueLock->Acquire();
   
   if(waitQueueSize > 0) {
@@ -53,7 +56,7 @@ void ServerLock::Acquire(LockOwner theOwner) {
 
   //release WaitQueueLock
   WaitQueueLock->Release();
-
+  
 
 }
 

@@ -11,15 +11,32 @@
 #include "ServerLock.cc"
 #include "ServerCond.cc"
 
-enum RequestType { UNKNOWN, CREATE_LOCK, ACQUIRE, RELEASE, DESTROY_LOCK, CREATE_CONDITION, WAIT, SIGNAL, BROADCAST, JOIN };
+enum RequestType { UNKNOWN, CREATE_LOCK, ACQUIRE, RELEASE, DESTROY_LOCK, CREATE_CONDITION, WAIT, SIGNAL, BROADCAST, REGISTER, CREATE_MV, GET, SET };
+
+struct ServerMV {
+  int value;
+  string name;
+};
+
+struct ServerToken {
+  string name;
+};
+
+int MAX_SERVER_MVs = 1000; //the max number of server MVs
+int MAX_SERVER_TOKENS = 1000;
 
 RequestType getRequestType(char* req);
 
 ServerLock *serverLockTable[1000];
 ServerCond *serverCondTable[1000];
+ServerMV serverMVTable[1000];
+ServerToken serverTokenTable[1000];
+
 
 int numServerLocks;
 int numServerConds;
+int numServerMVs;
+int numServerTokens;
 int numMembers;
 int maxNumMembers;
 
@@ -38,6 +55,9 @@ void TestWait(int theCondID, int theLockID);
 void TestSignal(int theCondID, int theLockID);
 void TestBroadcast(int theCondID, int theLockID);
 void TestRegister();
+int TestCreateMV();
+void TestGet(int theMVID);
+void TestSet(int theMVID, int theValue);
 
 void StartProject3Server(int numberOfMembers) {
 
@@ -55,11 +75,19 @@ void StartProject3Server(int numberOfMembers) {
   char* request = new char;
   char* response = new char;
 
+  
+
   Lock *ServerLockTableLock = new Lock("Server Lock Table Lock");
   //ServerLock serverLockTable[];
   numServerLocks = 0;
   Lock *ServerCondTableLock = new Lock("Server Cond Table Lock");
   numServerConds = 0;
+  
+  Lock *ServerTokenTableLock = new Lock("Server Token Table Lock");
+  numServerTokens = 0;
+
+  Lock *ServerMVTableLock = new Lock("Server MV Table Lock");
+  numServerMVs = 0;
 
   Lock *MemberTableLock = new Lock("Member Table Lock");
 
@@ -94,16 +122,67 @@ void StartProject3Server(int numberOfMembers) {
 
     bool sendResponse = false;
     bool error = false;
+    bool mvExists = false;
+    bool tokenExists = false;
+
+    string mvName = "";
+    string tokenName = "";
 
     RequestType r = getRequestType(request);
 
     KernelLock curLock;
     int lockID = -1;
     int condID = -1;
+    int mvID = -1;
+    int mvValue = -1;
 
     switch(r) {
 
     case CREATE_LOCK:
+      printf("Server received Create Token request. Token name = %s.\n", param);
+      tokenName = param;
+      ss.clear();
+      //create the lock and return the lock ID
+      
+      ServerTokenTableLock->Acquire();
+
+      if(numServerTokens >= MAX_SERVER_TOKENS) {
+	//server lock table full
+	ServerTokenTableLock->Release();
+	DEBUG('q',"Server Lock Table Full\n");
+	error = true;
+	break;
+      }
+
+      for(int i = 0; i < numServerTokens; i++) {
+	if(serverTokenTable[i].name == tokenName) {
+	  //token already exists w/ same name
+	  //printf("A token with the name \"%s\" already exists with id=%d\n",tokenName,i);
+	  lockID = i;
+	  tokenExists = true;
+	  break;
+	}
+      }
+
+      if(!tokenExists) {
+
+	serverTokenTable[numServerTokens].name = tokenName;
+
+	lockID = numServerTokens;
+	numServerTokens++;
+
+	sprintf(response, "%d", lockID); //send the client the lock ID
+      } else {
+	//the token already exists
+	sprintf(response, "%d dup", lockID); //send the client the lock ID and tell it that the token already exists
+      }
+
+      ServerTokenTableLock->Release();
+      
+      //sprintf(response, "%d", lockID); //send the client the lock ID
+      sendResponse = true;
+
+      /*  PROJECT 3 CREATE LOCK HERE
       printf("Server received Create Lock request. Lock name = %s.\n", param);
       ss.clear();
       //create the lock and return the lock ID
@@ -127,6 +206,8 @@ void StartProject3Server(int numberOfMembers) {
       
       sprintf(response, "%d", lockID); //send the client the lock ID
       sendResponse = true;
+
+      */
 
       /*
       KernelLockTableLock->Acquire();
@@ -546,8 +627,8 @@ void StartProject3Server(int numberOfMembers) {
       
       break;
 
-    case JOIN:
-      printf("Server received a registration message (join) request from machine %d, box %d.\n", inMailHdr.from, inPktHdr.from);
+    case REGISTER:
+      printf("Server received a registration message (join) request from machine %d, box %d.\n", inPktHdr.from, inMailHdr.from);
       
       //TODO - add the member's info to a list or something
       
@@ -560,28 +641,35 @@ void StartProject3Server(int numberOfMembers) {
       if(numMembers == maxNumMembers) {
 	printf("Reached the desired number of members (%d).\n", maxNumMembers);
 	//Send message to each member containing a list of the other members.
-	string memberListStr = "";
+	string memberListStr = "X";
 	ss.clear();
 	//ss << ".";
+	printf("Member List Generated:\n");
 	for(int i = 0; i < numMembers; i++) {
+	  memberListStr.append(" ");
 	  char tempBuf[10];
 	  sprintf(tempBuf,"%d",members[i].machineNum);
 	  memberListStr.append(tempBuf);
 	  memberListStr.append(",");
 	  sprintf(tempBuf,"%d",members[i].mailboxNum);
 	  memberListStr.append(tempBuf);
-	  memberListStr.append(" ");
+	  //memberListStr.append(" ");
+	  printf("   Machine: %d, Mailbox: %d\n", members[i].machineNum, members[i].mailboxNum);
 	  //ss << members[i].machineNum << "," << members[i].mailboxNum << " ";
 	}
 	//ss>>memberListStr;
-	cout<<"member list: "<<memberListStr<<endl;
+	//memberListStr.append(">");
+	//cout<<"member list: "<<memberListStr<<endl;
 
 	char* memberListToSend = new char[memberListStr.size() + 1];
 	strcpy(memberListToSend, memberListStr.c_str());
 
-	cout<<"member list to send: "<<memberListToSend<<endl;
+	//cout<<"member list to send: "<<memberListToSend<<endl;
+	//cout<<"size of member list: "<<sizeof(memberListToSend)<<endl;
+	//cout<<"max mail size: "<<MaxMailSize<<endl;
+	
 
-	outMailHdr.length = sizeof(memberListToSend) + 1;
+	outMailHdr.length = strlen(memberListToSend) + 1;
 
 	for(int i = 0; i < numMembers; i++) {
 	  outPktHdr.to = members[i].machineNum;
@@ -597,6 +685,101 @@ void StartProject3Server(int numberOfMembers) {
       }
       MemberTableLock->Release();
 
+      break;
+
+    case CREATE_MV:
+      printf("Server received Create MV request. MV name = %s.\n", param);
+      mvName = param;
+      ss.clear();
+      //create the MV and return the lock ID
+      
+      ServerMVTableLock->Acquire();
+
+      if(numServerMVs >= MAX_SERVER_MVs) {
+	//server MV table full
+	ServerMVTableLock->Release();
+	DEBUG('q',"Server MV Table Full\n");
+	error = true;
+	break;
+      }
+
+      for(int i=0; i < numServerMVs; i++) {
+	if(serverMVTable[i].name == mvName) {
+	  //a MV with the same name already exists
+	  //printf("MV name \n%s\" already exists. Sending existing MV ID=%d\n",mvName, i);
+	  mvExists = true;
+	  mvID = i;
+	  break;
+	}
+      }
+
+      if(!mvExists) {
+	serverMVTable[numServerMVs].value = -1;
+	serverMVTable[numServerMVs].name = mvName;
+
+	mvID = numServerMVs;
+	numServerMVs++;
+      } else {
+	//MV already exists
+      }
+      ServerMVTableLock->Release();
+      
+      sprintf(response, "%d", mvID); //send the client the MV ID
+      sendResponse = true;
+      break;
+
+    case GET:
+      printf("Server received Get request. MV ID = %s.\n",param);
+      ss.clear();
+      ss.str(param);
+      ss>>mvID;
+      //printf("MV id: %d\n",lockID);
+
+      ServerMVTableLock->Acquire();
+      if(mvID < 0 || mvID >= numServerMVs) {
+	//this is a bad value
+	DEBUG('q',"BAD VALUE\n");
+	error = true;
+	break;
+      }
+
+      mvValue = serverMVTable[mvID].value;
+
+      ServerMVTableLock->Release();
+
+      //send the value to the client
+      sprintf(response, "%d", mvValue);
+      sendResponse = true;
+     
+      break;
+
+    case SET:
+      ss>>param2; //get 2nd parameter (MV value)
+      printf("Server received Set request. MV ID = %s, Value = %s.\n",param,param2);
+      ss.clear();
+      ss.str(param);
+      ss>>mvID;
+
+      //int mvValue;
+      ss.clear();
+      ss.str(param2);
+      ss>>mvValue;
+      //printf("MV id: %d\n",lockID);
+
+      ServerMVTableLock->Acquire();
+      if(mvID < 0 || mvID >= numServerMVs) {
+	//this is a bad value
+	DEBUG('q',"BAD VALUE\n");
+	error = true;
+	break;
+      }
+
+      serverMVTable[mvID].value = mvValue;
+
+      ServerMVTableLock->Release();
+
+
+      sendResponse = false;
       break;
       
     case UNKNOWN:
@@ -641,6 +824,12 @@ void TestProject3() {
 
   TestRegister();
 
+  int newMVID = TestCreateMV();
+
+  TestSet(newMVID, 42);
+
+  TestGet(newMVID);
+
   //printf("creating lock\n");
   //int createLockID = TestCreateLock();
   //int createLockID2 = TestCreateLock();
@@ -665,6 +854,128 @@ void TestProject3() {
 
   //printf("broadcasting CV #%d with Lock #%d\n", createCondID, createLockID);
   //TestBroadcast(createCondID, createLockID);
+
+}
+
+void TestSet(int theMVID, int theValue) {
+
+  stringstream ss;
+
+  int myClientNum = 1;
+
+  PacketHeader outPktHdr, inPktHdr;
+  MailHeader outMailHdr, inMailHdr;
+  char buffer[MaxMailSize];
+  //char *data = "L 1234";
+
+  sprintf(buffer, "SMV %d %d", theMVID, theValue);
+
+  //ss<<"A "<<theLockID;
+
+  //ss>>buffer;
+
+
+  outPktHdr.to = 0; //hard coded to 0 for testing
+  outMailHdr.to = 0;
+  outMailHdr.from = 1;
+  outMailHdr.length = strlen(buffer) + 1;
+
+  bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+
+  if(!success) {
+    printf("The postOffice Send failed.\n");
+    interrupt->Halt();
+  }
+
+  
+
+
+
+}
+
+void TestGet(int theMVID) {
+
+  stringstream ss;
+
+  int myClientNum = 1;
+
+  PacketHeader outPktHdr, inPktHdr;
+  MailHeader outMailHdr, inMailHdr;
+  char buffer[MaxMailSize];
+  //char *data = "L 1234";
+
+  sprintf(buffer, "GMV %d", theMVID);
+
+  //ss<<"A "<<theLockID;
+
+  //ss>>buffer;
+
+
+  outPktHdr.to = 0; //hard coded to 0 for testing
+  outMailHdr.to = 0;
+  outMailHdr.from = 1;
+  outMailHdr.length = strlen(buffer) + 1;
+
+  bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+
+  if(!success) {
+    printf("The postOffice Send failed.\n");
+    interrupt->Halt();
+  }
+
+  
+  postOffice->Receive(myClientNum, &inPktHdr, &inMailHdr, buffer);
+  printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+  fflush(stdout);
+
+  ss.str(buffer);
+  int mvVal_rec;
+  ss>>mvVal_rec;
+
+  if(mvVal_rec < 0) {
+    printf("Error Getting the MV value. Server Response=%d.\n",mvVal_rec);
+  } else {
+    printf("Successfully Got the MV value. Server Response=%d.\n",mvVal_rec);
+  }
+
+
+}
+
+int TestCreateMV() {
+
+  stringstream ss;
+
+  int myClientNum = 1;
+
+  PacketHeader outPktHdr, inPktHdr;
+  MailHeader outMailHdr, inMailHdr;
+  char buffer[MaxMailSize];
+  char *data = "CMV name";
+
+
+
+  outPktHdr.to = 0; //hard coded to 0 for testing
+  outMailHdr.to = 0;
+  outMailHdr.from = 1;
+  outMailHdr.length = strlen(data) + 1;
+
+  bool success = postOffice->Send(outPktHdr, outMailHdr, data);
+
+  if(!success) {
+    printf("The postOffice Send failed.\n");
+    interrupt->Halt();
+  }
+
+  
+  postOffice->Receive(myClientNum, &inPktHdr, &inMailHdr, buffer);
+  printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+  fflush(stdout);
+
+  ss.str(buffer);
+  int mvID_rec;
+  ss>>mvID_rec;
+
+  return mvID_rec;
 
 }
 
@@ -693,11 +1004,11 @@ void TestRegister() {
     interrupt->Halt();
   }
 
-  cout<<"buffer: "<<buffer<<endl;
+  //cout<<"buffer: "<<buffer<<endl;
   
   postOffice->Receive(myClientNum, &inPktHdr, &inMailHdr, buffer);
   printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
-  cout<<buffer<<endl;
+  //cout<<buffer<<endl;
   fflush(stdout);
   
   ss.clear();
@@ -709,16 +1020,26 @@ void TestRegister() {
   return lockID_rec;
   */
   string currentClient;
+  int numClients = 0;
+  Member clients[1000];
+  printf("Member List Received:\n");
   while( getline(ss, currentClient, ' ')) {
+    
     int firstCommaPos = currentClient.find_first_of(",");
-    int lastPeriodPos = currentClient.find_last_of(".");
+    //cout<<"firstCommaPos:"<<firstCommaPos<<endl;
+    //int lastPeriodPos = currentClient.find_last_of(".");
     string machineNumStr = currentClient.substr(0,firstCommaPos);
-    string mailboxNumStr = currentClient.substr(firstCommaPos+1, lastPeriodPos);
+    string mailboxNumStr = currentClient.substr(firstCommaPos+1);
     //cout<<"machine num: "<<machineNumStr<<" mailbox num: "<<mailboxNumStr<<endl;
     int machineNum = atoi(machineNumStr.c_str());
     int mailboxNum = atoi(mailboxNumStr.c_str());
-    cout<<"machine num: "<<machineNum<<" mailbox num: "<<mailboxNum<<endl;
+    clients[numClients].machineNum = machineNum;
+    clients[numClients].mailboxNum = mailboxNum;
+    numClients++;
+    printf("   Machine: %d, Mailbox: %d\n", machineNum, mailboxNum);
+    //cout<<"machine num: "<<machineNum<<" mailbox num: "<<mailboxNum<<endl;
   }
+  printf("There are %d clients (including myself)\n",numClients);
 
 }
 
@@ -1081,7 +1402,13 @@ RequestType getRequestType(char* req) {
   } else if (strcmp(req, "B")==0) {
     return BROADCAST;
   } else if (strcmp(req, "J")==0) {
-    return JOIN;
+    return REGISTER;
+  } else if (strcmp(req, "CMV")==0) {
+    return CREATE_MV;
+  } else if (strcmp(req, "GMV")==0) {
+    return GET;
+  } else if (strcmp(req, "SMV")==0) {
+    return SET;
   } else {
     return UNKNOWN;
   }

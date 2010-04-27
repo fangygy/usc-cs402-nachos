@@ -127,6 +127,7 @@ class PostOffice {
    				// packet has arrived and can be pulled
 				// off of network (i.e., time to call 
 				// PostalDelivery)
+    NetworkAddress getNetAddr() { return netAddr; }
 
   private:
     Network *network;		// Physical network connection
