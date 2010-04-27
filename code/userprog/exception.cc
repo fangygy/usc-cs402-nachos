@@ -28,8 +28,26 @@
 #include <stdio.h>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 using namespace std;
+
+struct TokenRequest {
+  int tokenNum;
+  int mailboxNum;
+  int machineNum;
+};
+
+struct Member {
+  int machineNum;
+  int mailboxNum;
+};
+
+Member clients[1000];
+
+enum RequestType { UNKNOWN, CREATE_LOCK, ACQUIRE, RELEASE, DESTROY_LOCK, CREATE_CONDITION, WAIT, SIGNAL, BROADCAST, REGISTER, CREATE_MV, GET, SET, TOKEN, REGISTER_RESPONSE };
+
+RequestType getNetThreadRequestType(char* req);
 
 int copyin(unsigned int vaddr, int len, char *buf) {
     // Copy len bytes from the current thread's virtual address vaddr.
@@ -294,6 +312,7 @@ int CreateLock_Syscall(int vaddr) {
   // we are context switched out before nextLockIndex is
   // returned
 #else
+  
   stringstream ss;
 
   PacketHeader outPktHdr, inPktHdr;
@@ -304,13 +323,28 @@ int CreateLock_Syscall(int vaddr) {
   char *lockName = new char[size];
   copyin(vaddr,size,lockName);
 
-  ss.clear();
-  ss<<"L "<<lockName;
-  ss>>buffer;
+  cout<<"lock name: "<<lockName<<endl;
+  string lockNameStr = "L ";
+  lockNameStr.append(lockName);
+  cout<<"lockNameStr: "<<lockNameStr<<endl;
+
+  strcpy(buffer, lockNameStr.c_str());
+
+  //ss.clear();
+  //ss<<lockNameStr;
+  //ss<<"L "<<lockNameStr;
+  //ss>>buffer;
   
-  outPktHdr.to = 0;
-  outMailHdr.to = 0;
-  outMailHdr.from = 1;
+  cout<<"buffer: "<<buffer<<endl;
+
+  outPktHdr.to = postOffice->getNetAddr();
+  /*  outMailHdr.to = 0;*/
+  outMailHdr.to = currentThread->space->getMailbox();
+  //printf("mailbox # (network thread): %d\n",currentThread->space->getMailbox());
+  //printf("mailbox # (current thread): %d\n",currentThread->getMailbox());
+  //printf("machine # (default): %d\n",outPktHdr.to);
+
+  outMailHdr.from = currentThread->getMailbox();
   outMailHdr.length = strlen(buffer)+1;
 
   bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
@@ -320,7 +354,7 @@ int CreateLock_Syscall(int vaddr) {
     interrupt->Halt();
   }
 
-  postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
+  postOffice->Receive(currentThread->getMailbox(), &inPktHdr, &inMailHdr, buffer);
   printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
   fflush(stdout);
   
@@ -329,7 +363,26 @@ int CreateLock_Syscall(int vaddr) {
   int lockID_rec;
   ss>>lockID_rec;
 
+
+  //no one needs the token, send to the next group member
+  //TODO - send the next group member (via the network thread)
+	
+  outPktHdr.to = postOffice->getNetAddr();
+  outMailHdr.to = currentThread->space->getMailbox(); //send to network thread
+
+  ss.clear();
+  ss<<"T "<<lockID_rec;
+  ss>>buffer;
+
+  outMailHdr.length = strlen(buffer) + 1;
+  success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+  if(!success) {
+    printf("The post office send failed.\n");
+    interrupt->Halt();
+  }
+
   return lockID_rec; //will be -1 if lock table is full
+  
   
   
 
@@ -474,9 +527,12 @@ void Acquire_Syscall(int index) {
 
   sprintf(buffer, "A %d", index);
   
-  outPktHdr.to = 0;
-  outMailHdr.to = 0;
-  outMailHdr.from = 1;
+  outPktHdr.to = postOffice->getNetAddr();
+  outMailHdr.to = currentThread->space->getMailbox();
+  outMailHdr.from = currentThread->getMailbox();
+  //outPktHdr.to = 0;
+  //outMailHdr.to = 0;
+  //outMailHdr.from = 1;
   outMailHdr.length = strlen(buffer)+1;
 
   bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
@@ -486,7 +542,7 @@ void Acquire_Syscall(int index) {
     interrupt->Halt();
   }
 
-  postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
+  postOffice->Receive(currentThread->getMailbox(), &inPktHdr, &inMailHdr, buffer);
   printf("Got \"%d\" from %d, box %d\n",buffer,inPktHdr.from,inPktHdr.from);
   fflush(stdout);
 
@@ -554,9 +610,11 @@ void Release_Syscall(int index) {
 
   sprintf(buffer, "R %d", index);
   
-  outPktHdr.to = 0;
-  outMailHdr.to = 0;
-  outMailHdr.from = 1;
+  //outPktHdr.to = 0;
+  //outMailHdr.to = 0;
+  outPktHdr.to = postOffice->getNetAddr();
+  outMailHdr.to = currentThread->space->getMailbox();
+  outMailHdr.from = currentThread->getMailbox();
   outMailHdr.length = strlen(buffer)+1;
 
   bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
@@ -566,7 +624,8 @@ void Release_Syscall(int index) {
     interrupt->Halt();
   }
 
-  postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
+  /*
+  postOffice->Receive(currentThread->getMailbox(), &inPktHdr, &inMailHdr, buffer);
   printf("Got \"%d\" from %d, box %d\n",buffer,inPktHdr.from,inPktHdr.from);
   fflush(stdout);
 
@@ -581,6 +640,7 @@ void Release_Syscall(int index) {
     //lock released successfully (received confirmation from server)
     //do nothing
   }
+  */
 
 #endif
 
@@ -1057,8 +1117,82 @@ void Exit_Syscall(int status) {
 
 }
 
-void netThread() {
+void Register_Syscall() {
+  stringstream ss;
+
+  PacketHeader outPktHdr, inPktHdr;
+  MailHeader outMailHdr, inMailHdr;
+  char buffer[MaxMailSize];
+  //char *data = "J";
+
+  ss.clear();
+  ss << "J";
+  ss >> buffer;
+
+  outPktHdr.to = postOffice->getNetAddr();
+  outMailHdr.to = currentThread->space->getMailbox();
+  outMailHdr.from = currentThread->getMailbox();
+  outMailHdr.length = strlen(buffer)+1;
+
+  bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+  if(!success) {
+    printf("The post office send failed.\n");
+    interrupt->Halt();
+  }
+  
+  postOffice->Receive(currentThread->getMailbox(), &inPktHdr, &inMailHdr, buffer);
+  printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+
+  fflush(stdout);
   /*
+  ss.clear();
+  ss.str(buffer);
+
+  string currentClient;
+  int numClients = 0;
+  //Member clients[1000];
+  printf("Member List Received:\n");
+  while( getline(ss, currentClient, ' ')) {
+    
+    int firstCommaPos = currentClient.find_first_of(",");
+    //cout<<"firstCommaPos:"<<firstCommaPos<<endl;
+    //int lastPeriodPos = currentClient.find_last_of(".");
+    string machineNumStr = currentClient.substr(0,firstCommaPos);
+    string mailboxNumStr = currentClient.substr(firstCommaPos+1);
+    //cout<<"machine num: "<<machineNumStr<<" mailbox num: "<<mailboxNumStr<<endl;
+    int machineNum = atoi(machineNumStr.c_str());
+    int mailboxNum = atoi(mailboxNumStr.c_str());
+    clients[numClients].machineNum = machineNum;
+    clients[numClients].mailboxNum = mailboxNum;
+    numClients++;
+    printf("   Machine: %d, Mailbox: %d\n", machineNum, mailboxNum);
+    //cout<<"machine num: "<<machineNum<<" mailbox num: "<<mailboxNum<<endl;
+  }
+  printf("There are %d clients (including myself)\n",numClients);
+  */
+}
+
+void netThread() {
+  
+  int numClients = 0;
+  Member clients[1000]; //other Network Threads
+
+
+  int myMailboxNum = currentThread->getMailbox(); //currentThread->mailbox;
+  
+  Lock *AcquireQueueLock = new Lock("acquireQueueLock");
+  int acquireQueueLength = 0;
+  TokenRequest acquireQueue[1000];
+  TokenRequest myTokens[1000]; //keeps track of the tokens acquired by this network thread's user programs
+  int myTokensLength = 0;
+  Member nextClient;
+  int myClientID = -1;
+
+  Member myUserProgs[1000];
+  int numUserProgs = 0;
+  bool registered = false; //set to true when this network thread (and all the other members) register with the server
+  Lock* MyUserProgsLock = new Lock("NT User Progs Lock");
+  
   while(true) {
     // get the message 
     // determine what to do with the message
@@ -1067,73 +1201,418 @@ void netThread() {
     PacketHeader outPktHdr, inPktHdr;
     MailHeader outMailHdr, inMailHdr;
     char buffer[MaxMailSize];
+    char* param = new char;
+    char* param2 = new char; //second param, if needed
+    char* request = new char;
+    char* response = new char;
+
+    int tokenID = -1;
+
+    string currentClientResp;
     
-    //int size = 16;
-    //char *lockName = new char[size];
-    //copyin(vaddr,size,lockName);
+    int numClientsResp = 0;
+
     
-    //ss.clear();
-    //ss<<"D "<<lockName;
-    //ss>>buffer;
+    //outPktHdr.to = 0;
+    //outMailHdr.to = 0;
+    outMailHdr.from = myMailboxNum;
+    //outMailHdr.length = strlen(buffer)+1;
     
-    sprintf(buffer, "A %d", index);
+    //bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
     
-    outPktHdr.to = 0;
-    outMailHdr.to = 0;
-    outMailHdr.from = 1;
-    outMailHdr.length = strlen(buffer)+1;
+    //if(!success) {
+    //printf("The postOffice Send failed.\n");
+    //interrupt->Halt();
+    //}
     
-    bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
-    
-    if(!success) {
-    printf("The postOffice Send failed.\n");
-    interrupt->Halt();
-    }
-    
-    postOffice->Receive(1, &inPktHdr, &inMailHdr, buffer);
-    printf("Got \"%d\" from %d, box %d\n",buffer,inPktHdr.from,inPktHdr.from);
+    postOffice->Receive(myMailboxNum, &inPktHdr, &inMailHdr, buffer); 
+    printf("Network Thread: Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inPktHdr.from);
     fflush(stdout);
     
     ss.str(buffer);
-    char messageType;
-    ss>>messageType;
+    ss >> request;
+    ss >> param;
+
+    printf("NT: request=\"%s\"\n",request);
+
+    RequestType r = getNetThreadRequestType(request);
+
+    int myClientIndex = -1;
+    string clientListStr = "";
+    string nextWord = "";
+
+    bool canReleaseToken = false;
+    int releaseMyTokenIndex = -1;
     
-    switch(messageType) {
-    case 'C':
+    switch(r) {
+    case CREATE_LOCK:
       // If this is a create lock
       // send message to server
-      postOffice->Send();
+
+      ss.clear();
+      ss<<"C "<<param;
+      ss>>buffer;
+
+      int fromMailbox = inMailHdr.from;
+      int fromMachine = inPktHdr.from;
+      outPktHdr.to = 0;
+      outMailHdr.to = 0;
+      outMailHdr.length = strlen(buffer) + 1;
+      bool success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+      if(!success) {
+	printf("The post office send failed.\n");
+	interrupt->Halt();
+      }
       // Sends out the token id for every new message, even with OK message     
-      postOffice->Receive();
+      postOffice->Receive(myMailboxNum, &inPktHdr, &inMailHdr, buffer);
+      printf("Network Thread: Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+      fflush(stdout);
       // Parse the message, and the token id
       // which will be an integer
-      break;
-    case 'Acquire':
-      // Acquire a lock
-      // Wait for right message
-      while(I do not have the right token) {
-	postOffice->Receive();
-	if(token is the right token)
-	  break;
+      ss.clear();
+      ss.str(buffer);
+      int lockID_rec;
+      ss>>lockID_rec;
+
+      //string nextWord;
+      ss>>nextWord;
+      if(nextWord == "dup") {
+	//this lock already existed, it is not new
+	//do not send the token around (it is not my token)
+
+	printf("Network Thread: The token (id=%d) already existed.\n",lockID_rec);
+	
+      } else {
+
+	printf("Network Thread: Received (new) token ID %d\n",lockID_rec);
+
+	//send the token to my neighbor (start the cycle)
+      
+	string tokenStr = "T ";
+	string tokenNumStr ="";
+	
+	ss.clear();
+	ss<<lockID_rec;
+	tokenNumStr = ss.str();
+	//ss>>tokenNumStr;
+	//cout<<"tokenNumStr:"<<tokenNumStr<<endl;
+
+	tokenStr.append(tokenNumStr);
+	strcpy(buffer,tokenStr.c_str());
+	//ss>>buffer;
+
+	//cout<<"buffer: "<<buffer<<endl;
+	outPktHdr.to = nextClient.machineNum;
+	outMailHdr.to = nextClient.mailboxNum;
+	outMailHdr.length = strlen(buffer) + 1;
+	success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+	if(!success) {
+	  printf("The post office send failed.\n");
+	  interrupt->Halt();
+	}
+
       }
-      // Send a message to the user program, which unblocks it
-      postOffice->Send( );     
+
+      //send the token number to the caller
+      ss.clear();
+      ss<<lockID_rec;
+      ss>>buffer;
+      outPktHdr.to = fromMachine;
+      outMailHdr.to = fromMailbox;
+      outMailHdr.length = strlen(buffer) + 1;
+      success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+      if(!success) {
+	printf("The post office send failed.\n");
+	interrupt->Halt();
+      }
+
       break;
-    case 'Release':
+    case ACQUIRE:
+      // Acquire a lock
+      ss>>param2;
+      ss.clear();
+      //ss.str(param2);
+      //ss>>tokenID;
+      tokenID = atoi(param2);
+      
+
+      //cout<<"NT: UP wants to acquire token id="<<tokenID<<endl;
+      AcquireQueueLock->Acquire();
+      acquireQueue[acquireQueueLength].machineNum = inPktHdr.from;
+      acquireQueue[acquireQueueLength].mailboxNum = inMailHdr.from;
+      acquireQueue[acquireQueueLength].tokenNum = tokenID;
+      acquireQueueLength++;
+      AcquireQueueLock->Release();
+      
+      
+      break;
+    case RELEASE:
+      ss>>param2;
+      ss.clear();
+      //ss.str(param2);
+      //ss>>tokenID;
+      tokenID = atoi(param2);
+      
+
+      //cout<<"NT: UP wants to release token id="<<tokenID<<endl;
+
+      for(int i = 0; i < myTokensLength; i++) {
+	//if(myTokens[i].tokenNum == tokenID && myTokens[i].machineNum == inPktHdr.from && myTokens[i].mailboxNum == inMailHdr.from) {
+	if(myTokens[i].tokenNum == tokenID) {
+	  //The release request came from the same person who requested the token
+	  canReleaseToken = true;
+	  releaseMyTokenIndex = i;
+	  break;
+	}
+      }
+
+      if(canReleaseToken) {
+	//The release request came from the same person who requested the token
+	for(int i=releaseMyTokenIndex; i < myTokensLength-1; i++) {
+	  myTokens[i] = myTokens[i+1];
+	}
+	myTokensLength--;
+
+	//ss.clear();
+	//ss << "T "<< tokenID;
+	//ss >> buffer;
+
+	sprintf(buffer, "T %d", tokenID);
+       
+	outPktHdr.to = nextClient.machineNum;
+	outMailHdr.to = nextClient.mailboxNum;
+	outMailHdr.from = myMailboxNum;
+	outMailHdr.length = strlen(buffer)+1;
+
+	//printf("NT: Sending token %d (after release) to %d,%d\n",tokenID,outPktHdr.to,outMailHdr.to);
+	//printf("NT: buffer: %s\n",buffer);
+       
+	bool tokenSuccess = postOffice->Send(outPktHdr, outMailHdr, buffer);
+	if(!tokenSuccess) {
+	  printf("The post office send failed.\n");
+	  interrupt->Halt();
+	}
+
+      } else {
+	//the user doesn't have permission to release this lock
+	printf("Network Thread: The user does not have permission to release this token.\n");
+      }
+
+
+
       // On release, just send the token to the next UP
-      postOffice->Send( );
+      /*
+      AcquireQueueLock->Acquire();
+      if(acquireQueueLength == 0) {
+         //send token to the next UP
+      } else {
+         //send msg to the first thread waiting
+
+	 outPktHdr.to = acquireQueue[0].machineNum;
+	 outMailHdr.from = acquireQueue[0].mailboxNum;
+	 
+	 for(int i=1; i < acquireQueueLength; i++) {
+	    acquireQueue[i-1] = acquireQueue[i];
+	 }
+	 acquireQueueLength--;
+	 AcquireQueueLock->Release();
+
+	 //TODO- send token # to the 1st thread waiting
+	 postOffice->Send();
+      }
+      */
       break;
-    case 'Register':
+    case REGISTER:
+
+       ss.clear();
+       ss << "J";
+       ss >> buffer;
+
+       MyUserProgsLock->Acquire();
+       myUserProgs[numUserProgs].machineNum = inPktHdr.from;
+       myUserProgs[numUserProgs].mailboxNum = inMailHdr.from;
+       numUserProgs++;
+       MyUserProgsLock->Release();
+       
+       outPktHdr.to = 0;
+       outMailHdr.to = 0;
+       outMailHdr.from = myMailboxNum;
+       outMailHdr.length = strlen(buffer)+1;
+       
+       bool regSuccess = postOffice->Send(outPktHdr, outMailHdr, buffer);
+       if(!regSuccess) {
+	 printf("The post office send failed.\n");
+	 interrupt->Halt();
+       }
+
+       
+
+       break;
+       
+    case REGISTER_RESPONSE:
+      ss.clear();
+
+      ss.str(buffer);
+
+      //string currentClientResp;
+      currentClientResp = "";
+      numClientsResp = 0;
+
+      //Member clients[1000];
+      printf("Member List Received:\n");
+      //int myClientIndex = -1;
+      while( getline(ss, currentClientResp, ' ')) {
+	//printf("starting\n");
+	//cout<<"\""<<currentClientResp<<"\""<<endl;
+	string registerResponseMsgTitle = "X";
+	if(currentClientResp == registerResponseMsgTitle) {
+	  continue;
+	}
+	//printf("currentClientResp=%s\n",currentClientResp);
+	int firstCommaPos = currentClientResp.find_first_of(",");
+	string machineNumStr = currentClientResp.substr(0,firstCommaPos);
+	string mailboxNumStr = currentClientResp.substr(firstCommaPos+1);
+	int machineNum = atoi(machineNumStr.c_str());
+	int mailboxNum = atoi(mailboxNumStr.c_str());
+	if(machineNum == postOffice->getNetAddr() && mailboxNum == myMailboxNum) {
+	  myClientID = numClientsResp;
+	}
+	clients[numClientsResp].machineNum = machineNum;
+	clients[numClientsResp].mailboxNum = mailboxNum;
+	numClientsResp++;
+	printf("   Machine: %d, Mailbox: %d\n", machineNum, mailboxNum);
+	//cout<<"machine num: "<<machineNum<<" mailbox num: "<<mailboxNum<<endl;
+      }
+      
+      if(myClientID < 0) {
+	//my client ID was not in the list of registered clients... problem
+	printf("This network thread was not in the list of registered clients\n");
+	interrupt->Halt();
+      } else {
+	if(myClientID == numClientsResp - 1) {
+	  //I am the last client in the list.
+	  //my next client is the 1st client in the list
+	  nextClient.machineNum = clients[0].machineNum;
+	  nextClient.mailboxNum = clients[0].mailboxNum;
+	} else {
+	  if(numClientsResp > 1) {
+	    //I am not the only client in the list of registered clients
+	    nextClient.machineNum = clients[myClientID+1].machineNum;
+	    nextClient.mailboxNum = clients[myClientID+1].mailboxNum;
+	  } else {
+	    //I am the only client in the list of registered clients
+	    //(this case should be covered above (will never reach here)
+	  }
+	}
+      }
+
+      printf("Network Thread: There are %d clients (including myself)\n",numClientsResp);
+      printf("Network Thread: My machine/mailbox is %d,%d. My neighbor is at %d,%d.\n",postOffice->getNetAddr(),myMailboxNum,nextClient.machineNum,nextClient.mailboxNum);
+
+      registered = true;
+      MyUserProgsLock->Acquire();
+      ss.clear();
+      ss << "REG";
+      ss >> buffer;
+      for(int i =0; i<numUserProgs; i++) {
+	outPktHdr.to = myUserProgs[i].machineNum;
+	outMailHdr.to = myUserProgs[i].mailboxNum;
+	outMailHdr.length = strlen(buffer)+1;
+	bool rrSuccess = postOffice->Send(outPktHdr, outMailHdr, buffer);
+	if(!rrSuccess) {
+	  printf("The post office send failed.\n");
+	  interrupt->Halt();
+	}
+	
+      }
+      MyUserProgsLock->Release();
+
       break;
-    case 'Wait':
+       
+    case WAIT:
       break;
-    case 'SignalReply':
+
+    case TOKEN:
+      ss>>param2;
+      ss.clear();
+      //ss.str(param2);
+      //ss>>tokenID;
+
+      tokenID = atoi(param2);
+
+      printf("Network Thread: Received token id=%d\n",tokenID);
+     
+      bool tokenNeeded = false;
+
+      AcquireQueueLock->Acquire();
+      //printf("Network Thread: acquire queue length currently=%d\n",acquireQueueLength);
+      for(int i=0; i < acquireQueueLength; i++) {
+	if(acquireQueue[i].tokenNum == tokenID) {
+	  //there is a thread waiting for this token
+	  tokenNeeded = true;
+	  outPktHdr.to = acquireQueue[i].machineNum;
+	  outMailHdr.to = acquireQueue[i].mailboxNum;
+
+	  myTokens[myTokensLength].machineNum = acquireQueue[i].machineNum;
+	  myTokens[myTokensLength].mailboxNum = acquireQueue[i].mailboxNum;
+	  myTokensLength++;
+
+	  printf("My user program wants to acquire token id=%d\n",tokenID);
+
+	  for(int j = i+1; j < acquireQueueLength; j++) {
+	    acquireQueue[j-1] = acquireQueue[j];
+	  }
+	  acquireQueueLength--;
+
+	  ss.clear();
+	  ss<<tokenID;
+	  ss>>buffer;
+	  outMailHdr.length = strlen(buffer) + 1;
+	  success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+	  if(!success) {
+	    printf("The post office send failed.\n");
+	    interrupt->Halt();
+	  }
+
+	}
+	break;
+      }
+      AcquireQueueLock->Release();
+
+      if(!tokenNeeded) {
+	//no one needs the token, send to the next group member
+	//TODO - send the next group member
+
+	int tempWait = 0;
+	
+	while(tempWait < 10000) {
+	  currentThread->Yield();
+	  tempWait++;
+	}
+	
+	outPktHdr.to = nextClient.machineNum;
+	outMailHdr.to = nextClient.mailboxNum; //TODO - FIX THIS
+
+	//buffer remains the same as it was received
+	outMailHdr.length = strlen(buffer) + 1;
+	success = postOffice->Send(outPktHdr, outMailHdr, buffer);
+	if(!success) {
+	  printf("The post office send failed.\n");
+	  interrupt->Halt();
+	}
+
+      }
+
+      
+
       break;
-    case 'RegistrationReply':
-      break;
+      //case 'SignalReply':
+      //break;
+      //case 'RegistrationReply':
+      //break;
     }
   }
-  */
+  
 }
 
 void execThread() {
@@ -1320,7 +1799,7 @@ void ExceptionHandler(ExceptionType which) {
 		// Get the virtual address for the name of the process
 		// virtualAddress_e = machine->ReadRegister(4);
 		virtualAddress_e = machine->ReadRegister(4);
-		char *buf = new char[16+1];	// Kernel buffer to put the name in
+		char *buf = new char[32+1];	// Kernel buffer to put the name in
 		OpenFile *f;			// The new open file
 		int id;				// The openfile id
 		
@@ -1329,12 +1808,12 @@ void ExceptionHandler(ExceptionType which) {
 		 
 		}
 		
-		if( copyin(virtualAddress_e,16,buf) == -1 ) {
+		if( copyin(virtualAddress_e,32,buf) == -1 ) {
 		  DEBUG('d',"Bad pointer passed to Open\n");
 		  delete[] buf;
 		}
 		
-		buf[16]='\0';
+		buf[32]='\0';
 
 		// Print out filename
 		printf("Opening %s\n",buf);
@@ -1358,6 +1837,7 @@ void ExceptionHandler(ExceptionType which) {
 		  nextMailbox++;
 		  Thread *networkThread = new Thread("networkThread");
 		  networkThread->setMailbox(nextMailbox);
+                  space->setMailbox(nextMailbox);
 		  nextMailbox++;
 		  mailboxLock->Release();
 		  
@@ -1396,12 +1876,8 @@ void ExceptionHandler(ExceptionType which) {
 	  printf(buf_p,p1,p2,p3);
 	  break;
 	case SC_Register:
-	  // Send message to the networking thread
-	  // postOffice->Send()
-
-	  // Thread here is blocked, as we are waiting for the reply message from the network thread
-	  // User Program will not start without the reply message
-	  // postOffice->Receive()
+	  Register_Syscall();
+	  
 	  break;
 	}
 
@@ -1593,4 +2069,40 @@ void ExceptionHandler(ExceptionType which) {
       cout<<"Unexpected user mode exception - which:"<<which<<"  type:"<< type<<endl;
       interrupt->Halt();
     }
+}
+
+RequestType getNetThreadRequestType(char* req) {
+  
+  if(strcmp(req, "L")==0) {
+    return CREATE_LOCK;
+  } else if(strcmp(req, "A")==0) {
+    return ACQUIRE;
+  } else if (strcmp(req, "R")==0) {
+    return RELEASE;
+  } else if (strcmp(req, "D")==0) {
+    return DESTROY_LOCK;
+  } else if (strcmp(req, "C")==0) {
+    return CREATE_CONDITION;
+  } else if (strcmp(req, "W")==0) {
+    return WAIT;
+  } else if (strcmp(req, "S")==0) {
+    return SIGNAL;
+  } else if (strcmp(req, "B")==0) {
+    return BROADCAST;
+  } else if (strcmp(req, "J")==0) {
+    return REGISTER;
+  } else if (strcmp(req, "CMV")==0) {
+    return CREATE_MV;
+  } else if (strcmp(req, "GMV")==0) {
+    return GET;
+  } else if (strcmp(req, "SMV")==0) {
+    return SET;
+  } else if (strcmp(req, "T")==0) {
+    return TOKEN;
+  } else if (strcmp(req, "X")==0) {
+    return REGISTER_RESPONSE;
+  } else {
+    return UNKNOWN;
+  }
+
 }

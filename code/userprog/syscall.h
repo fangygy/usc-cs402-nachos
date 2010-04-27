@@ -168,7 +168,7 @@ void Broadcast(int index, int lock_index);
 
 void Print(char* buf, int p1, int p2, int p3);
 
-void Register(int mailbox);
+void Register();
 
 #endif /* IN_ASM */
 
