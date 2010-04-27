@@ -210,6 +210,9 @@ Print:
 	j	$31
 	.end Print
 
+
+	.globl Register
+	.ent	Register
 Register:
 	addiu $2,$0,SC_Register
 	syscall
