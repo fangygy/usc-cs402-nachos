@@ -31,7 +31,7 @@ CPP = $(GCCDIR)cpp
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
-all: halt matmult sort testfiles testLocks testConds exittest exectest forktest lockTest1 lockTest2
+all: halt matmult sort testfiles testLocks testConds exittest exectest forktest lockTest1 lockTest2 AirportLC AirportLiaison Passenger PassC
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.s > strt.s
@@ -103,5 +103,30 @@ forktest.o: forktest.c
 forktest: forktest.o start.o
 	$(LD) $(LDFLAGS) start.o forktest.o -o forktest.coff
 	../bin/coff2noff forktest.coff forktest
+
+AirportLiaison.o: AirportLiaison.c
+	$(CC) $(CFLAGS) -c AirportLiaison.c
+AirportLiaison: AirportLiaison.o start.o
+	$(LD) $(LDFLAGS) start.o AirportLiaison.o -o AirportLiaison.coff
+	../bin/coff2noff AirportLiaison.coff AirportLiaison
+
+AirportLC.o: AirportLC.c
+	$(CC) $(CFLAGS) -c AirportLC.c
+AirportLC: AirportLC.o start.o
+	$(LD) $(LDFLAGS) start.o AirportLC.o -o AirportLC.coff
+	../bin/coff2noff AirportLC.coff AirportLC
+
+Passenger.o: Passenger.c
+	$(CC) $(CFLAGS) -c Passenger.c
+Passenger: Passenger.o start.o
+	$(LD) $(LDFLAGS) start.o Passenger.o -o Passenger.coff
+	../bin/coff2noff Passenger.coff Passenger
+
+PassC.o: PassC.c
+	$(CC) $(CFLAGS) -c PassC.c
+PassC: PassC.o start.o
+	$(LD) $(LDFLAGS) start.o PassC.o -o PassC.coff
+	../bin/coff2noff PassC.coff PassC
+
 clean:
 	rm -f *.o *.coff

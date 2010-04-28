@@ -27,15 +27,18 @@ void main(int passengerNum) {
     int al1_line_length, al2_line_length, al3_line_length;
     int lineLengths[3];
     int shortLine;
-    int myLineNumber;
     int myLineCount;
 
+    /* Locks */
+    int passengerNumLock;
     int alLock;
+    int alLineLock;
 
     /* Create CVS for interactions with AL, CIS, SO, SI */
     int waitingForAL_C;
+    int waitingForTicket_AL_C;
 
-    passengerNumLock = createLock("passengerNumLock");
+    passengerNumLock = CreateLock("passengerNumLock");
     Acquire(passengerNumLock);
 
     myNumber = passengerNum;
@@ -49,18 +52,18 @@ void main(int passengerNum) {
        -------------------------------------------------------- */
 
     /* Passenger acquires the lock so they can search for shortest line amongst all lines */
-    alLineLock = createLock("alLineLock");
+    alLineLock = CreateLock("alLineLock");
     Acquire(alLineLock);
 
     /* Get the indexes to the MV to the Airport Liaison Line */
-    al1_line = createMV("al_line1");
-    al2_line = createMV("al_line2");
-    al3_line = createMV("al_line3");
+    al1_line = CreateMV("al_line1");
+    al2_line = CreateMV("al_line2");
+    al3_line = CreateMV("al_line3");
 
     /* Get the values to the MV of the Aiport Liaison Lines */
-    al1_line_length = getMV(al1_line);
-    al2_line_length = getMV(al2_line);
-    al3_line_length = getMV(al3_line);
+    al1_line_length = GetMV(al1_line);
+    al2_line_length = GetMV(al2_line);
+    al3_line_length = GetMV(al3_line);
 
     /* Store these in an array so that we can find minimum */
     lineLengths[0] = al1_line_length;
@@ -76,25 +79,25 @@ void main(int passengerNum) {
     case 0:
       myLineNumber   = al1_line;
       myLineCount    = al1_line_length;
-      waitingForAL_C = createCondition("waitAL1");
-      alLock         = createLock("alLock1");
-      waitingForTicket_AL_C = createCondition("waitTicketAL1");
+      waitingForAL_C = CreateCondition("waitAL1");
+      alLock         = CreateLock("alLock1");
+      waitingForTicket_AL_C = CreateCondition("waitTicketAL1");
       /* al_busy = createMV("al1_busy"); */
       break;
     case 1:
       myLineNumber = al2_line;
       myLineCount  = al2_line_length;
-      waitingForAL_C = createCondition("waitAL2");
-      alLock         = createLock("alLock2");
-      waitingForTicket_AL_C = createCondition("waitTicketAL2");
+      waitingForAL_C = CreateCondition("waitAL2");
+      alLock         = CreateLock("alLock2");
+      waitingForTicket_AL_C = CreateCondition("waitTicketAL2");
       /* al_busy = createMV("al2_busy"); */
       break;
     case 2:
       myLineNumber = al3_line;
       myLineCount  = al3_line_length;
-      waitingForAL_C = createCondition("waitAL3");
-      alLock         = createLock("alLock3");
-      waitingForTicket_AL_C = createCondition("waitTicketAL3");
+      waitingForAL_C = CreateCondition("waitAL3");
+      alLock         = CreateLock("alLock3");
+      waitingForTicket_AL_C = CreateCondition("waitTicketAL3");
       /* al_busy = createMV("al3_busy"); */
       break;
     }
@@ -103,7 +106,7 @@ void main(int passengerNum) {
 
     /* Increment the line count */
     myLineCount++;
-    setMV(myLineNumber, myLineCount); 
+    SetMV(myLineNumber, myLineCount); 
  
     Wait(waitingForAL_C, alLineLock);   
     Release(alLineLock);
@@ -112,8 +115,8 @@ void main(int passengerNum) {
     Acquire(alLock);
 
     /* decrement line count (left the line) */
-    myLineCount = getMV(myLineNumber) - 1;
-    setMV(myLineNumber, myLineCount);
+    myLineCount = GetMV(myLineNumber) - 1;
+    SetMV(myLineNumber, myLineCount);
         
     /* Passenger is told to go to counter, and hands their ticket to Liaison */
     Signal(waitingForTicket_AL_C, alLock);

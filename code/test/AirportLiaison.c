@@ -10,29 +10,39 @@ int main(int airportLNum) {
   int myNumber;
   int waitingForAL_C;
   int waitingForTicket_AL_C;
-  char WFCname[6];
-  char WFTCname[12];
-  char ALLname[6];
   int airportNumLock; 
   int myLine; 
-  int alPassenterCount;
+  int alPassengerCount;
   int passCount;
+  int alLock;
+  int alLineLock;
 
-  WFCname = "waitAL";
-  WFTCname = "waitTicketAL";
-  ALLname = "alLock";
+  /* Use this as a buffer for string / int concatenation */
+  char buff[50];
+ 
+  char *WFCname = "waitAl";
+  char *Linename = "al_line";
+  char *WFTCname = "waitTicketAL";
+  char *ALLname = "alLock";
   
-  airportNumLock = createLock("airportNumLock");
-  Acquire(airportLNumLock);
+  airportNumLock = CreateLock("airportNumLock");
+  Acquire(airportNumLock);
 
   myNumber = airportLNum;
   airportLNum++;
   Release(airportNumLock);
 
-  waitingForAL_C = createCondition(strcat(WFCname,myNumber));
-  waitingForTicket_AL_C = createCondition(strcat(WFTCname,myNumber));
-  myLine         = createMV(strcat("al_line",myNumber));
-  alLock         = creatLock(strcat(ALLname,myNumber));
+  
+  WFCname[7]   = (char)myNumber;
+  WFTCname[12] = (char)myNumber;
+  Linename[12] = (char)myNumber;
+  ALLname[7]   = (char)myNumber;
+  
+
+  waitingForAL_C = CreateCondition(WFCname);
+  waitingForTicket_AL_C = CreateCondition(WFTCname);
+  myLine         = CreateMV(Linename);
+  alLock         = CreateLock(ALLname);
 
   while(1) {
     int flight_number = 0;
@@ -41,7 +51,7 @@ int main(int airportLNum) {
      When the Airport Liaison has the LineLock, Passengers cannot search for the shortest
      line */
     /*pass name to try creating "same" lock for same critical region*/
-    alLineLock = createLock("alLineLock");
+    alLineLock = CreateLock("alLineLock");
     Acquire(alLineLock);
 
     /* If there are passengers in the line, then
@@ -50,7 +60,7 @@ int main(int airportLNum) {
      on to the Ready Queue */
     
     /* getMV(myLine) will give us the line count */
-    if(getMV(myLine)>0) {
+    if(GetMV(myLine)>0) {
       /* The first passenger waiting for the LineLock gets put on to the Ready Queue */
       Signal(waitingForAL_C, alLineLock);
     } else {
@@ -78,9 +88,9 @@ int main(int airportLNum) {
     
     Signal(waitingForTicket_AL_C, alLock);
     
-    alPassenterCount = createMV("alPassengerCount");
-    passCount = getMV(alPassengerCount) + 1;
-    setMV(alPassengerCount, passCount);
+    alPassengerCount = CreateMV("alPassengerCount");
+    passCount = GetMV(alPassengerCount) + 1;
+    SetMV(alPassengerCount, passCount);
     
     Release(alLock);
   }

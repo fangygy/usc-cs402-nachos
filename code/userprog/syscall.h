@@ -40,6 +40,10 @@
 #define SC_Broadcast    19
 #define SC_Print        20
 #define SC_Register     21
+#define SC_GetMV        22
+#define SC_SetMV        23
+#define SC_CreateMV     24
+
 #define MAXFILENAME 256
 
 #ifndef IN_ASM
@@ -169,6 +173,13 @@ void Broadcast(int index, int lock_index);
 void Print(char* buf, int p1, int p2, int p3);
 
 void Register();
+
+int GetMV(int index);
+
+void SetMV(int index, int value);
+
+int CreateMV(char* buf);
+
 
 #endif /* IN_ASM */
 

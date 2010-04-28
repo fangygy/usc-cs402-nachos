@@ -1172,6 +1172,22 @@ void Register_Syscall() {
   */
 }
 
+/* Returns the value of the monitor variable at the index specified */
+int GetMV_Syscall(int index) {
+  int value;
+  return value;
+}
+
+/* This syscall will talk to the networking thread and tell it to tell the server */
+/* to change a value of a monitor variable */
+void SetMV_Syscall(int index, int value) {
+
+}
+
+int CreateMV_Syscall(unsigned int vaddr) {
+  return 0; // for now
+}
+
 void netThread() {
   
   int numClients = 0;
@@ -1533,6 +1549,7 @@ void netThread() {
       break;
 
     case TOKEN:
+      {
       ss>>param2;
       ss.clear();
       //ss.str(param2);
@@ -1602,10 +1619,19 @@ void netThread() {
 	}
 
       }
-
+      } // end case bracket
       
 
       break;
+
+    case GET:
+
+      break;
+    case SET:
+      break;
+    case CREATE_MV:
+      break;
+      
       //case 'SignalReply':
       //break;
       //case 'RegistrationReply':
@@ -1876,8 +1902,23 @@ void ExceptionHandler(ExceptionType which) {
 	  printf(buf_p,p1,p2,p3);
 	  break;
 	case SC_Register:
+
 	  Register_Syscall();
-	  
+	  break;
+
+	case SC_GetMV:
+
+	  GetMV_Syscall(machine->ReadRegister(4));
+	  break;
+
+	case SC_SetMV:
+
+	  SetMV_Syscall(machine->ReadRegister(4), machine->ReadRegister(5));
+	  break;
+
+	case SC_CreateMV:
+
+	  CreateMV_Syscall(machine->ReadRegister(4));
 	  break;
 	}
 
