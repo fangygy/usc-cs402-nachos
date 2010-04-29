@@ -208,11 +208,14 @@ V. Testing:  (For each test case, you must show)
 				Then it will Release lock0, which will cause the network thread to pass the associated token to the other network thread.
 
 			project4test2:
+				This test will exec two threads, each doing the same thing.
 				This test will first register with the server.
 				This test will attempt to create lock0, which already exists. Therefore, the resulting lock ID should be the same as the ID received in project4test1.
 				This test will then Acquire lock0, which is in use by the other test.
 				This test will then attempt to Create mv0, which already exists. Therefore, the resulting MV ID should be the same as the ID received in project4test1.  
 				Then it will get the value of mv0, which should be 77 after it was set by the other test.
+				Then it will increment and print the value of mv0 (using the Set syscall).
+				Therefore, the values 77, 78, and 79 should be printed during this test.
 				Then it will release lock0, which should cause the associated token to pass between the two network threads infinitely.
 				
 
