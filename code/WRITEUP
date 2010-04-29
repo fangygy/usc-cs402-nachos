@@ -88,7 +88,6 @@ I. Requirements:
 		+ when a lock is created by the server, it will 'pass' the lock (message) off to a member of the network
 		+ the lock (message) will be passed around the 'circle' of members and not concern the server any longer
 		+ multiple create requests will be ignored by the server (i.e. keeps track of locks created)
-		+ 
 
 II. Assumptions: 
 
@@ -115,7 +114,6 @@ III. Design:
 	B. Clients send lock, CV, and MV requests to the server through their network threads.
 	C. All locks and CVs are passed around or held onto by the network threads when required by their individual user threads.
 	D. Clients wait until a token(message) is received from the 'circle' before continuing.
-	E. 
    		
 		
 IV. Implementation:
@@ -163,17 +161,13 @@ IV. Implementation:
 			SecurityOfficer.c
 			SecurityInspector.c
 			CheckInStaff.c
+
+			**also see all test files listed below
 			
 			
             + Data Structures added, and the file they were added to.
-		the following to system.cc / h
-			ipt
-			fifoCounter
-			fifo
-			tlbCounter
 		the following to Project3Server.cc
-			serverLockTable
-			serverCondTable
+			serverMVTable
 			
 			
             + Data Structures modified, and the file they were added to.
