@@ -197,49 +197,40 @@ V. Testing:  (For each test case, you must show)
 
 			-in the code/network/ directory, do the following (in order) to execute a test.
 				
-				In one terminal: nachos -m 0 -server  --> this starts the server on machine 0.
-				In another terminal: nachos -m 1 -x ../test/lockTest1 --> this tests locks and CVs.
-				In another terminal: nachos -m 2 -x ../test/lockTest2 --> this completes the above test.
+				In one terminal: nachos -m 0 -server 2 --> this starts the server on machine 0 and waits for 2 clients to register.
+				In another terminal: nachos -m 1 -x ../test/project4test1exec --> this tests distributed locks and MVs.
+				In another terminal: nachos -m 2 -x ../test/project4test2exec --> this completes the above test.
 				
 
             + Test Output
 
-			ExecTest:
-				Aside from the printing of the default virtual address information, it should print out the final
-				value of 7220. 
-			*Important note: Exectest runs two instances of matmult (each 50+ pages > Memory), however only the final print
-			statement for the second matmult will print out. This is because the first one prints out earlier, but it is
-			impossible to see given the fact that the virtual addresses are constantly being printed out (the output will
-			get lost amongst the print of VAs). The one way we know that is running is by looking at the amount of ticks.
-			Each matmult runs about 50,000+ ticks, so a combined number of ticks > 100,000 means that both matmults have run,
-			and that they have run to completion.
 
-			lockTest1:
-				This test will create two locks (lock0 and lock1) and one CV (cv0).
-				It will then acquire lock0 and lock1.
-				Then, it will send a Wait request with cv0 and lock0.  At this point, the program should be waiting.
-				After Waiting, this test will release lock0 and lock1.
+			project4test1:
+				This test will first register with the server.
+				This test will create a lock (lock0) and one MV (mv0).
+				It will then acquire lock0.
+				Then, it will Get the initial value of mv0, which should be 0 at the time of creation.
+				Then, it will Set the value of mv0 to 77.
+				Then it will Release lock0, which will cause the network thread to pass the associated token to the other network thread.
 
-			lockTest2:
-				This test will acquire lock0, which should be released when lockTest1 sent the Wait request.
-				This test will then send a Signal request with cv0 and lock0.  
-				Then it will release lock0.  This should wake up lockTest1.
-				Then it will acquire lock1.  Lock1 will be available once lockTest1 wakes up and releases it.
-				Then it will release lock1.
+			project4test2:
+				This test will first register with the server.
+				This test will attempt to create lock0, which already exists. Therefore, the resulting lock ID should be the same as the ID received in project4test1.
+				This test will then Acquire lock0, which is in use by the other test.
+				This test will then attempt to Create mv0, which already exists. Therefore, the resulting MV ID should be the same as the ID received in project4test1.  
+				Then it will get the value of mv0, which should be 77 after it was set by the other test.
+				Then it will release lock0, which should cause the associated token to pass between the two network threads infinitely.
+				
 
 
 VI. Discussion:
 
             + Experiment expectation.  (What you hope will happen.)
 			
-			Exectest:
-			The test should output 7220, which is the final result after the extensive multiplication / addition of the 
-			two matrices. As mentioned before, however, there will only be one output, since the other userprogram will output
-			its value before, when the system is still outputing virtual addresses. It will be impossible to notice this since 
-			the console prints out the value at such rapidity.
 
-			lockTest1/2:
-			This set of tests should show that lock/CV requests are passed between the clients and the server.  It should also show that locks and CVs can be shared between multiple clients.
+
+			project4test1/2:
+			This set of tests should show that lock/MV requests work on distributed systems.  It should also show that duplicate locks and MVs cannot be created. In addition, these tests will demonstrate that token passing between network threads works effectively.
 
 
             + Experiment result.  (What actually happens.)
