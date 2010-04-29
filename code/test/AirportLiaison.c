@@ -25,24 +25,31 @@ int main(int airportLNum) {
   char *WFTCname = "waitTicketAL";
   char *ALLname = "alLock";
   
+  /* Create MVs */
+  int alNumMV;
+  int alNumMV_v;
+
+
+  Register();
+  Print("Registered AL \n",0,0,0);
+
   airportNumLock = CreateLock("airportNumLock");
   Acquire(airportNumLock);
-
-  myNumber = airportLNum;
-  airportLNum++;
+  
   Release(airportNumLock);
 
-  
   WFCname[7]   = (char)myNumber;
   WFTCname[12] = (char)myNumber;
   Linename[12] = (char)myNumber;
-  ALLname[7]   = (char)myNumber;
-  
+  ALLname[7]   = (char)myNumber;  
 
   waitingForAL_C = CreateCondition(WFCname);
   waitingForTicket_AL_C = CreateCondition(WFTCname);
   myLine         = CreateMV(Linename);
   alLock         = CreateLock(ALLname);
+
+  Print("WaitingForAl_C: %s \n", WFCname,0,0);
+  Print("WaitingForTicket: %s \n", WFTCname,0,0);
 
   while(1) {
     int flight_number = 0;
@@ -60,7 +67,7 @@ int main(int airportLNum) {
      on to the Ready Queue */
     
     /* getMV(myLine) will give us the line count */
-    if(GetMV(myLine)>0) {
+    if(1>0) {
       /* The first passenger waiting for the LineLock gets put on to the Ready Queue */
       Signal(waitingForAL_C, alLineLock);
     } else {
