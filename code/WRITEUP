@@ -1,6 +1,6 @@
-Title:  Writeup for Project 1, Spring 2010
+Title:  Writeup for Project 4, Spring 2010
 
- Date:  04/12/2010
+ Date:  04/28/2010
 
  Group Num 03 :        Name            USC Email        Student ID
 
@@ -9,99 +9,161 @@ Title:  Writeup for Project 1, Spring 2010
 		       Tim Zimmer      tzimmer 		4814912664
 
 *********************************************
-**Project 3 Test Documentation see part V.**
+**Project 4 Test Documentation see part V.**
 *********************************************
 
 I. Requirements:
-
-	For this project, we have 3 different, distinct requirements.
-		
-		I. Implementation of the TLB (Translation Lookaside Buffer)
-			+ The TLB resides in the machine directory, and is already initialized by existing machine code
-			+ The TLB's function is to act as a fast cache that provides a direct pipeline from the CPU to main Memory
-			+ There must be software management for the TLB, which will be used on TLB misses. 
-			+ Dirty bits must be taken care of in the algorithm, ensuring that TLB state is set correctly			
-			+ User Programs must run to completion
-
-		II. Implementaion of Virtual Memory (Swap Files w/ FIFO and RAND, Inverted Page Table, and TLB):
-			+ Virtual Memory gives user programs the illusion of large contiguous chunks of memory
-			+ Virtual Memory is constructed via Swap Files, and IPT, and a TLB
-			+ The IPT, or Inverted Page Table, is an operating system data structure that maps physical addresses into main Memory
-			+ There is only one IPT in the entire instance of Nachos
-			+ The IPT is invisible to the system
-			+ The Swap File is a file that resides on disk, which contains data for evicted pages
-			+ The Swap File is read from and also written to, using existing Kernel calls.
-			+ 2 Page Replacement Algorithms, FIFO and Random, must be implemented to evict pages
-			+ 2 or more user programs LARGER than memory must run to completion
-			+ Also, memory is no longer pre-loaded. 
-
-		III. Implementation of Remote Procedural Calls 
-			+ Basic networking is set up in Nachos. 
-			+ Nachos makes use of existing classes, like postOffice, to relay messages between servers and clients
-			+ Lock and CV elements need to be rewritten to conform to the new networking protocols
-         
 	
-II. Assumptions:
-	+ Matmult is the user program that is used in testing
-	+ It is impossible to test Part 1 of this Project, since Part 1 is the groundwork for Part 2. In order to test Part 1 solely, Part 2 can not exist.
-		+ Based on what we know above, the success of the test for Part 2 is deemed sufficient evidence for the feasibility of Part 1. 
-	+ 
+	Part A:
+	create 7 different types of threads: Passengers, Airport Liaisons, Airline Check-In Staff,
+  		Cargo Handlers, Screening Officers, Security Inspectors, and an Airport Manager.
+ 		 	Each thread type has different responsibilities
+ 		I. Passengers
+: 			+ There must be at least 20 passengers
+ 			+ two types: Executive and Economy
+ 			+ Each carries 2-3 pieces baggage and a ticket
+ 			+ Passengers are created
+ 			+ Passenger waits in shortest line of Airline Liaisons
+             		+ When Passenger is called, gives AL ticket
+ 			+ Passenger either waits in executive or shortes economy line of the Check-In Staff of the airline
+  				specified by the AL depending on their type
+ 			+ When called, Passenger gives ticket and baggage to CIS
+ 			+ Passenger waits in shortest Screening Officer line
+ 			+ If necessary, Passenger will undergo questioning before continuing
+ 			+ If Security Inspector gives ok, Passenger gives boarding pass
+ 			+ Passenger proceeds to boarding area and waits for the boarding announcement
+ 		II. Airport Liaison:
+ 			+ There can be 5 to 7 Airport Liaisons
+ 			+ AL calls one passenger at a time
+ 			+ When AL recieves ticket from Passenger, will direct Passenger to correct Airline
+ 			+ AL records the amount of baggage and which Airline it goes to
+  		III. Airline Check-In Staff:
+ 			+ There must be 3 to 5 Check-in Staff per Airline
+ 			+ one line per CIS plus one executive passenger line per airline
+			+ Each CIS calls one Passenger at a time (executive line has priority over their own line)
+ 			+ CIS takes asks for Passenger ticket and baggage
+ 			+ CIS gives Passenger boarding pass with seat number assignment (no duplicates per airline)
+ 			+ CIS tags Passenger baggage with airline code and weight
+ 			+ CIS puts baggage on conveyor belt (shared by all airlines)
+ 			+ CIS dismisses Passenger (?)
+ 			+ CIS records number of passengers to check in and their baggage count
+ 			+ CIS can go on break if economy AND their line are both empty
+ 			+ When all Passengers check in, close check-in kiosk (all go on break?)
+           	IV. Cargo Handler
+ 			+ There can be between 6 to 10 Cargo Handlers
+ 			+ CH will pick up baggage from conveyor, read airline code, and drop off at appropriate aircraft.
+	                + CH record number of baggage loaded into each aircraft
+ 			+ CH can go on break when conveyor is empty
+            		+ CH all on break or at work at the same time (all or none)
+ 		V. Screening Officer:
+ 			+ SO handles one Passenger at a time from their line
+ 			+ SO generates Pass/Fail report on Passenger (percentage chance of fail)
+ 			+ SO sends Passenger and report to first available Security Inspector
+ 		VI. Security Inspector:
+ 			+ There must be the same number of SI's as SO's
+ 			+ SI handles one Passenger at a time
+ 			+ SI creates their own PASS/FAIL report
+ 			+ If either SO or SI security reports are FAIL, SI sends Passenger to be questioned
+ 			+ SI must handle their own Passenger returning from questioning before another Passenger from any SO
+ 			+ SI verifies that each cleared Passenger holds a valid boarding pass
+ 			+ SI records number of Passengers cleared per airline
+  		VII. Airport Manager:
+ 			+ There is only one airport manager
+ 			+ AM checks reports (passenger or baggage) at random intervals to ensure no race conditions
+             		+ AM signals back to work if there is baggage and CH's are on break
+             		+ When all Passengers and baggage have reached the airline, AM makes boarding announcement
+ 			+ AM never goes on break
+      There must be at least 3 airlines
 
+	Part B:
+	Implement the Token Ring algorithm for handling access to critical regions.
+
+		+ Create a network thread for every thread created (e.g. Passenger thread, Airport Liaison thread, etc.)
+		+ Network thread handles syscalls from User thread (passenger, etc) and makes requests to server
+		+ Separate Passenger, Airport Liaison, etc. functions into separate entities or user programs
+		+ Each client will run a set(number) of one type of user program
+		+ Monitor Variables held on the server will contain the old important global variables
+		+ Each user program will 'register' itself with the server
+		+ when all user programs are registered, the server will send lists containing all members of the network
+		+ when a lock is created by the server, it will 'pass' the lock (message) off to a member of the network
+		+ the lock (message) will be passed around the 'circle' of members and not concern the server any longer
+		+ multiple create requests will be ignored by the server (i.e. keeps track of locks created)
+		+ 
+
+II. Assumptions: 
+
+	Part A:	
+	+ The 2-3 baggage items handled by the check-in staff per passenger does not include their carry-on baggage
+	+ One aircraft/flight per airline
+	+ Any number of Screening Officers/Security Inspectors allowable as long as their relationship remains 1 to 1
+	+ Screening Officers have lines exactly like Airport Liaisons
+	+ SO's hold their current Passenger until sending them to available SI
+	+ Passengers, Airport Liaisons, Screening Officers, and Security Inspectors never go on break
+	+ All Passenger baggage checked takes up one "slot" on the conveyor (is treated as a single item)
+	+ SI have lines... the only passengers to get in those lines are those returning from questioning
+	+ Passengers place their bags down all at the same time.
+	+ Check-in staff and cargo handlers pick up a customer's bags all at once. 
+         
+	Part B:
+	+ Airport interactions may be simplified in light of the growing complexities caused by distributing the system
+	+ Using project 2 memory paradigm for added simplicity
+	
+	
 III. Design:
 	
-	// Design for Parts 1 and 2
-	// General Description of the Algorithm
-	A. Get the virtual page required.
-   		1. Ensure that the page is within a legal range.
-	B. Check to see whether the needed page is in the IPT.
-		1. Iterate through the IPT, and match the process id of the IPT to that of the current thread's address space.
-			a. If they are the same, then proceed to 2.
-			b. If iterated through the entire array, then this is a miss. Go to step C.  
-		2. Check to see if the virtual page in the IPT is the same as the virtual page obtained in step A.
-			a. If so, then we have an IPT hit. 
-			b. Update the TLB 
-	C. This is an IPT miss.
-		1. Find a place in main memory that is open. 
-			a. If it is full, go to step 2.
-			b. If not, go to step 6b. 
-		2. Using FIFO / Rand, select a page to evict
-		3. Set the valid bits in the TLB to false
-		4. Save the page if it is dirty, to a swap file
-		5. Evict the page, by shifting the FIFO array
-		6. Check to see if the new page is inside the swap file
-			a. If it is, read it.
-			b. If not, then simply load the page into main memory
-		7. Update the Inverted Page Table
-		8. Update the TLB
-	D. Increment the TLB Counter
-	D. Restart the User Instruction, without incrementing the PC Register
-
-	// Design for Part 3
 	A. A server runs continuously waiting for client requests sent over the network.
-	B. Clients send lock and CV requests to the server (create lock, acquire, release, create CV, wait, signal, broadcast).
-	C. Server tracks all locks and CVs requested by the clients.
-	D. Clients wait until a response is received from the server after certain requests (acquire and wait) before continuing.
+	B. Clients send lock, CV, and MV requests to the server through their network threads.
+	C. All locks and CVs are passed around or held onto by the network threads when required by their individual user threads.
+	D. Clients wait until a token(message) is received from the 'circle' before continuing.
+	E. 
    		
 		
 IV. Implementation:
 
             + Files Modified:
-			exception.cc
-			system.h - externs/structs
-			addrspace.h/.cc
-			progtest.h/.cc
-			exectest.c
-			matmult.c
-			system.cc
-			system.h
-			Makefile.common
-			network/Makefile
+			Modify /trunk/code/network/Project3Server.cc 
+			Modify /trunk/code/threads/main.cc 
+			Modify /trunk/code/machine/machine.h
+  			Modify /trunk/code/machine/translate.cc 
+  			Modify /trunk/code/test/exectest.c
+  			Modify /trunk/code/test/halt.c
+  			Modify /trunk/code/threads/system.cc
+  			Modify /trunk/code/threads/system.h
+  			Modify /trunk/code/threads/thread.cc
+  			Modify /trunk/code/threads/thread.h 
+  			Modify /trunk/code/userprog/addrspace.cc
+ 			Modify /trunk/code/userprog/addrspace.h 
+  			Modify /trunk/code/userprog/exception.cc 
+  			Modify /trunk/code/userprog/nachos
+  			Modify /trunk/code/userprog/progtest.cc
+  			Modify /trunk/code/userprog/syscall.h 
+  			Modify /trunk/code/vm/Makefile 
+  			Modify /trunk/code/vm/nachos 
+			Modify /trunk/code/test/start.s 
+			Modify /trunk/code/network/ServerLock.cc
+			Modify /trunk/code/network/post.h 
+			Modify /trunk/code/test/lockTest1.c
+  			Modify /trunk/code/test/lockTest2.c 
+			
+			
 			            
 	    + Files added
-			NewTranslationEntry.h
-			Project3Server.cc
-			ServerLock.h/.cc
-			ServerCond.h/.cc
+			PassengerClient.c
+			AirportLiaisonClient.c
+			AirportManagerClient.c
+			CargoHandlerClient.c
+			SecurityOfficerClient.c
+			SecurityInspectorClient.c
+			CheckInStaffClient.c
+
+			Passenger.c
+			AirportLiaison.c
+			AirportManager.c
+			CargoHandler.c
+			SecurityOfficer.c
+			SecurityInspector.c
+			CheckInStaff.c
+			
 			
             + Data Structures added, and the file they were added to.
 		the following to system.cc / h
@@ -196,8 +258,9 @@ VI. Discussion:
 			
 VII. Miscellaneous:
 
-- Whatever else you want the grader know about your development.  You can create your own subsections headings here.
-	    
-	    + Assumptions	
+	+Note: faulty airport from early on came back to bite us when we needed to change it for this project.
+		how much should we be marked off for a mistake we have already been punished for?
+
+	
 
 	
