@@ -12,11 +12,11 @@ int main () {
 
   Print("Creating lock with name \"lockOne\"\n",0,0,0);
   lock0 = CreateLock("lockOne");
-  Print("Created lock with name \"lockOne\" and ID=%d\n",lock0,0,0);
+  Print("Created lock with name \"lockOne\"\n",0,0,0);
   
-  Print("Acquiring lock ID=%d\n",lock0,0,0);
+  Print("Acquiring lock0\n",0,0,0);
   Acquire(lock0);
-  Print("Acquired lock ID=%d\n",lock0,0,0);
+  Print("Acquired lock0\n",0,0,0);
 
   Print("Creating MV with name \"mvOne\"\n",0,0,0);
   mv0 = CreateMV("mvOne");
@@ -24,9 +24,17 @@ int main () {
 
   
   mv0value = GetMV(mv0);
-  Print("Current value of \"mvOne\" (should be 77)=%d\n",mv0value,0,0);
+  Print("Current value of \"mvOne\" =%d\n",mv0value,0,0);
+
+  mv0value++;
+
+  Print("Setting value of \"mvOne\" to %d\n",mv0value,0,0);
+  SetMV(mv0,mv0value);
+
+  mv0value = GetMV(mv0);
+  Print("New value of \"mvOne\" =%d\n",mv0value,0,0);
   
-  Print("Releasing lock ID=%d\n",lock0,0,0);
+  Print("Releasing lock0\n",0,0,0);
   Release(lock0);
 
 }
