@@ -31,7 +31,12 @@ int nextLockIndex = 0;
 int MAX_LOCKS = 1000;
 
 Lock *mailboxLock;
-int nextMailbox = 0;
+int nextMailbox = 1;
+
+int sys_passNumber = 0;
+int sys_alNumber   = 0;
+int al_lines[3];
+
 
 int nextCondIndex = 0;
 int MAX_CONDS = 1000; 
@@ -117,6 +122,11 @@ Initialize(int argc, char **argv)
     processTable        = new ProcessTable[64];
 
     ipt                 = new NewTranslationEntry[NumPhysPages];
+    
+    for(g = 0; g < 3; g++) {
+      al_lines[g] = 0;
+    }
+    
     for(g = 0; g < 64; g++) {
       processTable[g].as = NULL;
       processTable[g].numChildProcess = 0;

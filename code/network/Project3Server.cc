@@ -97,7 +97,7 @@ void StartProject3Server(int numberOfMembers) {
     //printf("Starting Server\n");
 
     postOffice->Receive(0, &inPktHdr, &inMailHdr, buffer);
-    printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+    printf("Server got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
     fflush(stdout);
 
     ss.clear();
@@ -105,6 +105,8 @@ void StartProject3Server(int numberOfMembers) {
 
     outPktHdr.to = inPktHdr.from;
     outMailHdr.to = inMailHdr.from;
+
+    outMailHdr.from = 0;
 
     LockOwner newOwner;
     newOwner.machineID = inPktHdr.from;
@@ -133,7 +135,7 @@ void StartProject3Server(int numberOfMembers) {
     KernelLock curLock;
     int lockID = -1;
     int condID = -1;
-    int mvID = -1;
+    int mvID = -2;
     int mvValue = -1;
 
     switch(r) {
@@ -300,7 +302,7 @@ void StartProject3Server(int numberOfMembers) {
       if(lockID < 0 || lockID >= numServerLocks) {
 	//this is a bad value
 	DEBUG('q',"BAD VALUE\n");
-	error = true;
+	//error = true;
 	break;
       }
       ServerLockTableLock->Release();
@@ -354,7 +356,7 @@ void StartProject3Server(int numberOfMembers) {
 	//this is a bad value
 	DEBUG('q',"BAD VALUE\n");
 	//return;
-	error = true;
+	//error = true;
 	break;
       }
 
@@ -520,7 +522,7 @@ void StartProject3Server(int numberOfMembers) {
       if(condID < 0 || condID >= numServerConds) {
 	//bad cond ID
 	DEBUG('q',"BAD VALUE\n");
-	error = true;
+	//error = true;
 	break;
       }
       ServerCondTableLock->Release();
@@ -530,7 +532,7 @@ void StartProject3Server(int numberOfMembers) {
       if(lockID < 0 || lockID >= numServerLocks) {
 	//bad lock ID
 	DEBUG('q',"BAD VALUE\n");
-	error = true;
+	//error = true;
 	break;
       }
 
@@ -581,7 +583,7 @@ void StartProject3Server(int numberOfMembers) {
       if(condID < 0 || condID >= numServerConds) {
 	//bad cond ID
 	DEBUG('q',"BAD VALUE\n");
-	error = true;
+	//error = true;
 	break;
       }
       ServerCondTableLock->Release();
@@ -688,14 +690,17 @@ void StartProject3Server(int numberOfMembers) {
       break;
 
     case CREATE_MV:
-      printf("Server received Create MV request. MV name = %s.\n", param);
+      printf("Server received Create MV request. MV name = %s.From %d,%d\n", param, inPktHdr.from, inMailHdr.from);
       mvName = param;
       ss.clear();
       //create the MV and return the lock ID
       
       ServerMVTableLock->Acquire();
 
+      printf("Num Server MVs: %d\n",numServerMVs);
+
       if(numServerMVs >= MAX_SERVER_MVs) {
+	printf("**   NumServerMVs: %d, MAX_SERVER_MVs: %d\n",numServerMVs, MAX_SERVER_MVs);
 	//server MV table full
 	ServerMVTableLock->Release();
 	DEBUG('q',"Server MV Table Full\n");
@@ -714,7 +719,7 @@ void StartProject3Server(int numberOfMembers) {
       }
 
       if(!mvExists) {
-	serverMVTable[numServerMVs].value = -1;
+	serverMVTable[numServerMVs].value = 0;
 	serverMVTable[numServerMVs].name = mvName;
 
 	mvID = numServerMVs;
@@ -739,7 +744,7 @@ void StartProject3Server(int numberOfMembers) {
       if(mvID < 0 || mvID >= numServerMVs) {
 	//this is a bad value
 	DEBUG('q',"BAD VALUE\n");
-	error = true;
+	//error = true;
 	break;
       }
 
@@ -770,7 +775,7 @@ void StartProject3Server(int numberOfMembers) {
       if(mvID < 0 || mvID >= numServerMVs) {
 	//this is a bad value
 	DEBUG('q',"BAD VALUE\n");
-	error = true;
+	// error = true;
 	break;
       }
 
@@ -797,13 +802,15 @@ void StartProject3Server(int numberOfMembers) {
 	printf("The postOffice Send failed. Terminating Nachos.\n");
 	interrupt->Halt();
       } else {
-	printf("Sent response to client machine=%d, box=%d, response=%s.\n",outPktHdr.to,outMailHdr.to,response);
+	printf("Server sent response to client machine=%d, box=%d, response=%s.\n",outPktHdr.to,outMailHdr.to,response);
       }
-    } else if(error) {
+    } 
+       
+    else if(error) {
       //error doing something, send a message to client
-
+      
       //todo- send error msg to client
-      sprintf(response, "%d", -1);
+      sprintf(response, "%d", -3);
       outMailHdr.length = sizeof(response) + 1;
       bool success = postOffice->Send(outPktHdr, outMailHdr, response);
       if(!success) {
@@ -814,7 +821,7 @@ void StartProject3Server(int numberOfMembers) {
 	printf("Sent response to client.\n");
       }
     }
-
+    
 
   }
 

@@ -58,6 +58,11 @@ struct KernelLock {
   bool toBeDestroyed;
 };
 
+extern int sys_passNumber;
+extern int sys_alNumber;
+extern int al_lines[];
+
+
 extern KernelLock osLocks[];
 
 extern BitMap* bitmap;
