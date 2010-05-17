@@ -17,16 +17,17 @@ public class GameBoard {
                     
     private BufferedReader inputStream; 
         
-    private Tile [][] gameTiles;
+    private newTile [][] gameTiles;
+    String[] categories;
         
     public GameBoard (String fileName) throws IOException {
         
 	inputStream = new BufferedReader(new FileReader("Tile.txt"));
 	String rowCount = inputStream.readLine();
 	String colCount = inputStream.readLine();
-	gameTiles = new Tile [5][5];
+	gameTiles = new newTile [5][5];
 	String[] data = new String[105];
-	String[] categories = new String[5];
+	categories = new String[5];
 
 	/* Read in the first 5 lines to get the category names */
 	for(int i = 0; i < 5; i++) {
@@ -40,7 +41,7 @@ public class GameBoard {
 		String question     = inputStream.readLine();
 		int bullshit        = Integer.parseInt(inputStream.readLine());
 		String answer       = inputStream.readLine();
-		Tile temp           = new Tile (question, answer, numPoints);
+		newTile temp           = new newTile (question, answer, numPoints);
 		gameTiles[row][col] = temp;
 	    }
 	}
@@ -73,18 +74,26 @@ public class GameBoard {
     } // End Constructor
 
     /* When the user selects a category and points, show them the question */
-    public String askQuestion(int row, int column) {
-	/* Parse the string to get the question */
-	Scanner scanner = new Scanner(gameTiles[row][column].toString());
-	/* Return the question */
-	return scanner.next();
+    public void askQuestion(int row, int column) {
+	
+	/* Prints the question to console */
+	System.out.println(gameTiles[row][column].getQuestion());
     }
+
     /* Get the answer from the user and see if they answered it correctly */
-    public void answerQuestion(String ques, String answer) {
-	/* Prompt the user for the answer */
-	System.out.println( "That's correct");
+    public boolean answerQuestion(String answer, int row, int column) {
+	String correctAnswer = gameTiles[row][column].getAnswer();
+
+	if(compareAnswers(correctAnswer,answer)) {
+	    System.out.println("That's correct");
+	    return true;
+	} else {
+	    System.out.println("I'm sorry that's wrong");
+	    return false;
+	}
     }
-    /* Compares */
+
+    /* Compares the answer the user gave and the answer to the question */
     public boolean compareAnswers(String bonaFideAnswer, String userAnswer){
 	if (userAnswer.equals(bonaFideAnswer))
 	    return true;
@@ -114,9 +123,34 @@ public class GameBoard {
 	column = scan.nextInt();
 	return column;
     }    
-    
+    /* Show the grid of questions to the user */
     public void showGrid() {
+	String[] grid = new String[5];
 	
+	for(int i = 0; i < 5; i++) {
+	    StringBuilder sb = new StringBuilder();
+	    sb.setLength(10);
+	    sb.append(categories[i]);
+	    System.out.print(sb);
+	}
+    }
+
+    public void setAnswered(int row, int column) {
+	gameTiles[row][column].setIsAnswered(true);
+    }
+
+    /* Returns true if there are still answers left */
+    public boolean questionsLeft() {
+	for(int i = 0; i < 5; i++) {
+	    for(int g = 0; g < 5; g++) {
+		if(!gameTiles[i][g].isAnswered) {
+		    /* There exists a question that has not been answered */
+		    return true;
+		}
+	    }
+	}
+	/* If we get to the end that means all questions have been answered */
+	return false;
     }
 
     public void startGame(int numPlayers) {
@@ -126,7 +160,7 @@ public class GameBoard {
 	}
 
 	/* Welcome players to the game */
-	
+	showGrid();
 	/* (Optional) Set Players Names */
 
 	/* Begin asking questions */
@@ -138,7 +172,49 @@ public class GameBoard {
 	/* Exit the program now */
     }
 
+    public class newTile {
+	private String question;
+	private String answer;
+	private int value;
+	private boolean isAnswered;
+	
+	public newTile(String q, String a, int v) {
+	    
+	    isAnswered = false;
+	    question = q;
+	    answer = a;
+	    value = v;
+	}
+	
+	public String getQuestion() {
+	    return question;
+	}
+	
+	public String getAnswer() {
+	    return answer;
+	}
 
+	public int getPoints() {
+	    return value; 
+	}
+
+	public boolean isAnswered() {
+	    return isAnswered;
+	}
+	public void setIsAnswered(boolean yesNo) {
+	    isAnswered = yesNo;
+	}
+	
+	public String toString ()
+	{
+	    String s = question;
+	    s+= "\n" + answer;
+	    s+= "\nScore: " + value;
+	    return s;
+	}
+    }
+    
+    
     /* Create a new class that stores information for each player */
     public class Player {
 
@@ -164,7 +240,7 @@ public class GameBoard {
 	
     } // End Player 
     
-    public Tile getTile (int r, int c) {
+    public newTile getTile (int r, int c) {
 	return gameTiles [r] [c];
     }
 
@@ -174,8 +250,8 @@ public class GameBoard {
 	
 	/* Create the game */
 	try {
-	GameBoard newGame = new GameBoard("newGame");
-	newGame.startGame(numPlayers);
+	    GameBoard newGame = new GameBoard("newGame");
+	    newGame.startGame(numPlayers);
 	} catch (Exception e) {
 	    e.printStackTrace();
 	}
