@@ -73,9 +73,9 @@ public class GameBoard {
     } // End Constructor
 
     /* When the user selects a category and points, show them the question */
-    public String askQuestion(int cat, int points) {
+    public String askQuestion(int row, int column) {
 	/* Parse the string to get the question */
-	Scanner scanner = new Scanner(gameTiles[cat][(points/100)-100].toString());
+	Scanner scanner = new Scanner(gameTiles[row][column].toString());
 	/* Return the question */
 	return scanner.next();
     }
@@ -91,6 +91,30 @@ public class GameBoard {
 	return false;
     }
 
+    public int usersDesiredQuestionROW(String name){
+	//need to import scann and instantiate scanner in game board
+	int row;
+	Scanner scan = new Scanner(System.in);
+	System.out.println("So " + name + " what question would you like to answer or at least attempt to answer?");
+	System.out.println("Give your desired question in coorindates.");
+	System.out.println("How to figure out the coordinates of your desired question");
+	System.out.println("1.) The Categories at the top are not part of the grid.");
+	System.out.println("2.) The columns start with 0 at the most left column and increment by 1 integer each column to the right.");
+	System.out.println("3.) The rows start with 0 at the top of the grid and increment by 1 integer each row down.");
+	System.out.println(" ");
+	System.out.print("Enter row of desired question:");
+	row = scan.nextInt();
+	return row;
+    }
+    
+    public int usersDesiredQuestionCOLUMN (){
+	int column;
+	Scanner scan = new Scanner(System.in);
+	System.out.print("Enter column of desired question:");
+	column = scan.nextInt();
+	return column;
+    }    
+    
     public void showGrid() {
 	
     }
@@ -106,8 +130,6 @@ public class GameBoard {
 	/* (Optional) Set Players Names */
 
 	/* Begin asking questions */
-
-
 
 	/* Tabulate the score */
 
