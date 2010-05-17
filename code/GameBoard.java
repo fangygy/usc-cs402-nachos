@@ -35,8 +35,8 @@ public class GameBoard {
 	}
 	
 	/* Read in the question and answers and points */
-	for (int row = 0; row < 5; row++) {
-	    for (int col = 0; col < 5; col++) {
+	for (int col = 0; col < 5; col++) {
+	    for (int row = 0; row < 5; row++) {
 		int numPoints       = Integer.parseInt(inputStream.readLine());
 		String question     = inputStream.readLine();
 		int bullshit        = Integer.parseInt(inputStream.readLine());
@@ -113,24 +113,26 @@ public class GameBoard {
 	//need to import scann and instantiate scanner in game board
 	int row;
 	Scanner scan = new Scanner(System.in);
-	System.out.println("So " + name + " what question would you like to answer or at least attempt to answer?");
-	System.out.println("Give your desired question in coorindates.");
-	System.out.println("How to figure out the coordinates of your desired question");
-	System.out.println("1.) The Categories at the top are not part of the grid.");
-	System.out.println("2.) The columns start with 0 at the most left column and increment by 1 integer each column to the right.");
-	System.out.println("3.) The rows start with 0 at the top of the grid and increment by 1 integer each row down.");
-	System.out.println(" ");
-	System.out.print("Enter row of desired question:");
+	System.out.print("Enter points:");
 	row = scan.nextInt();
+	row = (row-100)/100;
 	return row;
     }
     
     /* Prompt user for the column */
     public int usersDesiredQuestionCOLUMN (){
+	String category;
 	int column;
+	column = 0;
 	Scanner scan = new Scanner(System.in);
-	System.out.print("Enter column of desired question:");
-	column = scan.nextInt();
+	System.out.print("Enter category:");
+	category = scan.nextLine();
+	for(int i = 0; i < 5; i++) {
+	    if(categories[i].equals(category)) {
+		column = i;
+		break;
+	    }
+	}
 	return column;
     } 
 
@@ -153,8 +155,8 @@ public class GameBoard {
 	System.out.println();
 	for(int i = 0; i < 5; i++) {
 	    for(int g = 0; g < 5; g++) {
-		if(!gameTiles[g][i].isAnswered()) {
-		    formatString(gameTiles[g][i].getPointsString());
+		if(!gameTiles[i][g].isAnswered()) {
+		    formatString(gameTiles[i][g].getPointsString());
 		} else {
 		    formatString("Done");
 		}
@@ -206,7 +208,7 @@ public class GameBoard {
 	
         /* (Optional) Set Players Names */
 	for(int i = 0; i < numPlayers; i++) {
-	    System.out.println("What would you like to call yourself player?" + (i+1));
+	    System.out.println("What would you like to call yourself player" + (i+1) + "?");
 	    players[i].setName(scan.nextLine());
 	}
 	
@@ -214,8 +216,8 @@ public class GameBoard {
 	while (questionsLeft()) {
 	    for(int i = 0; i < numPlayers; i++){
 		showGrid();
-		int row = usersDesiredQuestionROW(players[i].getName());
 		int column = usersDesiredQuestionCOLUMN();
+		int row = usersDesiredQuestionROW(players[i].getName());
 		
 		askQuestion(row, column);
 		System.out.print("Your answer in the form of a question:");
