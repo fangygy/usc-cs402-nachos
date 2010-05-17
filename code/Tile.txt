@@ -1,0 +1,107 @@
+5
+5
+Byte me
+It Varies
+Network
+Java
+Random
+100
+The most fundamental unit of memory on a digital computer.
+1
+What is a bit?
+200
+Number of bits in a byte.
+1
+What is 8?
+300
+Information that represents continuously variable quantities that can fall anywhere on a continuum.
+1
+What is analog information?
+400
+This medium represents the "on" or "off" status with pulses of light.
+1
+What are fiber-optic cables?
+500
+The "bits" of the first computer were comprised of these
+1
+What are vaccuum tubes?
+100
+Correct way to read "num = 14;"
+1
+What is "num is assigned the value of 14".
+200
+A set of words that cannot be used as names of variables
+1
+What are reserved words?
+300
+3 characters that can comprise a variable name
+1
+What are letters, digits, and underscores?
+400
+Number of different characters that can be stored in a char variable.
+1
+What is 256?
+500
+The unique numerical name for a location in memory
+1
+What is a memory address?
+100
+Minimum number of interconnected computers necessary to constitute a network.
+1
+What is 2?
+200
+A network computer dedicated to storing programs and data that are shared among network users.
+1
+What is a file server?
+300
+Network where every computer is directly linked to every other computer
+1
+What is a point-to-point network?
+400
+The ultimate wide-area network
+1
+What is the Internet?
+500
+Software that translates an Internet address to an IP address
+1
+What is the Domain Name System (DNS)?
+100
+Names given to specific storage locations in the computer
+1
+What are variables
+200
+Java is considered this level of programming language
+1
+What is a high-level language?
+300
+A software tool that translates source code into a specific target language
+1
+What is a compiler?
+400
+Information in a Java "class" file has been converted to this form.
+1
+What is Java bytecode?
+500
+Inventor of Java
+1
+Who is James Gosling?
+100
+A statement telling the computer to reserve space for a particular type of variable.
+1
+What is a declaration statement?
+200
+A statement that uses generator to assign a random number between 1 & 6 to x.
+1
+What is x = generator.nextInt(6) + 1;
+300
+Top grossing film of all time
+1
+What is "Titanic"?
+400
+A line of code that uses generator to assign a random number between 2 and 5 to x.
+1
+What is x = generator.nextInt(4) + 2;?
+500
+Sign appearing in chocolate store in The Land of Chocolate (Simpsons)
+1
+What is "Chocolate-Half price"?
