@@ -41,7 +41,7 @@ public class GameBoard {
 		String question     = inputStream.readLine();
 		int bullshit        = Integer.parseInt(inputStream.readLine());
 		String answer       = inputStream.readLine();
-		newTile temp           = new newTile (question, answer, numPoints);
+		newTile temp        = new newTile (question, answer, numPoints);
 		gameTiles[row][col] = temp;
 	    }
 	}
@@ -73,6 +73,14 @@ public class GameBoard {
 	
     } // End Constructor
 
+
+
+    /*
+     * Application Code 
+     *
+     *
+     */
+
     /* When the user selects a category and points, show them the question */
     public void askQuestion(int row, int column) {
 	
@@ -99,7 +107,8 @@ public class GameBoard {
 	    return true;
 	return false;
     }
-
+    
+    /* Prompt user for the row */
     public int usersDesiredQuestionROW(String name){
 	//need to import scann and instantiate scanner in game board
 	int row;
@@ -116,27 +125,53 @@ public class GameBoard {
 	return row;
     }
     
+    /* Prompt user for the column */
     public int usersDesiredQuestionCOLUMN (){
 	int column;
 	Scanner scan = new Scanner(System.in);
 	System.out.print("Enter column of desired question:");
 	column = scan.nextInt();
 	return column;
-    }    
-    /* Show the grid of questions to the user */
-    public void showGrid() {
-	String[] grid = new String[5];
-	
-	for(int i = 0; i < 5; i++) {
-	    StringBuilder sb = new StringBuilder();
-	    sb.setLength(10);
-	    sb.append(categories[i]);
-	    System.out.print(sb);
+    } 
+
+    /* Use the function for formatting the string so the grid appears organized */
+    public void formatString(String string) {
+	int length = string.length();
+	System.out.print(string);
+	for(int i = 0; i < (20-length);i++) {
+	   System.out.print(" ");
 	}
     }
+    
+    /* Show the grid of questions to the user */
+    public void showGrid() {
+	System.out.println();
+	String[] grid = new String[5];	
+	for(int i = 0; i < 5; i++) {
+	    formatString(categories[i]);
+	}
+	System.out.println();
+	for(int i = 0; i < 5; i++) {
+	    for(int g = 0; g < 5; g++) {
+		if(!gameTiles[g][i].isAnswered()) {
+		    formatString(gameTiles[g][i].getPointsString());
+		} else {
+		    formatString("Done");
+		}
+	    } 
+	    System.out.println();
+	}
+	System.out.println();
+    }
 
+    /* Sets the question to has been answered */
     public void setAnswered(int row, int column) {
 	gameTiles[row][column].setIsAnswered(true);
+    }
+
+    /* Gets the points for the question */
+    public int getQPoints(int row, int column) {
+	return gameTiles[row][column].getPoints();
     }
 
     /* Returns true if there are still answers left */
@@ -153,29 +188,78 @@ public class GameBoard {
 	return false;
     }
 
+    /* Starts the game */
     public void startGame(int numPlayers) {
 	Player[] players = new Player[numPlayers];
 	for(int i=0; i < numPlayers; i++) {
 	    players[i] = new Player();
 	}
 
-	/* Welcome players to the game */
-	showGrid();
-	/* (Optional) Set Players Names */
-
-	/* Begin asking questions */
-
-	/* Tabulate the score */
-
-	/* Determine the winner */
-
-	/* Exit the program now */
+	Scanner scan = new Scanner(System.in);
+        
+        /* Welcome players to the game */
+	System.out.println("Why hello there.....");
+	System.out.println("WELCOME TO 211263's JEOPARDY EXTRA CREDIT ASSIGNMENT AMIGO!");
+	System.out.println("READY TO PLAY SOME JEOPARDY?");
+	System.out.println("WELL I DON'T REALLY CARE IF YOU'RE READY OR NOT YOU'RE GOING TO PLAY!");
+	System.out.println("Here we go.................");
+	
+        /* (Optional) Set Players Names */
+	for(int i = 0; i < numPlayers; i++) {
+	    System.out.println("What would you like to call yourself player?" + (i+1));
+	    players[i].setName(scan.nextLine());
+	}
+	
+        /* Begin asking questions */
+	while (questionsLeft()) {
+	    for(int i = 0; i < numPlayers; i++){
+		showGrid();
+		int row = usersDesiredQuestionROW(players[i].getName());
+		int column = usersDesiredQuestionCOLUMN();
+		
+		askQuestion(row, column);
+		System.out.print("Your answer in the form of a question:");
+		String answer = scan.nextLine();
+		boolean didYouGuessRight = answerQuestion(answer, row, column);
+		setAnswered(row, column);
+		
+		if (didYouGuessRight)
+		    players[i].addScore(getQPoints(row, column));
+		else
+		    players[i].subScore(getQPoints(row, column));
+		
+	    }
+	}
+        /* Tabulate the score */
+	//Do I need anything?
+        /* Determine the winner */
+	int max = 0;
+	for(int i = 1; i < numPlayers; i++) {
+	    if(players[i].getScore() > players[max].getScore()) {
+		max = i;
+	    }
+	}
+	
+	System.out.println( players[max].getName() + " IS THE WINNER!!!!!");
+	
+        /* Exit the program now */
+	System.out.println("This game of jeopardy is over!");
+	System.out.print("ADIOS");
     }
+    
+    
+    /*
+     * NEW CLASSES 
+     * User Class and newTile Class
+     *
+     */
 
+
+    /* Create a new class that has appropriate accessors and mutators for data */
     public class newTile {
 	private String question;
 	private String answer;
-	private int value;
+	private Integer value;
 	private boolean isAnswered;
 	
 	public newTile(String q, String a, int v) {
@@ -197,7 +281,11 @@ public class GameBoard {
 	public int getPoints() {
 	    return value; 
 	}
-
+	
+	public String getPointsString() {
+	    return value.toString();
+	}
+	
 	public boolean isAnswered() {
 	    return isAnswered;
 	}
@@ -205,8 +293,7 @@ public class GameBoard {
 	    isAnswered = yesNo;
 	}
 	
-	public String toString ()
-	{
+	public String toString() {
 	    String s = question;
 	    s+= "\n" + answer;
 	    s+= "\nScore: " + value;
@@ -214,12 +301,16 @@ public class GameBoard {
 	}
     }
     
+    public newTile getTile (int r, int c) {
+	return gameTiles [r] [c];
+    }
     
     /* Create a new class that stores information for each player */
     public class Player {
 
 	private int score;
-
+	private String name;
+	
 	public Player() {
 	    score = 0;
 	}
@@ -238,12 +329,22 @@ public class GameBoard {
 	    score-=points;
 	} 
 	
+	public void setName(String playerName) {
+	    name = playerName;
+	}
+
+	public String getName() {
+	    return name;
+	}
+	
     } // End Player 
     
-    public newTile getTile (int r, int c) {
-	return gameTiles [r] [c];
-    }
 
+    /*
+     * MAIN METHOD 
+     *
+     *
+     */ 
     
     public static void main(String args[]) {
 	int numPlayers = 4;
