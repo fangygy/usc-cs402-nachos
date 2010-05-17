@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.lang.*;
 import java.util.*;
+import java.util.Random;
 
 public class GameBoard {
                     
@@ -74,12 +75,12 @@ public class GameBoard {
     } // End Constructor
 
 
-
     /*
      * Application Code 
      *
      *
      */
+
 
     /* When the user selects a category and points, show them the question */
     public void askQuestion(int row, int column) {
@@ -209,7 +210,6 @@ public class GameBoard {
 	}
     }
 
-
     /* Starts the game */
     public void startGame(int numPlayers) {
 	Player[] players = new Player[numPlayers];
@@ -278,6 +278,94 @@ public class GameBoard {
 	System.out.print("ADIOS");
     }
     
+    /*
+     * TEST
+     *
+     *
+     */
+
+    public void startTest() {
+	int numPlayers = 4;
+
+	Player[] players = new Player[numPlayers];
+	for(int i=0; i < numPlayers; i++) {
+	    players[i] = new Player();
+	}
+
+	Scanner scan = new Scanner(System.in);
+        
+        /* Welcome players to the game */
+	System.out.println("Why hello there.....");
+	System.out.println("WELCOME TO 211263's JEOPARDY EXTRA CREDIT ASSIGNMENT AMIGO!");
+	System.out.println("READY TO PLAY SOME JEOPARDY?");
+	System.out.println("WELL I DON'T REALLY CARE IF YOU'RE READY OR NOT YOU'RE GOING TO PLAY!");
+	System.out.println("Here we go.................");
+	
+        /* (Optional) Set Players Names */
+	for(int i = 0; i < numPlayers; i++) {
+	    System.out.println("What would you like to call yourself player" + (i+1) + "?");
+	    players[i].setName("ab"+i);
+	}
+	int c = 0;
+	int r = 0;
+	int column, row;
+	Random random = new Random();
+	boolean didYouGuessRight = false;
+
+        /* Begin asking questions */
+
+
+	while (questionsLeft()) {
+	    for(int i = 0; i < numPlayers; i++){
+		showGrid();
+		if(r%5==0 && r!=0) {
+		    r = 0;
+		    c++;
+		}
+		if( c==5) {
+		    break;
+		}
+		System.out.println("c / r : "+ c + " " + r);
+		column = c;
+		row = r;
+		
+		askQuestion(row, column);
+		System.out.print("Your answer in the form of a question:");
+		if(random.nextInt() % 10 ==0) {
+		    didYouGuessRight = false;
+		} else {
+		    didYouGuessRight = true;
+		}
+
+		setAnswered(row, column);
+		
+		if (didYouGuessRight)
+		    players[i].addScore(getQPoints(row, column));
+		else
+		    players[i].subScore(getQPoints(row, column));
+		
+		outputScores(numPlayers, players);
+
+		r++;
+	    }
+	}
+        /* Tabulate the score */
+        /* Determine the winner */
+	int max = 0;
+	for(int i = 1; i < numPlayers; i++) {
+	    if(players[i].getScore() > players[max].getScore()) {
+		max = i;
+	    }
+	}
+	
+	System.out.println( players[max].getName() + " IS THE WINNER!!!!!");
+	
+        /* Exit the program now */
+	System.out.println("This game of jeopardy is over!");
+	System.out.print("ADIOS");
+
+    }
+
     
     /*
      * NEW CLASSES 
@@ -379,11 +467,19 @@ public class GameBoard {
     
     public static void main(String args[]) {
 	int numPlayers = 4;
-	
+	Scanner newScan = new Scanner(System.in);
 	/* Create the game */
 	try {
 	    GameBoard newGame = new GameBoard("newGame");
-	    newGame.startGame(numPlayers);
+	    System.out.println("Choose an option");
+	    System.out.println("1: Run Jeapordy Game");
+	    System.out.println("2: Run test");
+	    int choice = newScan.nextInt();
+	    if(choice == 1) { 
+		newGame.startGame(numPlayers);
+	    } else {
+		newGame.startTest();
+	    }
 	} catch (Exception e) {
 	    e.printStackTrace();
 	}
