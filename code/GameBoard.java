@@ -310,8 +310,8 @@ public class GameBoard {
 	int r = 0;
 	int column, row;
 	Random random = new Random();
-	boolean didYouGuessRight = false;
-
+	boolean didYouGuessRight;
+	String answer;
         /* Begin asking questions */
 
 
@@ -331,12 +331,14 @@ public class GameBoard {
 		
 		askQuestion(row, column);
 		System.out.print("Your answer in the form of a question:");
-		if(random.nextInt() % 10 ==0) {
-		    didYouGuessRight = false;
+		if(random.nextInt() % 10 > 2) {
+		    System.out.println("Wrong answer");
+		    answer = "Wrong answer";
 		} else {
-		    didYouGuessRight = true;
+		    System.out.println(gameTiles[row][column].getAnswer());
+		    answer = gameTiles[row][column].getAnswer();
 		}
-
+	        didYouGuessRight = answerQuestion(answer, row, column);
 		setAnswered(row, column);
 		
 		if (didYouGuessRight)
