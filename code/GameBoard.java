@@ -109,13 +109,16 @@ public class GameBoard {
     }
     
     /* Prompt user for the row */
-    public int usersDesiredQuestionROW(String name){
+    public int usersDesiredQuestionROW(String name, int column){
 	//need to import scann and instantiate scanner in game board
 	int row;
 	Scanner scan = new Scanner(System.in);
 	System.out.print("Enter points:");
 	row = scan.nextInt();
 	row = (row-100)/100;
+	if(gameTiles[row][column].isAnswered()) {
+	    return -1;
+	}
 	return row;
     }
     
@@ -124,16 +127,25 @@ public class GameBoard {
 	String category;
 	int column;
 	column = 0;
+	boolean catDone = false;
 	Scanner scan = new Scanner(System.in);
 	System.out.print("Enter category:");
 	category = scan.nextLine();
+
 	for(int i = 0; i < 5; i++) {
 	    if(categories[i].equals(category)) {
 		column = i;
 		break;
 	    }
 	}
-	return column;
+	for(int i = 0; i < 5; i++) {
+	    if(gameTiles[i][column].isAnswered()) {
+		// Do nothing
+	    } else {
+		return column;
+	    }
+	}	
+	return -1;
     } 
 
     /* Use the function for formatting the string so the grid appears organized */
@@ -190,6 +202,14 @@ public class GameBoard {
 	return false;
     }
 
+    public void outputScores(int numPlayers, Player[] players) {
+	System.out.println();
+	for(int i = 0; i < numPlayers; i++) {
+	    System.out.println(players[i].getName() + "'s score: " + players[i].getScore());
+	}
+    }
+
+
     /* Starts the game */
     public void startGame(int numPlayers) {
 	Player[] players = new Player[numPlayers];
@@ -217,7 +237,14 @@ public class GameBoard {
 	    for(int i = 0; i < numPlayers; i++){
 		showGrid();
 		int column = usersDesiredQuestionCOLUMN();
-		int row = usersDesiredQuestionROW(players[i].getName());
+		while(column == -1) {
+		    column = usersDesiredQuestionCOLUMN();
+		}
+		int row = usersDesiredQuestionROW(players[i].getName(), column);
+		/* If the user selects a question that has already been answered */
+		while(row == -1) {
+		    row = usersDesiredQuestionROW(players[i].getName(), column);
+		}
 		
 		askQuestion(row, column);
 		System.out.print("Your answer in the form of a question:");
@@ -230,6 +257,7 @@ public class GameBoard {
 		else
 		    players[i].subScore(getQPoints(row, column));
 		
+		outputScores(numPlayers, players);
 	    }
 	}
         /* Tabulate the score */
