@@ -238,11 +238,13 @@ public class GameBoard {
 		showGrid();
 		int column = usersDesiredQuestionCOLUMN();
 		while(column == -1) {
+		    System.out.println("Sorry but that category has been answered");
 		    column = usersDesiredQuestionCOLUMN();
 		}
 		int row = usersDesiredQuestionROW(players[i].getName(), column);
 		/* If the user selects a question that has already been answered */
 		while(row == -1) {
+		    System.out.println("Sorry but that question has been answered");
 		    row = usersDesiredQuestionROW(players[i].getName(), column);
 		}
 		
@@ -261,7 +263,6 @@ public class GameBoard {
 	    }
 	}
         /* Tabulate the score */
-	//Do I need anything?
         /* Determine the winner */
 	int max = 0;
 	for(int i = 1; i < numPlayers; i++) {
