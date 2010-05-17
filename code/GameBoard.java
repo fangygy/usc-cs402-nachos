@@ -73,18 +73,16 @@ public class GameBoard {
 
     /* When the */
     public String askQuestion(String question) {
-
+	return "hello";
     }
 
     public String answerQuestion( ) {
-
+	return "hello";
     }
 
     public boolean verifyCorrect() {
-
+	return true;
     }
-
-    public 
 
     public void showGrid() {
 	
@@ -145,10 +143,14 @@ public class GameBoard {
 
     
     public static void main(String args[]) {
-
+	int numPlayers = 4;
 	
 	/* Create the game */
+	try {
 	GameBoard newGame = new GameBoard("newGame");
-	newGame.start(numPlayers);
+	newGame.startGame(numPlayers);
+	} catch (Exception e) {
+	    e.printStackTrace();
+	}
     }    
 }
