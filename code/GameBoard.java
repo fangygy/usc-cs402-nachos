@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.lang.*;
+import java.util.*;
 
 public class GameBoard {
                     
@@ -71,24 +72,28 @@ public class GameBoard {
 	
     } // End Constructor
 
-    /* When the */
-    public String askQuestion(String question) {
-	return "hello";
+    /* When the user selects a category and points, show them the question */
+    public String askQuestion(int cat, int points) {
+	/* Parse the string to get the question */
+	Scanner scanner = new Scanner(gameTiles[cat][(points/100)-100].toString());
+	/* Return the question */
+	return scanner.next();
     }
-
-    public String answerQuestion( ) {
-	return "hello";
+    /* Get the answer from the user and see if they answered it correctly */
+    public void answerQuestion(String ques, String answer) {
+	/* Prompt the user for the answer */
+	System.out.println( "That's correct");
     }
-
-    public boolean verifyCorrect() {
-	return true;
+    /* Compares */
+    public boolean compareAnswers(String bonaFideAnswer, String userAnswer){
+	if (userAnswer.equals(bonaFideAnswer))
+	    return true;
+	return false;
     }
 
     public void showGrid() {
 	
     }
-
-    
 
     public void startGame(int numPlayers) {
 	Player[] players = new Player[numPlayers];
